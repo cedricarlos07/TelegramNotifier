@@ -11,7 +11,7 @@ ZOOM_USER_ID = os.environ.get("ZOOM_USER_ID", "")
 
 # Excel file configuration
 EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", "attached_assets/Kodjo English - Classes Schedules (1).xlsx")
-SHEET_NAME = "Emploi du Temps"
+SHEET_NAME = "Fix Schedule"
 
 # Scheduler configuration
 SCHEDULE_UPDATE_COURSES = {"day_of_week": "6", "hour": 0, "minute": 0}  # Sunday at midnight
