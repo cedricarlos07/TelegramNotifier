@@ -67,6 +67,7 @@ body {
 .navbar-brand {
     font-weight: 700;
     font-size: 1.4rem;
+    color: #ffffff !important;
 }
 
 .brand-icon {
@@ -74,6 +75,11 @@ body {
     height: 36px;
     background-color: #4f46e5;
     border-radius: 50%;
+}
+
+/* Amélioration de la visibilité des éléments de navigation */
+[data-bs-theme="dark"] .navbar-dark .navbar-nav .nav-link {
+    color: #ffffff !important;
 }
 
 /* Theme switcher */
@@ -161,7 +167,7 @@ body {
 
 /* Fix text color in card headers based on theme */
 [data-bs-theme="dark"] .card-header .text-white {
-    color: #f3f4f6 !important;
+    color: #ffffff !important;
 }
 
 [data-bs-theme="light"] .card-header .text-white {
@@ -636,10 +642,11 @@ body {
 }
 
 [data-bs-theme="dark"] {
-    --card-text-color: #f3f4f6;
-    --muted-text-color: #9ca3af;
-    --badge-text-light: #f3f4f6;
-    --badge-text-dark: #f3f4f6;
+    --card-text-color: #ffffff;
+    --muted-text-color: #d1d5db;
+    --badge-text-light: #ffffff;
+    --badge-text-dark: #ffffff;
+    --text-color-emphasis: #ffffff;
 }
 
 .card-title, .card-text, .card-body p:not(.stat-value),
@@ -653,12 +660,29 @@ body {
 
 /* Assurer que tous les textes soient visibles en mode sombre */
 [data-bs-theme="dark"] .text-dark {
-    color: #f3f4f6 !important;
+    color: var(--text-color-emphasis) !important;
 }
 
 /* Meilleur contraste pour le texte sur les cartes en mode sombre */
 [data-bs-theme="dark"] .card {
-    color: #f3f4f6;
+    color: var(--text-color-emphasis);
+}
+
+/* Amélioration des textes blancs sur fond sombre */
+[data-bs-theme="dark"] .text-white {
+    color: var(--text-color-emphasis) !important;
+}
+
+/* Amélioration du contraste pour les textes dans les input-group */
+[data-bs-theme="dark"] .input-group-text {
+    color: var(--text-color-emphasis) !important;
+}
+
+/* Amélioration de la lisibilité des éléments de formulaire */
+[data-bs-theme="dark"] select.form-select,
+[data-bs-theme="dark"] input.form-control {
+    color: var(--text-color-emphasis) !important;
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Améliorer la visibilité des liens */
