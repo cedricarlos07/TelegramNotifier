@@ -130,6 +130,11 @@
                             </a>
                         </li>
                         <li class="nav-item mb-1">
+                            <a class="nav-link {% if request.path == '/analytics' %}active{% else %}link-light{% endif %}" href="{{ url_for('analytics') }}">
+                                <i class="fas fa-chart-bar me-2"></i> Analyses
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
                             <a class="nav-link {% if request.path == '/scenarios' %}active{% else %}link-light{% endif %}" href="{{ url_for('scenarios') }}">
                                 <i class="fas fa-tasks me-2"></i> Scénarios
                             </a>
@@ -206,6 +211,9 @@
                     <div class="list-group list-group-flush bg-dark">
                         <a href="{{ url_for('zoom_links') }}" class="list-group-item list-group-item-action bg-dark text-light">
                             <i class="fas fa-video me-2"></i> Liens Zoom
+                        </a>
+                        <a href="{{ url_for('analytics') }}" class="list-group-item list-group-item-action bg-dark text-light">
+                            <i class="fas fa-chart-bar me-2"></i> Analyses
                         </a>
                         <a href="{{ url_for('scenarios') }}" class="list-group-item list-group-item-action bg-dark text-light">
                             <i class="fas fa-tasks me-2"></i> Scénarios

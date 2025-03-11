@@ -1,0 +1,555 @@
+{% extends "layout.html" %}
+
+{% block title %}Analyse de Participation{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4">Analyse Détaillée de Participation</h1>
+    
+    <!-- Cartes de synthèse -->
+    <div class="row mb-4">
+        <!-- Présences totales -->
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 stat-card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-2">Présences totales</h5>
+                    <p class="stat-value">{{ total_attendances }}</p>
+                    <p class="text-muted mb-0">Enregistrements de participation</p>
+                    <i class="bi bi-people-fill stat-icon"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cours totaux -->
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 stat-card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-2">Cours totaux</h5>
+                    <p class="stat-value">{{ total_courses }}</p>
+                    <p class="text-muted mb-0">Cours dans le système</p>
+                    <i class="bi bi-camera-video-fill stat-icon"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Taux moyen de participation -->
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 stat-card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-2">Taux de participation</h5>
+                    <p class="stat-value">{{ avg_attendance_rate }}</p>
+                    <p class="text-muted mb-0">Présences par cours en moyenne</p>
+                    <i class="bi bi-graph-up-arrow stat-icon"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Durée moyenne de présence -->
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 stat-card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted mb-2">Durée moyenne</h5>
+                    <p class="stat-value">{{ average_duration }}</p>
+                    <p class="text-muted mb-0">Minutes par présence</p>
+                    <i class="bi bi-hourglass-split stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section filtres -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form id="analytics-filter-form" method="GET" action="{{ url_for('analytics') }}">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Groupe Telegram</label>
+                        <select class="form-select" name="telegram_group" id="telegram-group-filter">
+                            <option value="">Tous les groupes</option>
+                            {% for group in telegram_groups %}
+                            <option value="{{ group }}">{{ group }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Période</label>
+                        <select class="form-select" name="period" id="period-filter">
+                            <option value="all">Toutes les périodes</option>
+                            <option value="today">Aujourd'hui</option>
+                            <option value="this_week">Cette semaine</option>
+                            <option value="this_month">Ce mois</option>
+                            <option value="last_month">Mois précédent</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Jour de la semaine</label>
+                        <select class="form-select" name="weekday" id="weekday-filter">
+                            <option value="">Tous les jours</option>
+                            <option value="0">Lundi</option>
+                            <option value="1">Mardi</option>
+                            <option value="2">Mercredi</option>
+                            <option value="3">Jeudi</option>
+                            <option value="4">Vendredi</option>
+                            <option value="5">Samedi</option>
+                            <option value="6">Dimanche</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Appliquer les filtres</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Graphiques -->
+    <div class="row mb-4">
+        <!-- Distribution par cours -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Distribution des présences par cours</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="graphTypeDropdown1" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bar-chart-fill me-1"></i> Type
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="graphTypeDropdown1">
+                            <li><a class="dropdown-item course-chart-type" data-type="bar" href="#">Barres</a></li>
+                            <li><a class="dropdown-item course-chart-type" data-type="pie" href="#">Secteurs</a></li>
+                            <li><a class="dropdown-item course-chart-type" data-type="doughnut" href="#">Donut</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="courseAttendanceChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Distribution par jour de la semaine -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Présences par jour de la semaine</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="graphTypeDropdown2" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bar-chart-fill me-1"></i> Type
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="graphTypeDropdown2">
+                            <li><a class="dropdown-item weekday-chart-type" data-type="bar" href="#">Barres</a></li>
+                            <li><a class="dropdown-item weekday-chart-type" data-type="line" href="#">Ligne</a></li>
+                            <li><a class="dropdown-item weekday-chart-type" data-type="radar" href="#">Radar</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="weekdayAttendanceChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <!-- Heures populaires -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Heures de cours les plus populaires</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="timePopularityChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Taux de présence par cours -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Taux de présence par cours (%)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="attendanceRateChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section des tableaux de données -->
+    <div class="row mb-4">
+        <!-- Top participants -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Top 5 participants</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Nombre de présences</th>
+                                    <th>Durée totale (min)</th>
+                                    <th>Moyenne (min)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attendee in top_attendees %}
+                                <tr>
+                                    <td>{{ attendee.user_name or 'Anonyme' }}</td>
+                                    <td>{{ attendee.attendance_count }}</td>
+                                    <td>{{ attendee.total_duration }}</td>
+                                    <td>{{ (attendee.total_duration / attendee.attendance_count)|round(1) }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucune donnée disponible</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Taux de présence détaillés -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Taux de présence détaillés</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Cours</th>
+                                    <th>Taux de présence</th>
+                                    <th>État</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in course_attendance_rates %}
+                                <tr>
+                                    <td>{{ course.course_name }}</td>
+                                    <td>{{ course.rate }}%</td>
+                                    <td>
+                                        {% if course.rate >= 80 %}
+                                        <span class="badge bg-success">Excellent</span>
+                                        {% elif course.rate >= 60 %}
+                                        <span class="badge bg-info">Bon</span>
+                                        {% elif course.rate >= 40 %}
+                                        <span class="badge bg-warning">Moyen</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Faible</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Aucune donnée disponible</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rapports et exports -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Rapports et Exports</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <a href="#" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-file-earmark-excel me-2"></i> Exporter les données (Excel)
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="#" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-file-earmark-pdf me-2"></i> Générer un rapport PDF
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="#" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-envelope me-2"></i> Envoyer par email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Données pour les graphiques
+    const courseNames = {{ course_names|tojson }};
+    const attendanceCounts = {{ attendance_counts|tojson }};
+    const weekdayLabels = {{ weekday_labels|tojson }};
+    const weekdayData = {{ weekday_data|tojson }};
+    const timeLabels = {{ time_labels|tojson }};
+    const timeData = {{ time_data|tojson }};
+    
+    // Données pour le taux de présence
+    const courseRates = {{ course_attendance_rates|tojson }};
+    const rateLabels = courseRates.map(course => course.course_name);
+    const rateData = courseRates.map(course => course.rate);
+    
+    // Configuration couleurs
+    const colorPalette = [
+        '#4f46e5', '#10b981', '#0ea5e9', '#ef4444', '#f59e0b', 
+        '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#6366f1'
+    ];
+    
+    // Graphique de distribution par cours
+    let courseAttendanceChart = new Chart(
+        document.getElementById('courseAttendanceChart').getContext('2d'), 
+        {
+            type: 'bar',
+            data: {
+                labels: courseNames,
+                datasets: [{
+                    label: 'Nombre de présences',
+                    data: attendanceCounts,
+                    backgroundColor: colorPalette,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Présences: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    );
+    
+    // Graphique par jour de la semaine
+    let weekdayAttendanceChart = new Chart(
+        document.getElementById('weekdayAttendanceChart').getContext('2d'), 
+        {
+            type: 'bar',
+            data: {
+                labels: weekdayLabels,
+                datasets: [{
+                    label: 'Présences',
+                    data: weekdayData,
+                    backgroundColor: colorPalette[0],
+                    borderColor: colorPalette[0],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }
+    );
+    
+    // Graphique des heures populaires
+    let timePopularityChart = new Chart(
+        document.getElementById('timePopularityChart').getContext('2d'), 
+        {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: [{
+                    label: 'Présences',
+                    data: timeData,
+                    borderColor: colorPalette[1],
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }
+    );
+    
+    // Graphique du taux de présence
+    let attendanceRateChart = new Chart(
+        document.getElementById('attendanceRateChart').getContext('2d'), 
+        {
+            type: 'horizontalBar',
+            type: 'bar',
+            data: {
+                labels: rateLabels,
+                datasets: [{
+                    label: 'Taux de présence (%)',
+                    data: rateData,
+                    backgroundColor: rateData.map(rate => {
+                        if (rate >= 80) return '#10b981'; // success
+                        if (rate >= 60) return '#0ea5e9'; // info
+                        if (rate >= 40) return '#f59e0b'; // warning
+                        return '#ef4444'; // danger
+                    }),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    );
+    
+    // Changement de type de graphique pour les cours
+    document.querySelectorAll('.course-chart-type').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const chartType = this.getAttribute('data-type');
+            
+            // Détruire le graphique existant
+            courseAttendanceChart.destroy();
+            
+            // Créer un nouveau graphique avec le type sélectionné
+            courseAttendanceChart = new Chart(
+                document.getElementById('courseAttendanceChart').getContext('2d'), 
+                {
+                    type: chartType,
+                    data: {
+                        labels: courseNames,
+                        datasets: [{
+                            label: 'Nombre de présences',
+                            data: attendanceCounts,
+                            backgroundColor: colorPalette,
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: chartType !== 'bar'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Présences: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+            
+            // Mettre à jour le texte du bouton
+            document.getElementById('graphTypeDropdown1').innerHTML = 
+                `<i class="bi bi-bar-chart-fill me-1"></i> ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`;
+        });
+    });
+    
+    // Changement de type de graphique pour les jours de la semaine
+    document.querySelectorAll('.weekday-chart-type').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const chartType = this.getAttribute('data-type');
+            
+            // Détruire le graphique existant
+            weekdayAttendanceChart.destroy();
+            
+            // Configuration spécifique pour le radar
+            let options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            };
+            
+            if (chartType === 'radar') {
+                options = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true
+                        }
+                    }
+                };
+            }
+            
+            // Créer un nouveau graphique avec le type sélectionné
+            weekdayAttendanceChart = new Chart(
+                document.getElementById('weekdayAttendanceChart').getContext('2d'), 
+                {
+                    type: chartType,
+                    data: {
+                        labels: weekdayLabels,
+                        datasets: [{
+                            label: 'Présences',
+                            data: weekdayData,
+                            backgroundColor: chartType === 'radar' ? 'rgba(79, 70, 229, 0.2)' : colorPalette[0],
+                            borderColor: colorPalette[0],
+                            borderWidth: chartType !== 'bar' ? 2 : 0,
+                            fill: chartType === 'radar' ? true : false,
+                            tension: chartType === 'line' ? 0.3 : 0
+                        }]
+                    },
+                    options: options
+                }
+            );
+            
+            // Mettre à jour le texte du bouton
+            document.getElementById('graphTypeDropdown2').innerHTML = 
+                `<i class="bi bi-bar-chart-fill me-1"></i> ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`;
+        });
+    });
+});
+</script>
+{% endblock %}

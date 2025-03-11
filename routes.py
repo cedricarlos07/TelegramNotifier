@@ -21,6 +21,107 @@ def register_routes(app):
         app (Flask): Flask application
     """
     
+    @app.route('/analytics')
+    @login_required
+    def analytics():
+        """Tableau de bord d'analyse détaillé pour la participation aux cours."""
+        # Récupérer toutes les présences
+        attendances = ZoomAttendance.query.all()
+        
+        # Récupérer tous les cours
+        courses = Course.query.all()
+        
+        # Récupérer tous les groupes Telegram uniques
+        telegram_groups = db.session.query(Course.telegram_group_id).distinct().all()
+        telegram_groups = [group[0] for group in telegram_groups]
+        
+        # Statistiques globales
+        total_attendances = len(attendances)
+        total_courses = len(courses)
+        
+        # Calculer le taux moyen de participation (présences / cours)
+        avg_attendance_rate = 0
+        if total_courses > 0:
+            avg_attendance_rate = round((total_attendances / total_courses), 2)
+            
+        # Récupération des présences par cours
+        course_attendances = db.session.query(
+            Course.course_name,
+            db.func.count(ZoomAttendance.id).label('attendance_count')
+        ).join(ZoomAttendance, ZoomAttendance.course_id == Course.id)\
+        .group_by(Course.course_name).all()
+        
+        course_names = [course[0] for course in course_attendances]
+        attendance_counts = [course[1] for course in course_attendances]
+        
+        # Récupérer les tendances de participation par jour de la semaine
+        weekday_attendances = db.session.query(
+            Course.day_of_week,
+            db.func.count(ZoomAttendance.id).label('attendance_count')
+        ).join(ZoomAttendance, ZoomAttendance.course_id == Course.id)\
+        .group_by(Course.day_of_week).all()
+        
+        weekday_labels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
+        weekday_data = [0] * 7
+        
+        for day, count in weekday_attendances:
+            if 0 <= day < 7:  # Vérifier que l'indice est valide
+                weekday_data[day] = count
+        
+        # Récupérer la durée moyenne de présence
+        average_duration = db.session.query(db.func.avg(ZoomAttendance.duration)).scalar() or 0
+        average_duration = round(average_duration, 2)
+        
+        # Récupérer le top 5 des participants les plus assidus
+        top_attendees = db.session.query(
+            ZoomAttendance.user_name,
+            db.func.count(ZoomAttendance.id).label('attendance_count'),
+            db.func.sum(ZoomAttendance.duration).label('total_duration')
+        ).group_by(ZoomAttendance.user_name)\
+        .order_by(db.func.count(ZoomAttendance.id).desc())\
+        .limit(5).all()
+        
+        # Récupérer les heures de début les plus populaires
+        popular_times = db.session.query(
+            db.func.extract('hour', Course.start_time).label('hour'),
+            db.func.count(ZoomAttendance.id).label('attendance_count')
+        ).join(ZoomAttendance, ZoomAttendance.course_id == Course.id)\
+        .group_by('hour')\
+        .order_by(db.func.count(ZoomAttendance.id).desc())\
+        .all()
+        
+        time_labels = [f"{hour}:00" for hour, _ in popular_times]
+        time_data = [count for _, count in popular_times]
+        
+        # Récupérer le taux de présence par cours (présences / sessions totales)
+        course_attendance_rates = []
+        for course in courses:
+            total_sessions = 1  # Au moins une session par cours
+            attendance_count = ZoomAttendance.query.filter_by(course_id=course.id).count()
+            rate = (attendance_count / total_sessions) * 100
+            course_attendance_rates.append({
+                'course_name': course.course_name,
+                'rate': round(rate, 1)
+            })
+        
+        # Trier par taux de présence
+        course_attendance_rates = sorted(course_attendance_rates, key=lambda x: x['rate'], reverse=True)
+        
+        return render_template('analytics.html',
+                              total_attendances=total_attendances,
+                              total_courses=total_courses,
+                              avg_attendance_rate=avg_attendance_rate,
+                              average_duration=average_duration,
+                              course_names=course_names,
+                              attendance_counts=attendance_counts,
+                              weekday_labels=weekday_labels,
+                              weekday_data=weekday_data,
+                              top_attendees=top_attendees,
+                              time_labels=time_labels,
+                              time_data=time_data,
+                              course_attendance_rates=course_attendance_rates,
+                              telegram_groups=telegram_groups)
+    
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         """Page de connexion admin."""
