@@ -132,34 +132,54 @@ class ExcelProcessor:
             df = self.load_excel_data()
             if df is None:
                 return results
+            
+            # Debug column names
+            logger.info(f"Excel columns: {df.columns.tolist()}")
                 
             # Process the dataframe
             for index, row in df.iterrows():
                 results["processed"] += 1
                 try:
-                    # Extract course details
-                    course_name = row.get('Course Name')
-                    teacher_name = row.get('Teacher Name')
-                    day_str = row.get('Day')
-                    start_time_str = row.get('Start Time')
-                    end_time_str = row.get('End Time')
-                    telegram_group_id = row.get('Telegram Group ID')
+                    # Extract course details based on the Excel structure we observed
+                    course_name = row.get('Salma Choufani - ABG - SS - 2:00pm')  # First column contains course name
+                    teacher_name = row.get('Salma Choufani')  # Second column contains teacher name
+                    day_str = row.get('DAY')  # Day column
+                    start_time_str = row.get('TIME (France)')  # Using the French time column
+                    end_time_str = None  # End time not provided, we'll calculate it later
+                    telegram_group_id = row.get('TELEGRAM GROUP ID')  # Telegram group ID column
                     
                     # Skip rows with missing essential data
-                    if not course_name or not day_str or not start_time_str or not end_time_str:
+                    if pd.isna(course_name) or pd.isna(day_str) or pd.isna(start_time_str):
+                        logger.warning(f"Skipping row {index}: Missing essential data")
                         continue
                     
                     # Convert to appropriate data types
                     day_of_week = self._get_day_of_week_index(day_str)
                     start_time = self._parse_time(start_time_str)
-                    end_time = self._parse_time(end_time_str)
                     
-                    if day_of_week == -1 or not start_time or not end_time:
-                        logger.warning(f"Skipping row {index}: Invalid day or time format")
+                    # Assume classes are 1 hour if end time is not provided
+                    if start_time and not end_time_str:
+                        hour = start_time.hour
+                        minute = start_time.minute
+                        end_hour = hour + 1
+                        end_time = time(end_hour % 24, minute)
+                    else:
+                        end_time = self._parse_time(end_time_str)
+                    
+                    if day_of_week == -1 or not start_time:
+                        logger.warning(f"Skipping row {index}: Invalid day or time format: {day_str}, {start_time_str}")
                         continue
                     
                     # Calculate the next occurrence date
                     next_date = self._get_next_occurrence(day_of_week)
+                    
+                    # Use a safe string representation for course_name
+                    if not isinstance(course_name, str):
+                        course_name = str(course_name)
+                    
+                    # Use a safe string representation for teacher_name
+                    if pd.isna(teacher_name) or not isinstance(teacher_name, str):
+                        teacher_name = "Unknown Teacher"
                     
                     # Check if course already exists in database
                     existing_course = Course.query.filter_by(
@@ -168,12 +188,21 @@ class ExcelProcessor:
                         start_time=start_time
                     ).first()
                     
+                    # Make sure telegram_group_id is in the correct format
+                    if pd.isna(telegram_group_id) or not telegram_group_id:
+                        telegram_group_id = "-1001234567890"  # Default if not specified
+                    else:
+                        telegram_group_id = str(telegram_group_id).strip()
+                    
+                    logger.info(f"Processing course: {course_name}, teacher: {teacher_name}, day: {day_str}, " +
+                               f"time: {start_time_str}, group: {telegram_group_id}")
+                    
                     if existing_course:
                         # Update existing course
                         existing_course.teacher_name = teacher_name
                         existing_course.end_time = end_time
                         existing_course.schedule_date = next_date
-                        existing_course.telegram_group_id = telegram_group_id or existing_course.telegram_group_id
+                        existing_course.telegram_group_id = telegram_group_id
                         db.session.commit()
                         logger.info(f"Updated course: {course_name} on {next_date}")
                     else:
@@ -185,7 +214,7 @@ class ExcelProcessor:
                             start_time=start_time,
                             end_time=end_time,
                             schedule_date=next_date,
-                            telegram_group_id=telegram_group_id or "-1001234567890"  # Default group if not specified
+                            telegram_group_id=telegram_group_id
                         )
                         db.session.add(new_course)
                         db.session.commit()
