@@ -1,0 +1,95 @@
+/* Additional custom styles beyond Bootstrap */
+
+/* Body and general styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make footer stick to bottom */
+.footer {
+    margin-top: auto;
+}
+
+/* Card styles */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    border-top-left-radius: 0.5rem !important;
+    border-top-right-radius: 0.5rem !important;
+}
+
+/* Dashboard stats cards */
+.card .display-4 {
+    font-weight: 700;
+    font-size: 2.5rem;
+}
+
+/* Improve table readability */
+.table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* Tab styling for course management */
+.nav-tabs .nav-link {
+    border: none;
+    color: rgba(255, 255, 255, 0.75);
+    padding: 0.75rem 1rem;
+}
+
+.nav-tabs .nav-link.active {
+    color: white;
+    background-color: transparent;
+    border-bottom: 2px solid white;
+}
+
+/* Improve modal styling */
+.modal-header, .modal-footer {
+    border: none;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Log level badge colors */
+.badge.bg-info {
+    background-color: var(--bs-info) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--bs-warning) !important;
+}
+
+.badge.bg-danger {
+    background-color: var(--bs-danger) !important;
+}
+
+/* Custom spacing for forms */
+form label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card .display-4 {
+        font-size: 2rem;
+    }
+}

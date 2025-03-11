@@ -1,0 +1,225 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Scenario Management</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Scenarios are automated tasks that run according to a schedule. You can manually trigger them here if needed.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Scenario 1: Update Courses -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Scenario 1: Update Courses</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Description:</strong> Reads the Excel file, updates course schedules for the upcoming week or month.
+                </p>
+                <p class="card-text">
+                    <strong>Schedule:</strong> Every Sunday at midnight
+                </p>
+                <p class="card-text">
+                    <strong>Actions:</strong>
+                    <ul>
+                        <li>Read course information from Excel</li>
+                        <li>Update or create courses in the database</li>
+                        <li>Calculate next occurrence dates</li>
+                    </ul>
+                </p>
+            </div>
+            <div class="card-footer">
+                <form method="POST" action="{{ url_for('run_scenario', scenario_name='update_courses') }}">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-play me-2"></i>Run Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scenario 2: Create Zoom Links -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-video me-2"></i>Scenario 2: Create Zoom Links</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Description:</strong> Creates Zoom meetings for all courses that don't have a Zoom link yet.
+                </p>
+                <p class="card-text">
+                    <strong>Schedule:</strong> Every Sunday at 00:05 AM (after Scenario 1)
+                </p>
+                <p class="card-text">
+                    <strong>Actions:</strong>
+                    <ul>
+                        <li>Find courses without Zoom links</li>
+                        <li>Create Zoom meetings for each course</li>
+                        <li>Update courses with Zoom meeting links</li>
+                    </ul>
+                </p>
+            </div>
+            <div class="card-footer">
+                <form method="POST" action="{{ url_for('run_scenario', scenario_name='create_zoom_links') }}">
+                    <button type="submit" class="btn btn-info text-white">
+                        <i class="fas fa-play me-2"></i>Run Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scenario 3: Generate Messages -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-comment-alt me-2"></i>Scenario 3: Generate Messages</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Description:</strong> Generates Telegram messages for all courses in the upcoming week.
+                </p>
+                <p class="card-text">
+                    <strong>Schedule:</strong> Every Sunday at 00:10 AM (after Scenario 2)
+                </p>
+                <p class="card-text">
+                    <strong>Actions:</strong>
+                    <ul>
+                        <li>Find all courses for the upcoming week</li>
+                        <li>Create message templates with course details</li>
+                        <li>Schedule messages for sending</li>
+                    </ul>
+                </p>
+            </div>
+            <div class="card-footer">
+                <form method="POST" action="{{ url_for('run_scenario', scenario_name='generate_messages') }}">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-play me-2"></i>Run Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scenario 4: Send Daily Messages -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Scenario 4: Send Daily Messages</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Description:</strong> Sends scheduled Telegram messages for today's courses.
+                </p>
+                <p class="card-text">
+                    <strong>Schedule:</strong> Every day at 8:00 AM
+                </p>
+                <p class="card-text">
+                    <strong>Actions:</strong>
+                    <ul>
+                        <li>Find all scheduled messages for today</li>
+                        <li>Send messages to appropriate Telegram groups</li>
+                        <li>Mark messages as sent</li>
+                    </ul>
+                </p>
+            </div>
+            <div class="card-footer">
+                <form method="POST" action="{{ url_for('run_scenario', scenario_name='send_daily_messages') }}">
+                    <button type="submit" class="btn btn-warning text-dark">
+                        <i class="fas fa-play me-2"></i>Run Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Telegram Test Message -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Send Test Message</h5>
+    </div>
+    <div class="card-body">
+        <form id="testMessageForm">
+            <div class="mb-3">
+                <label for="group_id" class="form-label">Telegram Group ID</label>
+                <input type="text" class="form-control" id="group_id" name="group_id" required>
+                <div class="form-text">Enter the Telegram Group ID where you want to send the test message.</div>
+            </div>
+            <div class="mb-3">
+                <label for="message" class="form-label">Message</label>
+                <textarea class="form-control" id="message" name="message" rows="3" required>Test message from Telegram Course Bot</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane me-2"></i>Send Test Message
+            </button>
+        </form>
+        <div id="testMessageResult" class="mt-3" style="display: none;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Test Message Form
+        document.getElementById('testMessageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const groupId = document.getElementById('group_id').value;
+            const message = document.getElementById('message').value;
+            const resultDiv = document.getElementById('testMessageResult');
+            
+            // Clear previous results
+            resultDiv.innerHTML = '';
+            resultDiv.style.display = 'none';
+            resultDiv.className = 'mt-3 alert';
+            
+            // Show loading
+            resultDiv.innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Sending message...</div>';
+            resultDiv.className = 'mt-3 alert alert-info';
+            resultDiv.style.display = 'block';
+            
+            // Send request
+            fetch('/api/send-test-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'group_id': groupId,
+                    'message': message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + data.message;
+                    resultDiv.className = 'mt-3 alert alert-success';
+                } else {
+                    resultDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + data.message;
+                    resultDiv.className = 'mt-3 alert alert-danger';
+                }
+                resultDiv.style.display = 'block';
+            })
+            .catch(error => {
+                resultDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>An error occurred: ' + error;
+                resultDiv.className = 'mt-3 alert alert-danger';
+                resultDiv.style.display = 'block';
+            });
+        });
+    });
+</script>
+{% endblock %}

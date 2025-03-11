@@ -1,0 +1,181 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>Classements des participants
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>À propos du système de classement</h5>
+                    <p>
+                        Le système de classement attribue des points aux participants de vos groupes Telegram en fonction de leur activité :
+                        <ul>
+                            <li><strong>Messages envoyés :</strong> 1 point par message</li>
+                            <li><strong>Participation aux réunions Zoom :</strong> 10 points par présence</li>
+                        </ul>
+                        Les classements sont calculés hebdomadairement et mensuellement, et peuvent être partagés directement dans les groupes Telegram.
+                    </p>
+                </div>
+                
+                <!-- Filter controls -->
+                <div class="mb-4">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="group" class="form-label">Groupe Telegram</label>
+                            <select class="form-select" id="group" name="group" {% if not groups %}disabled{% endif %}>
+                                {% if not groups %}
+                                    <option value="">Aucun groupe disponible</option>
+                                {% else %}
+                                    {% for group_id in groups %}
+                                        <option value="{{ group_id }}" {% if group_id == selected_group %}selected{% endif %}>
+                                            {{ group_id }}
+                                        </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="period" class="form-label">Période</label>
+                            <select class="form-select" id="period" name="period">
+                                <option value="weekly" {% if selected_period == 'weekly' %}selected{% endif %}>Hebdomadaire</option>
+                                <option value="monthly" {% if selected_period == 'monthly' %}selected{% endif %}>Mensuelle</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100" {% if not groups %}disabled{% endif %}>
+                                <i class="fas fa-filter me-2"></i>Filtrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Rankings table -->
+                {% if selected_group %}
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="fas fa-list me-2"></i>
+                                Top participants - 
+                                {% if selected_period == 'weekly' %}Classement hebdomadaire{% else %}Classement mensuel{% endif %}
+                            </h6>
+                            <button type="button" class="btn btn-sm btn-light" 
+                                    onclick="sendRankings('{{ selected_group }}', '{{ selected_period }}')">
+                                <i class="fas fa-paper-plane me-1"></i>Envoyer au groupe
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            {% if rankings %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">#</th>
+                                                <th scope="col">Nom d'utilisateur</th>
+                                                <th scope="col">Points messages</th>
+                                                <th scope="col">Points présence</th>
+                                                <th scope="col">Points totaux</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for rank in rankings %}
+                                                <tr>
+                                                    <th scope="row">
+                                                        {% if rank.rank == 1 %}
+                                                            <i class="fas fa-crown text-warning me-1"></i>{{ rank.rank }}
+                                                        {% elif rank.rank == 2 %}
+                                                            <i class="fas fa-medal text-secondary me-1"></i>{{ rank.rank }}
+                                                        {% elif rank.rank == 3 %}
+                                                            <i class="fas fa-award text-danger me-1"></i>{{ rank.rank }}
+                                                        {% else %}
+                                                            {{ rank.rank }}
+                                                        {% endif %}
+                                                    </th>
+                                                    <td>{{ rank.user_name or rank.user_id }}</td>
+                                                    <td>{{ rank.message_points }}</td>
+                                                    <td>{{ rank.attendance_points }}</td>
+                                                    <td><strong>{{ rank.total_points }}</strong></td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning text-center">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    Aucune activité pour ce groupe dans cette période.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Sélectionnez un groupe pour voir les classements.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function sendRankings(groupId, periodType) {
+        if (!groupId) {
+            alert('Aucun groupe Telegram sélectionné.');
+            return;
+        }
+        
+        // Disable UI elements and show loading state
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Envoi en cours...';
+        
+        // Send the rankings to the group
+        const formData = new FormData();
+        formData.append('group_id', groupId);
+        formData.append('period_type', periodType);
+        
+        fetch('{{ url_for("send_rankings") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Success notification
+                alert('Classement envoyé avec succès !');
+            } else {
+                // Error notification
+                alert('Erreur lors de l\'envoi du classement : ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erreur lors de l\'envoi du classement : ' + error);
+        })
+        .finally(() => {
+            // Restore UI elements
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+    
+    // Auto-submit form when changing select values
+    document.getElementById('group').addEventListener('change', function() {
+        this.form.submit();
+    });
+    
+    document.getElementById('period').addEventListener('change', function() {
+        this.form.submit();
+    });
+</script>
+{% endblock %}

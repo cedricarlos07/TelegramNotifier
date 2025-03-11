@@ -1,0 +1,72 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-vial me-2"></i>Mode Simulation
+                </h5>
+                {% if simulation_mode %}
+                <span class="badge bg-warning text-dark">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Mode simulation actif
+                </span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>À propos du mode simulation</h5>
+                    <p>
+                        Le mode simulation vous permet de tester l'application sans envoyer de messages aux vrais groupes Telegram.
+                        En mode simulation, tous les messages seront envoyés uniquement au groupe de test spécifié ci-dessous.
+                        Les messages seront préfixés par <code>[SIMULATION]</code> pour les distinguer des messages réels.
+                    </p>
+                </div>
+                
+                <form action="{{ url_for('toggle_simulation') }}" method="POST">
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="simulation_mode" name="simulation_mode" {% if simulation_mode %}checked{% endif %}>
+                        <label class="form-check-label" for="simulation_mode">Activer le mode simulation</label>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="test_group_id" class="form-label">ID du groupe de test Telegram</label>
+                        <input type="text" class="form-control" id="test_group_id" name="test_group_id" value="{{ test_group_id or '' }}" placeholder="Ex: -1001234567890" required>
+                        <div class="form-text">
+                            Tous les messages en mode simulation seront envoyés à ce groupe Telegram.
+                            Assurez-vous que le bot a été ajouté à ce groupe avec les permissions nécessaires.
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Enregistrer les paramètres
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-question-circle me-2"></i>Comment utiliser le mode simulation
+                </h5>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">Créez un <strong>groupe de test</strong> dans Telegram et notez son ID.</li>
+                    <li class="mb-2">Ajoutez votre bot Telegram à ce groupe avec les <strong>permissions d'administrateur</strong>.</li>
+                    <li class="mb-2">Activez le mode simulation et entrez l'ID du groupe de test ci-dessus.</li>
+                    <li class="mb-2">Exécutez vos scénarios normalement - tous les messages seront redirigés vers le groupe de test.</li>
+                    <li>Lorsque vous êtes prêt à utiliser le système en production, désactivez le mode simulation.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

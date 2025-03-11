@@ -1,0 +1,66 @@
+💡 **Fonctionnalité de Simulation Démo/Test**  
+
+---
+
+### 🧪 **1. Objectif :**  
+Permettre de tester le bot dans un environnement de simulation pour vérifier son bon fonctionnement sans impacter les vrais groupes Telegram.  
+
+---
+
+### 🚀 **2. Fonctionnement :**  
+
+#### 🔧 **Mode Simulation (Démo/Test)**  
+- **Activation :** Un bouton "Activer le Mode Simulation" sur le dashboard Flask.  
+- **Simulation d’Envoyé de Notifications :**  
+  - Les notifications sont envoyées vers un **groupe de test Telegram** ou un **numéro de téléphone spécifique**.  
+  - Les messages envoyés doivent être clairement marqués avec un préfixe **"[SIMULATION]"** pour les différencier des vrais messages.  
+
+#### 🔄 **Simulation des Scénarios :**  
+- **Scénario 1 : Dynamic Scheduling**  
+  - Générer une mise à jour fictive du calendrier.  
+  - Vérifier si les dates et heures sont correctement calculées et formatées.  
+
+- **Scénario 2 : Zoom Meeting Scheduling**  
+  - Créer des réunions Zoom fictives (en utilisant des identifiants de test) et vérifier si les liens sont bien générés.  
+
+- **Scénario 3 : Message Telegram Generation**  
+  - Générer les messages Telegram de manière fictive.  
+  - Vérifier leur contenu et leur format avant envoi.  
+
+- **Scénario 4 : Envoi de Messages Telegram**  
+  - Simuler l'envoi vers le groupe de test ou le numéro spécifique.  
+  - Vérifier la réception et la mise en forme correcte.  
+
+---
+
+### 🖥️ **3. Dashboard Flask : Gestion de la Simulation**  
+
+#### 🔧 **Gestion des Modes :**  
+- **Bouton d’activation/désactivation du mode simulation.**  
+- **Indicateur visuel (badge ou bannière) pour indiquer que le mode simulation est actif.**  
+
+#### 🔍 **Logs et Historique :**  
+- Visualiser les messages simulés envoyés.  
+- Vérifier les liens Zoom générés pendant la simulation.  
+- Voir l’historique des points et des classements simulés.  
+
+#### 📝 **Groupe de Test :**  
+- **Configurer le numéro ou l'ID du groupe de test via le dashboard.**  
+- Permettre de basculer facilement entre **groupe réel** et **groupe de test**.  
+
+---
+
+### 📝 **4. Avantages :**  
+1. **Test en Conditions Réelles :** Voir exactement comment le bot fonctionne sans perturber les vrais utilisateurs.  
+2. **Détection des Bugs en Amont :** Vérifier les erreurs de logique ou de syntaxe avant de passer en production.  
+3. **Confiance Avant Déploiement :** S'assurer que tout est opérationnel avant de toucher aux groupes réels.  
+
+---
+
+💡 **Bonus : Journal de Simulation**  
+- Garder une trace des simulations réalisées avec les logs complets.  
+- Pouvoir les consulter ou les exporter pour analyse.  
+
+---
+
+Dis-moi si tu veux que je commence à coder cette partie ou si tu as d'autres idées à ajouter ! 💪
