@@ -466,8 +466,9 @@ def register_routes(app):
                 db.session.add(log_entry)
                 db.session.commit()
             else:
+                activation_text = "l'activation" if enabled else "la désactivation"
                 flash(
-                    f"Échec de {'l\'activation' if enabled else 'la désactivation'} du mode simulation", 
+                    f"Échec de {activation_text} du mode simulation", 
                     "danger"
                 )
             
