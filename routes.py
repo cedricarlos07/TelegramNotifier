@@ -1292,6 +1292,44 @@ Vous pouvez utiliser ce système pour:
             db.session.commit()
             
             return jsonify({'success': False, 'message': error_msg})
+    
+    @app.route('/api/send-daily-rankings', methods=['POST'])
+    @login_required
+    def send_daily_rankings():
+        """Send daily rankings to all Telegram groups"""
+        try:
+            # Send the daily rankings
+            bot = init_telegram_bot()
+            results = bot.send_daily_rankings()
+            
+            # Log the results
+            log_entry = Log(
+                level="INFO",
+                scenario="send_daily_rankings",
+                message=f"Daily rankings sent: {results['success']} successful, {results['failure']} failed"
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True, 
+                'message': f"Classements quotidiens envoyés à {results['success']} groupes ({results['failure']} échecs)"
+            })
+                
+        except Exception as e:
+            error_msg = f"Error sending daily rankings: {str(e)}"
+            logger.error(error_msg)
+            
+            # Log the error
+            log_entry = Log(
+                level="ERROR",
+                scenario="send_daily_rankings",
+                message=error_msg
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            return jsonify({'success': False, 'message': error_msg})
 
     # Error handlers
     @app.errorhandler(404)
