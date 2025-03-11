@@ -1,6 +1,7 @@
 import logging
 import random
-from datetime import datetime, timedelta
+import pandas as pd
+from datetime import datetime, timedelta, time
 from flask import render_template, request, redirect, url_for, jsonify, flash
 from app import app, db
 from models import Course, ScheduledMessage, Log, UserRanking, AppSettings, TelegramMessage, ZoomAttendance
@@ -826,31 +827,56 @@ def register_routes(app):
                 db.session.commit()
                 flash(f"{len(old_courses)} cours de démonstration précédents supprimés", "info")
             
+            # Log des colonnes disponibles pour le débogage
+            logger.info(f"Excel columns: {df.columns.tolist()}")
+            
             # Traitement de chaque ligne du fichier Excel
             for index, row in df.iterrows():
                 try:
-                    # Extraire les données du cours
-                    course_name = row.get('Course Name')
-                    teacher_name = row.get('Teacher Name')
-                    day_str = row.get('Day')
-                    start_time_str = row.get('Start Time')
-                    end_time_str = row.get('End Time')
+                    # Extraire les données du cours basées sur la structure Excel observée
+                    course_name = row.get('Salma Choufani - ABG - SS - 2:00pm')  # Première colonne contient le nom du cours
+                    teacher_name = row.get('Salma Choufani')  # Deuxième colonne contient le nom de l'enseignant
+                    day_str = row.get('DAY')  # Colonne jour
+                    start_time_str = row.get('TIME (France)')  # Utilisation de l'heure française
+                    telegram_group_id = row.get('TELEGRAM GROUP ID')  # Colonne ID du groupe Telegram
                     
                     # Vérifier les données essentielles
-                    if not course_name or not day_str or not start_time_str or not end_time_str:
+                    if pd.isna(course_name) or pd.isna(day_str) or pd.isna(start_time_str):
+                        logger.warning(f"Skipping row {index}: Missing essential data")
                         continue
                     
                     # Convertir les types de données
                     day_of_week = excel_processor._get_day_of_week_index(day_str)
                     start_time = excel_processor._parse_time(start_time_str)
-                    end_time = excel_processor._parse_time(end_time_str)
                     
-                    if day_of_week == -1 or not start_time or not end_time:
+                    # Calculer l'heure de fin (par défaut 1 heure plus tard)
+                    if start_time:
+                        hour = start_time.hour
+                        minute = start_time.minute
+                        end_hour = hour + 1
+                        end_time = time(end_hour % 24, minute)
+                    else:
+                        logger.warning(f"Skipping row {index}: Invalid time format: {start_time_str}")
+                        error_count += 1
+                        continue
+                    
+                    if day_of_week == -1:
+                        logger.warning(f"Skipping row {index}: Invalid day format: {day_str}")
                         error_count += 1
                         continue
                     
                     # Calculer la prochaine date d'occurrence
                     next_date = excel_processor._get_next_occurrence(day_of_week)
+                    
+                    # Utiliser une représentation sûre pour le nom du cours
+                    if not isinstance(course_name, str):
+                        course_name = str(course_name)
+                    
+                    # Utiliser une représentation sûre pour le nom de l'enseignant
+                    if pd.isna(teacher_name) or not isinstance(teacher_name, str):
+                        teacher_name = "Professeur Démo"
+                        
+                    logger.info(f"Importing course: {course_name}, teacher: {teacher_name}, day: {day_str}, time: {start_time_str}")
                     
                     # Générer un lien Zoom fictif
                     zoom_link = f"https://zoom.us/j/{random.randint(10000000000, 99999999999)}"
