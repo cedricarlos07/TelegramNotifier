@@ -3,8 +3,10 @@ import random
 import pandas as pd
 from datetime import datetime, timedelta, time
 from flask import render_template, request, redirect, url_for, jsonify, flash
+from flask_login import login_user, logout_user, login_required, current_user
 from app import app, db
-from models import Course, ScheduledMessage, Log, UserRanking, AppSettings, TelegramMessage, ZoomAttendance
+from models import Course, ScheduledMessage, Log, UserRanking, AppSettings, TelegramMessage, ZoomAttendance, User
+from forms import LoginForm, ChangePasswordForm, AddAdminForm
 from scheduler import run_job
 from excel_processor import excel_processor
 from telegram_bot import init_telegram_bot
@@ -19,8 +21,204 @@ def register_routes(app):
         app (Flask): Flask application
     """
     
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        """Page de connexion admin."""
+        # Si l'utilisateur est déjà connecté, rediriger vers le dashboard
+        if current_user.is_authenticated:
+            return redirect(url_for('dashboard'))
+        
+        form = LoginForm()
+        if form.validate_on_submit():
+            # Récupérer l'utilisateur depuis la base de données
+            user = User.query.filter_by(username=form.username.data).first()
+            
+            # Vérifier si l'utilisateur existe et si le mot de passe est correct
+            if user is None or not user.check_password(form.password.data):
+                flash('Nom d\'utilisateur ou mot de passe incorrect', 'danger')
+                return redirect(url_for('login'))
+            
+            # Connexion de l'utilisateur
+            login_user(user, remember=form.remember_me.data)
+            
+            # Mise à jour de la date de dernière connexion
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+            
+            # Log de connexion
+            log_entry = Log(
+                level="INFO",
+                scenario="auth",
+                message=f"Connexion réussie pour l'utilisateur {user.username}"
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            # Redirection vers la page demandée ou le dashboard
+            next_page = request.args.get('next')
+            if not next_page or not next_page.startswith('/'):
+                next_page = url_for('dashboard')
+            return redirect(next_page)
+        
+        return render_template('login.html', form=form)
+    
+    @app.route('/logout')
+    @login_required
+    def logout():
+        """Déconnexion de l'utilisateur."""
+        # Log de déconnexion
+        log_entry = Log(
+            level="INFO",
+            scenario="auth",
+            message=f"Déconnexion de l'utilisateur {current_user.username}"
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        # Déconnexion
+        logout_user()
+        flash('Vous avez été déconnecté avec succès', 'success')
+        return redirect(url_for('login'))
+    
+    @app.route('/change-password', methods=['GET', 'POST'])
+    @login_required
+    def change_password():
+        """Changement de mot de passe."""
+        form = ChangePasswordForm()
+        if form.validate_on_submit():
+            # Vérifier l'ancien mot de passe
+            if not current_user.check_password(form.old_password.data):
+                flash('Ancien mot de passe incorrect', 'danger')
+                return redirect(url_for('change_password'))
+            
+            # Définir le nouveau mot de passe
+            current_user.set_password(form.password.data)
+            db.session.commit()
+            
+            # Log de changement de mot de passe
+            log_entry = Log(
+                level="INFO",
+                scenario="auth",
+                message=f"Mot de passe changé pour l'utilisateur {current_user.username}"
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            flash('Votre mot de passe a été modifié avec succès', 'success')
+            return redirect(url_for('dashboard'))
+        
+        return render_template('change_password.html', form=form)
+    
+    @app.route('/admin-users', methods=['GET', 'POST'])
+    @login_required
+    def admin_users():
+        """Gestion des utilisateurs administrateurs."""
+        # Vérifier si l'utilisateur est admin
+        if not current_user.is_admin:
+            flash('Accès refusé. Vous devez être administrateur pour accéder à cette page.', 'danger')
+            return redirect(url_for('dashboard'))
+        
+        form = AddAdminForm()
+        if form.validate_on_submit():
+            # Créer un nouvel utilisateur
+            user = User(
+                username=form.username.data,
+                email=form.email.data,
+                is_admin=True
+            )
+            user.set_password(form.password.data)
+            
+            db.session.add(user)
+            db.session.commit()
+            
+            # Log de création d'utilisateur
+            log_entry = Log(
+                level="INFO",
+                scenario="auth",
+                message=f"Nouvel utilisateur {user.username} créé par {current_user.username}"
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            flash(f'Utilisateur {user.username} créé avec succès', 'success')
+            return redirect(url_for('admin_users'))
+        
+        # Récupérer tous les utilisateurs
+        users = User.query.all()
+        
+        return render_template('admin_users.html', users=users, form=form, current_user=current_user)
+    
+    @app.route('/admin-users/toggle-admin/<int:user_id>', methods=['GET'])
+    @login_required
+    def toggle_admin(user_id):
+        """Activer/désactiver le statut d'administrateur pour un utilisateur."""
+        # Vérifier si l'utilisateur est admin
+        if not current_user.is_admin:
+            flash('Accès refusé. Vous devez être administrateur pour effectuer cette action.', 'danger')
+            return redirect(url_for('dashboard'))
+        
+        # Éviter que l'utilisateur modifie son propre statut
+        if user_id == current_user.id:
+            flash('Vous ne pouvez pas modifier votre propre statut d\'administrateur', 'warning')
+            return redirect(url_for('admin_users'))
+        
+        # Récupérer l'utilisateur
+        user = User.query.get_or_404(user_id)
+        
+        # Inverser le statut d'administrateur
+        user.is_admin = not user.is_admin
+        db.session.commit()
+        
+        # Log de modification de statut
+        log_entry = Log(
+            level="INFO",
+            scenario="auth",
+            message=f"Statut admin modifié pour {user.username} par {current_user.username}: {user.is_admin}"
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        status = "activé" if user.is_admin else "désactivé"
+        flash(f'Statut d\'administrateur {status} pour {user.username}', 'success')
+        return redirect(url_for('admin_users'))
+    
+    @app.route('/admin-users/delete/<int:user_id>', methods=['GET'])
+    @login_required
+    def delete_user(user_id):
+        """Supprimer un utilisateur."""
+        # Vérifier si l'utilisateur est admin
+        if not current_user.is_admin:
+            flash('Accès refusé. Vous devez être administrateur pour effectuer cette action.', 'danger')
+            return redirect(url_for('dashboard'))
+        
+        # Éviter que l'utilisateur se supprime lui-même
+        if user_id == current_user.id:
+            flash('Vous ne pouvez pas supprimer votre propre compte', 'warning')
+            return redirect(url_for('admin_users'))
+        
+        # Récupérer l'utilisateur
+        user = User.query.get_or_404(user_id)
+        username = user.username
+        
+        # Supprimer l'utilisateur
+        db.session.delete(user)
+        db.session.commit()
+        
+        # Log de suppression d'utilisateur
+        log_entry = Log(
+            level="INFO",
+            scenario="auth",
+            message=f"Utilisateur {username} supprimé par {current_user.username}"
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        flash(f'Utilisateur {username} supprimé avec succès', 'success')
+        return redirect(url_for('admin_users'))
+    
     @app.route('/')
     @app.route('/admin')
+    @login_required
     def dashboard():
         """Dashboard home page"""
         # Get counts for dashboard
@@ -69,6 +267,7 @@ def register_routes(app):
         )
     
     @app.route('/courses')
+    @login_required
     def courses():
         """Course management page"""
         # Get all courses
@@ -85,6 +284,7 @@ def register_routes(app):
         return render_template('courses.html', courses_by_day=courses_by_day, days=days)
     
     @app.route('/courses/add', methods=['POST'])
+    @login_required
     def add_course():
         """Add a new course"""
         try:
@@ -239,6 +439,7 @@ def register_routes(app):
         return redirect(url_for('courses'))
     
     @app.route('/zoom-links')
+    @login_required
     def zoom_links():
         """Zoom links management page"""
         # Get all courses with Zoom links
@@ -300,6 +501,7 @@ def register_routes(app):
         return redirect(url_for('zoom_links'))
     
     @app.route('/scenarios')
+    @login_required
     def scenarios():
         """Scenarios management page"""
         return render_template('scenarios.html')
@@ -340,6 +542,7 @@ def register_routes(app):
         return redirect(url_for('scenarios'))
     
     @app.route('/logs')
+    @login_required
     def logs():
         """Logs page"""
         # Get all logs, most recent first
@@ -450,6 +653,7 @@ def register_routes(app):
             return jsonify({'success': False, 'message': error_msg})
             
     @app.route('/simulation')
+    @login_required
     def simulation():
         """Simulation mode management page"""
         # Get app settings
@@ -524,6 +728,7 @@ def register_routes(app):
         return redirect(url_for('simulation'))
     
     @app.route('/bot-status')
+    @login_required
     def bot_status():
         """Telegram bot status page"""
         bot = init_telegram_bot()
@@ -694,6 +899,7 @@ def register_routes(app):
             })
             
     @app.route('/rankings')
+    @login_required
     def rankings():
         """User rankings page"""
         # Get all groups with activity
