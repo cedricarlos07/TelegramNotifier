@@ -268,9 +268,13 @@ class TelegramBot:
             attendance_points (int): Points for attendance
             
         Returns:
-            tuple: (weekly_ranking, monthly_ranking) The updated ranking records
+            tuple: (daily_ranking, weekly_ranking, monthly_ranking) The updated ranking records
         """
         now = datetime.utcnow()
+        
+        # Calculate current day period (00:00 to 23:59:59)
+        start_of_day = datetime(now.year, now.month, now.day, 0, 0, 0)
+        end_of_day = start_of_day + timedelta(days=1) - timedelta(seconds=1)
         
         # Calculate current week period (Monday to Sunday)
         start_of_week = now - timedelta(days=now.weekday())
@@ -283,6 +287,36 @@ class TelegramBot:
             end_of_month = datetime(now.year + 1, 1, 1, 0, 0, 0) - timedelta(seconds=1)
         else:
             end_of_month = datetime(now.year, now.month + 1, 1, 0, 0, 0) - timedelta(seconds=1)
+        
+        # Update daily ranking
+        daily_ranking = UserRanking.query.filter_by(
+            user_id=user_id,
+            telegram_group_id=chat_id,
+            period_start=start_of_day,
+            period_end=end_of_day,
+            period_type='daily'
+        ).first()
+        
+        if not daily_ranking:
+            daily_ranking = UserRanking(
+                user_id=user_id,
+                user_name=user_name,
+                telegram_group_id=chat_id,
+                period_start=start_of_day,
+                period_end=end_of_day,
+                period_type='daily'
+            )
+            db.session.add(daily_ranking)
+        
+        if message_points > 0:
+            daily_ranking.message_points += message_points
+            daily_ranking.last_message_date = now
+        
+        if attendance_points > 0:
+            daily_ranking.attendance_points += attendance_points
+            daily_ranking.last_attendance_date = now
+        
+        daily_ranking.total_points = daily_ranking.message_points + daily_ranking.attendance_points
         
         # Update weekly ranking
         weekly_ranking = UserRanking.query.filter_by(
@@ -344,9 +378,11 @@ class TelegramBot:
         
         monthly_ranking.total_points = monthly_ranking.message_points + monthly_ranking.attendance_points
         
+        db.session.commit()
+        
         # Calculate ranks later in a separate operation to avoid doing it for each message
         
-        return (weekly_ranking, monthly_ranking)
+        return (daily_ranking, weekly_ranking, monthly_ranking)
 
     def format_course_message(self, course):
         """
@@ -461,7 +497,7 @@ class TelegramBot:
         Calculate rankings for users in a period.
         
         Args:
-            period_type (str): 'weekly' or 'monthly'
+            period_type (str): 'daily', 'weekly' or 'monthly'
             telegram_group_id (str): Optional group ID to filter by
             
         Returns:
@@ -470,11 +506,17 @@ class TelegramBot:
         now = datetime.utcnow()
         
         # Calculate period dates
-        if period_type == 'weekly':
+        if period_type == 'daily':
+            # Daily period (current day)
+            start_of_period = datetime(now.year, now.month, now.day, 0, 0, 0)
+            end_of_period = start_of_period + timedelta(days=1) - timedelta(seconds=1)
+        elif period_type == 'weekly':
+            # Weekly period (Monday to Sunday)
             start_of_period = now - timedelta(days=now.weekday())
             start_of_period = datetime(start_of_period.year, start_of_period.month, start_of_period.day, 0, 0, 0)
             end_of_period = start_of_period + timedelta(days=7) - timedelta(seconds=1)
         else:  # monthly
+            # Monthly period
             start_of_period = datetime(now.year, now.month, 1, 0, 0, 0)
             if now.month == 12:
                 end_of_period = datetime(now.year + 1, 1, 1, 0, 0, 0) - timedelta(seconds=1)
@@ -509,7 +551,7 @@ class TelegramBot:
         
         Args:
             telegram_group_id (str): The Telegram group ID
-            period_type (str): 'weekly' or 'monthly'
+            period_type (str): 'daily', 'weekly' or 'monthly'
             limit (int): Number of top users to return
             
         Returns:
@@ -524,7 +566,7 @@ class TelegramBot:
         
         Args:
             telegram_group_id (str): The Telegram group ID
-            period_type (str): 'weekly' or 'monthly'
+            period_type (str): 'daily', 'weekly' or 'monthly'
             
         Returns:
             bool: Success status
@@ -534,8 +576,15 @@ class TelegramBot:
         if not top_users:
             message = f"*Classement {period_type}*\n\nAucun participant pour le moment. Soyez le premier !"
         else:
-            period_text = "de la semaine" if period_type == 'weekly' else "du mois"
-            message = f"*🏆 TOP PARTICIPANTS {period_text.upper()} 🏆*\n\n"
+            # Détermination du texte selon la période
+            if period_type == 'daily':
+                period_text = "du jour"
+            elif period_type == 'weekly':
+                period_text = "de la semaine"
+            else:  # monthly
+                period_text = "du mois"
+                
+            message = f"*🏆 MEILLEURS PARTICIPANTS {period_text.upper()} 🏆*\n\n"
             
             for i, user in enumerate(top_users):
                 medal = "🥇" if i == 0 else "🥈" if i == 1 else "🥉" if i == 2 else f"{i+1}."
@@ -546,6 +595,55 @@ class TelegramBot:
             message += "Continuez à participer pour monter dans le classement ! 💪"
         
         return self.send_message(telegram_group_id, message)
+
+    def send_daily_rankings(self, courses=None):
+        """
+        Envoie les classements quotidiens à tous les groupes Telegram actifs.
+        
+        Args:
+            courses (list): Liste optionnelle de cours pour filtrer les groupes
+            
+        Returns:
+            dict: Résultats avec les compteurs de succès et d'échec
+        """
+        results = {"success": 0, "failure": 0}
+        processed_groups = set()
+        
+        # Si des cours sont fournis, envoyer les classements seulement aux groupes de ces cours
+        if courses:
+            for course in courses:
+                group_id = course.telegram_group_id
+                if group_id and group_id not in processed_groups:
+                    # Envoyer le classement quotidien
+                    if self.send_ranking_message(group_id, 'daily'):
+                        results["success"] += 1
+                    else:
+                        results["failure"] += 1
+                    
+                    processed_groups.add(group_id)
+        else:
+            # Sinon, envoyer à tous les groupes uniques dans la base de données
+            from models import Course
+            
+            unique_groups = db.session.query(Course.telegram_group_id).distinct().all()
+            for (group_id,) in unique_groups:
+                if group_id and group_id not in processed_groups:
+                    # Envoyer le classement quotidien
+                    if self.send_ranking_message(group_id, 'daily'):
+                        results["success"] += 1
+                    else:
+                        results["failure"] += 1
+                    
+                    processed_groups.add(group_id)
+        
+        # Journal des résultats
+        log_message = f"Envoi de {results['success']} classements quotidiens, {results['failure']} échecs"
+        log_entry = Log(level="INFO", scenario="daily_rankings", message=log_message)
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        logger.info(log_message)
+        return results
 
 # Initialize bot later to avoid app context issues
 telegram_bot = None
