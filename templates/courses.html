@@ -7,12 +7,87 @@
     </div>
 </div>
 
-<!-- Add Course Button -->
-<div class="row mb-4">
-    <div class="col-12">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
-            <i class="fas fa-plus-circle me-2"></i>Add New Course
-        </button>
+<!-- Add Course Button and Filters -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Filtres avancés et contrôles</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Filters -->
+            <div class="col-lg-10">
+                <form id="filterForm" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="filter_teacher" class="form-label">Professeur</label>
+                        <select class="form-select" id="filter_teacher" name="teacher">
+                            <option value="">Tous les professeurs</option>
+                            {% for teacher in teachers %}
+                                <option value="{{ teacher }}">{{ teacher }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filter_class" class="form-label">Classe</label>
+                        <select class="form-select" id="filter_class" name="class">
+                            <option value="">Toutes les classes</option>
+                            {% for class_name in class_names %}
+                                <option value="{{ class_name }}">{{ class_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filter_group" class="form-label">Groupe Telegram</label>
+                        <select class="form-select" id="filter_group" name="group">
+                            <option value="">Tous les groupes</option>
+                            {% for group in telegram_groups %}
+                                <option value="{{ group }}">{{ group }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filter_period" class="form-label">Période</label>
+                        <select class="form-select" id="filter_period" name="period">
+                            <option value="">Toutes les périodes</option>
+                            <option value="this_week">Cette semaine</option>
+                            <option value="next_week">Semaine prochaine</option>
+                            <option value="this_month">Ce mois</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-filter me-2"></i>Filtrer
+                        </button>
+                        <button type="reset" class="btn btn-secondary ms-2">
+                            <i class="fas fa-undo me-2"></i>Réinitialiser
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Add Course Button -->
+            <div class="col-lg-2 d-flex align-items-end justify-content-end">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+                    <i class="fas fa-plus-circle me-2"></i>Ajouter un cours
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Planning Progress Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h6 class="mb-3">Progression de la planification</h6>
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ planning_progress }}%;" 
+                 aria-valuenow="{{ planning_progress }}" aria-valuemin="0" aria-valuemax="100">
+                {{ planning_progress }}% Planifiés
+            </div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+            <small class="text-muted">{{ courses_with_zoom }} cours avec liens Zoom</small>
+            <small class="text-muted">{{ total_courses }} cours au total</small>
+        </div>
     </div>
 </div>
 
@@ -270,6 +345,132 @@
                 modal.show();
             });
         });
+        
+        // Handle Filter Form
+        const filterForm = document.getElementById('filterForm');
+        if (filterForm) {
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get filter values
+                const teacher = document.getElementById('filter_teacher').value;
+                const className = document.getElementById('filter_class').value;
+                const group = document.getElementById('filter_group').value;
+                const period = document.getElementById('filter_period').value;
+                
+                // Build URL with query parameters
+                let url = window.location.pathname;
+                const params = new URLSearchParams();
+                
+                if (teacher) params.append('teacher', teacher);
+                if (className) params.append('class', className);
+                if (group) params.append('group', group);
+                if (period) params.append('period', period);
+                
+                // Redirect to filtered URL
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                window.location.href = url;
+            });
+            
+            // Handle reset button
+            filterForm.querySelector('button[type="reset"]').addEventListener('click', function() {
+                // Reset all selects
+                filterForm.querySelectorAll('select').forEach(select => {
+                    select.value = '';
+                });
+                
+                // Go to base URL
+                window.location.href = window.location.pathname;
+            });
+            
+            // Pre-populate filter values from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('teacher')) {
+                document.getElementById('filter_teacher').value = urlParams.get('teacher');
+            }
+            if (urlParams.has('class')) {
+                document.getElementById('filter_class').value = urlParams.get('class');
+            }
+            if (urlParams.has('group')) {
+                document.getElementById('filter_group').value = urlParams.get('group');
+            }
+            if (urlParams.has('period')) {
+                document.getElementById('filter_period').value = urlParams.get('period');
+            }
+        }
     });
+    
+    // Function to validate course form to prevent duplicates
+    function validateCourseForm(formId) {
+        const form = document.getElementById(formId);
+        const dayOfWeek = form.querySelector('[name="day_of_week"]').value;
+        const startTime = form.querySelector('[name="start_time"]').value;
+        const endTime = form.querySelector('[name="end_time"]').value;
+        const teacherName = form.querySelector('[name="teacher_name"]').value;
+        
+        // Check server-side if this is a duplicate
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('day_of_week', dayOfWeek);
+            formData.append('start_time', startTime);
+            formData.append('end_time', endTime);
+            formData.append('teacher_name', teacherName);
+            
+            fetch('/api/check-course-conflict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.conflict) {
+                    if (confirm(`ATTENTION: Un cours similaire existe déjà:\n\n${data.details}\n\nVoulez-vous vraiment créer un cours en doublon?`)) {
+                        resolve(true); // User confirmed to proceed despite conflict
+                    } else {
+                        resolve(false); // User cancelled
+                    }
+                } else {
+                    resolve(true); // No conflict
+                }
+            })
+            .catch(error => {
+                console.error('Error checking course conflict:', error);
+                // In case of error, allow form submission but warn user
+                if (confirm('Impossible de vérifier les doublons. Voulez-vous continuer?')) {
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            });
+        });
+    }
+    
+    // Add validation to add course form
+    const addCourseForm = document.querySelector('#addCourseModal form');
+    if (addCourseForm) {
+        addCourseForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            validateCourseForm('addCourseModal').then(isValid => {
+                if (isValid) {
+                    this.submit();
+                }
+            });
+        });
+    }
+    
+    // Add validation to edit course form
+    const editCourseForm = document.getElementById('editCourseForm');
+    if (editCourseForm) {
+        editCourseForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            validateCourseForm('editCourseForm').then(isValid => {
+                if (isValid) {
+                    this.submit();
+                }
+            });
+        });
+    }
 </script>
 {% endblock %}

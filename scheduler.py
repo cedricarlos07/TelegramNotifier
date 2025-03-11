@@ -277,13 +277,7 @@ def initialize_scheduler(app):
         minute=0
     )
     
-    # Send daily rankings every day at 20:00 (8:00 PM)
-    scheduler.add_job(
-        id='send_daily_rankings',
-        func=send_daily_rankings_job,
-        trigger='cron',
-        hour=20,
-        minute=0
-    )
+    # La tâche d'envoi automatique des classements a été désactivée comme demandé par le client
+    # L'envoi des classements se fait uniquement manuellement via l'interface
     
     logger.info("Scheduler initialized with all jobs")
