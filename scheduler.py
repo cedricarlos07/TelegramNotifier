@@ -180,6 +180,29 @@ def send_daily_messages_job():
         error_msg = f"Error in send_daily_messages_job: {str(e)}"
         log_job_execution("send_daily_messages", False, error_msg)
 
+def send_daily_rankings_job():
+    """
+    Job to send daily rankings to all Telegram groups.
+    Run daily at 20:00 (8:00 PM).
+    """
+    logger.info("Running scheduled job: send_daily_rankings_job")
+    
+    try:
+        # Utiliser les cours du jour pour envoyer les classements aux groupes actifs aujourd'hui
+        today = datetime.now().date()
+        courses_today = Course.query.filter_by(schedule_date=today).all()
+        
+        bot = init_telegram_bot()
+        results = bot.send_daily_rankings(courses_today)
+        
+        # Log the results
+        message = f"Daily rankings job completed: {results['success']} successful, {results['failure']} failed"
+        log_job_execution("send_daily_rankings", True, message)
+        
+    except Exception as e:
+        error_msg = f"Error in send_daily_rankings_job: {str(e)}"
+        log_job_execution("send_daily_rankings", False, error_msg)
+
 def run_job(job_name):
     """
     Run a specific job by name.
@@ -199,6 +222,8 @@ def run_job(job_name):
             generate_messages_job()
         elif job_name == "send_daily_messages":
             send_daily_messages_job()
+        elif job_name == "send_daily_rankings":
+            send_daily_rankings_job()
         else:
             return False
         return True
@@ -249,6 +274,15 @@ def initialize_scheduler(app):
         func=send_daily_messages_job,
         trigger='cron',
         hour=8,
+        minute=0
+    )
+    
+    # Send daily rankings every day at 20:00 (8:00 PM)
+    scheduler.add_job(
+        id='send_daily_rankings',
+        func=send_daily_rankings_job,
+        trigger='cron',
+        hour=20,
         minute=0
     )
     
