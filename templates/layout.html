@@ -72,6 +72,12 @@
                             <i class="fas fa-vial me-1 text-danger"></i> Simulation
                         </a>
                     </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link rounded {% if request.path == '/bot-status' %}active bg-light{% endif %}" 
+                           href="{{ url_for('bot_status') }}">
+                            <i class="fas fa-heartbeat me-1 text-danger"></i> Bot Status
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

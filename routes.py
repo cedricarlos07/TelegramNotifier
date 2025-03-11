@@ -515,6 +515,102 @@ def register_routes(app):
         
         return redirect(url_for('simulation'))
     
+    @app.route('/bot-status')
+    def bot_status():
+        """Telegram bot status page"""
+        bot = init_telegram_bot()
+        status = bot.check_bot_status()
+        
+        # Get all groups used in courses
+        telegram_groups = db.session.query(Course.telegram_group_id).distinct().all()
+        telegram_group_ids = [group[0] for group in telegram_groups if group[0]]
+        
+        # Get recent logs related to Telegram
+        telegram_logs = Log.query.filter(
+            Log.scenario.in_(['telegram_message', 'test_message'])
+        ).order_by(Log.timestamp.desc()).limit(20).all()
+        
+        return render_template(
+            'bot_status.html',
+            bot_status=status,
+            telegram_groups=telegram_group_ids,
+            logs=telegram_logs
+        )
+        
+    @app.route('/api/check-group', methods=['POST'])
+    def check_group():
+        """Check if a Telegram group is valid and the bot has access"""
+        try:
+            group_id = request.form.get('group_id')
+            if not group_id:
+                return jsonify({'success': False, 'message': 'Group ID is required'})
+            
+            bot = init_telegram_bot()
+            
+            # Try to get chat info
+            try:
+                # Clean group_id
+                group_id = group_id.strip()
+                
+                # Try to convert to integer if it's a numeric ID
+                try:
+                    if group_id.startswith('-'):
+                        numeric_group_id = int(group_id)
+                        actual_group_id = numeric_group_id
+                    else:
+                        numeric_group_id = int(group_id)
+                        actual_group_id = numeric_group_id
+                except ValueError:
+                    actual_group_id = group_id
+                
+                # Get chat info
+                chat_info = bot.bot.get_chat(actual_group_id)
+                
+                # Check bot's permissions
+                try:
+                    bot_status = bot.check_bot_status()
+                    member = bot.bot.get_chat_member(actual_group_id, bot_status["bot_id"])
+                    
+                    # Prepare response
+                    result = {
+                        'success': True,
+                        'chat_id': str(chat_info.id),
+                        'chat_type': chat_info.type,
+                        'chat_title': getattr(chat_info, 'title', 'N/A'),
+                        'bot_status': member.status,
+                        'can_send': member.status in ['administrator', 'creator'] or getattr(chat_info, 'all_members_are_administrators', False)
+                    }
+                    
+                    # Log the success
+                    log_entry = Log(
+                        level="INFO",
+                        scenario="check_group",
+                        message=f"Successfully checked group {group_id}: {result}"
+                    )
+                    db.session.add(log_entry)
+                    db.session.commit()
+                    
+                    return jsonify(result)
+                except Exception as e:
+                    # The bot might not be in the group
+                    error_msg = f"Bot is not in the group or has no permission: {str(e)}"
+                    logger.warning(error_msg)
+                    return jsonify({
+                        'success': False,
+                        'message': error_msg,
+                        'chat_id': str(chat_info.id),
+                        'chat_title': getattr(chat_info, 'title', 'N/A'),
+                        'chat_type': chat_info.type
+                    })
+            except Exception as e:
+                error_msg = f"Failed to get chat info: {str(e)}"
+                logger.error(error_msg)
+                return jsonify({'success': False, 'message': error_msg})
+        except Exception as e:
+            error_msg = f"Error checking group: {str(e)}"
+            logger.error(error_msg)
+            return jsonify({'success': False, 'message': error_msg})
+            
     @app.route('/rankings')
     def rankings():
         """User rankings page"""
