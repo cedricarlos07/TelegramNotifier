@@ -331,6 +331,14 @@ body {
     }
 }
 
+/* Indicator dots for status */
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
 /* Utility classes for spacing and alignment */
 .gap-2 {
     gap: 0.5rem;
