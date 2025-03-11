@@ -101,25 +101,37 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <button type="submit" class="btn btn-success w-100">
-                                <i class="fas fa-plus-circle me-2"></i>Créer un cours démo
+                                <i class="fas fa-plus-circle me-2"></i>Créer un cours manuellement
                             </button>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('import_demo_excel') }}" class="btn btn-warning w-100">
+                                <i class="fas fa-file-excel me-2"></i>Importer depuis Excel
+                            </a>
+                        </div>
+                        <div class="col-md-3">
                             <a href="{{ url_for('send_demo_notification') }}" class="btn btn-primary w-100">
-                                <i class="fas fa-paper-plane me-2"></i>Envoyer notification démo
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer notification
                             </a>
                         </div>
                     </div>
                 </form>
                 
                 {% if demo_courses %}
-                <div class="table-responsive mt-4">
+                <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+                    <h5 class="mb-0">Cours de démonstration importés ({{ demo_courses|length }})</h5>
+                    <a href="{{ url_for('import_demo_excel', clear='true') }}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-trash me-1"></i>Effacer tous les cours
+                    </a>
+                </div>
+                <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Cours</th>
                                 <th>Professeur</th>
                                 <th>Horaire</th>
+                                <th>Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -132,6 +144,7 @@
                                     {{ ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][course.day_of_week] }}
                                     {{ course.start_time.strftime('%H:%M') }} - {{ course.end_time.strftime('%H:%M') }}
                                 </td>
+                                <td>{{ course.schedule_date.strftime('%d/%m/%Y') }}</td>
                                 <td>
                                     <a href="{{ url_for('send_demo_course', course_id=course.id) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-paper-plane"></i> Envoyer
@@ -147,7 +160,7 @@
                 </div>
                 {% else %}
                 <div class="alert alert-info mt-3">
-                    <i class="fas fa-info-circle me-2"></i>Aucun cours de démonstration créé. Utilisez le formulaire ci-dessus pour en ajouter.
+                    <i class="fas fa-info-circle me-2"></i>Aucun cours de démonstration créé. Utilisez le formulaire ci-dessus pour en ajouter manuellement ou importez-les depuis le fichier Excel.
                 </div>
                 {% endif %}
                 

@@ -793,6 +793,113 @@ def register_routes(app):
             logger.error(f"Error creating demo course: {str(e)}")
             return redirect(url_for('simulation'))
     
+    @app.route('/simulation/import-excel')
+    def import_demo_excel():
+        """Import course data from Excel for simulation"""
+        try:
+            # Vérifier que le mode simulation est actif
+            bot = init_telegram_bot()
+            if not bot.is_simulation_mode():
+                flash("Le mode simulation doit être activé pour importer les cours démo", "danger")
+                return redirect(url_for('simulation'))
+            
+            test_group_id = bot.get_test_group_id()
+            if not test_group_id:
+                flash("Un ID de groupe test est requis pour importer les cours démo", "danger")
+                return redirect(url_for('simulation'))
+            
+            # Charger les données du fichier Excel
+            df = excel_processor.load_excel_data()
+            if df is None:
+                flash("Impossible de charger le fichier Excel. Vérifiez le chemin et la structure du fichier.", "danger")
+                return redirect(url_for('simulation'))
+            
+            # Compter les succès et les erreurs
+            success_count = 0
+            error_count = 0
+            
+            # Suppression des anciens cours de démo (optionnel)
+            if request.args.get('clear', 'false') == 'true':
+                old_courses = Course.query.filter_by(telegram_group_id=test_group_id).all()
+                for old_course in old_courses:
+                    db.session.delete(old_course)
+                db.session.commit()
+                flash(f"{len(old_courses)} cours de démonstration précédents supprimés", "info")
+            
+            # Traitement de chaque ligne du fichier Excel
+            for index, row in df.iterrows():
+                try:
+                    # Extraire les données du cours
+                    course_name = row.get('Course Name')
+                    teacher_name = row.get('Teacher Name')
+                    day_str = row.get('Day')
+                    start_time_str = row.get('Start Time')
+                    end_time_str = row.get('End Time')
+                    
+                    # Vérifier les données essentielles
+                    if not course_name or not day_str or not start_time_str or not end_time_str:
+                        continue
+                    
+                    # Convertir les types de données
+                    day_of_week = excel_processor._get_day_of_week_index(day_str)
+                    start_time = excel_processor._parse_time(start_time_str)
+                    end_time = excel_processor._parse_time(end_time_str)
+                    
+                    if day_of_week == -1 or not start_time or not end_time:
+                        error_count += 1
+                        continue
+                    
+                    # Calculer la prochaine date d'occurrence
+                    next_date = excel_processor._get_next_occurrence(day_of_week)
+                    
+                    # Générer un lien Zoom fictif
+                    zoom_link = f"https://zoom.us/j/{random.randint(10000000000, 99999999999)}"
+                    zoom_meeting_id = str(random.randint(100000000, 999999999))
+                    
+                    # Créer le cours
+                    new_course = Course(
+                        course_name=course_name,
+                        teacher_name=teacher_name or "Professeur Démo",
+                        telegram_group_id=test_group_id,
+                        day_of_week=day_of_week,
+                        start_time=start_time,
+                        end_time=end_time,
+                        schedule_date=next_date,
+                        zoom_link=zoom_link,
+                        zoom_meeting_id=zoom_meeting_id
+                    )
+                    
+                    db.session.add(new_course)
+                    success_count += 1
+                    
+                except Exception as e:
+                    error_count += 1
+                    logger.error(f"Erreur lors de l'importation de la ligne {index}: {str(e)}")
+            
+            # Commit des changements
+            db.session.commit()
+            
+            # Log de l'action
+            log_entry = Log(
+                level="INFO",
+                scenario="demo_import_excel",
+                message=f"Import Excel pour démo: {success_count} succès, {error_count} erreurs"
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            if success_count > 0:
+                flash(f"{success_count} cours importés avec succès depuis Excel pour la démonstration", "success")
+            else:
+                flash("Aucun cours n'a pu être importé. Vérifiez le format du fichier Excel.", "warning")
+                
+            return redirect(url_for('simulation'))
+            
+        except Exception as e:
+            flash(f"Erreur lors de l'importation des cours: {str(e)}", "danger")
+            logger.error(f"Error importing demo courses from Excel: {str(e)}")
+            return redirect(url_for('simulation'))
+    
     @app.route('/simulation/send-demo-notification')
     def send_demo_notification():
         """Send a demo notification to the test group"""
