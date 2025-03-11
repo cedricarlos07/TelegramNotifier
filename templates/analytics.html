@@ -114,7 +114,7 @@
                     <h5 class="mb-0">Distribution des présences par cours</h5>
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="graphTypeDropdown1" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-bar-chart-fill me-1"></i> Type
+                            <i class="fas fa-chart-bar me-1"></i> Type
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="graphTypeDropdown1">
                             <li><a class="dropdown-item course-chart-type" data-type="bar" href="#">Barres</a></li>
@@ -124,7 +124,9 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <canvas id="courseAttendanceChart" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="courseAttendanceChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -136,7 +138,7 @@
                     <h5 class="mb-0">Présences par jour de la semaine</h5>
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="graphTypeDropdown2" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-bar-chart-fill me-1"></i> Type
+                            <i class="fas fa-chart-bar me-1"></i> Type
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="graphTypeDropdown2">
                             <li><a class="dropdown-item weekday-chart-type" data-type="bar" href="#">Barres</a></li>
@@ -146,7 +148,9 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <canvas id="weekdayAttendanceChart" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="weekdayAttendanceChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -160,7 +164,9 @@
                     <h5 class="mb-0">Heures de cours les plus populaires</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="timePopularityChart" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="timePopularityChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,7 +178,9 @@
                     <h5 class="mb-0">Taux de présence par cours (%)</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="attendanceRateChart" height="300"></canvas>
+                    <div class="chart-container">
+                        <canvas id="attendanceRateChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -272,17 +280,17 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <a href="#" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-file-earmark-excel me-2"></i> Exporter les données (Excel)
+                        <i class="fas fa-file-excel me-2"></i> Exporter les données (Excel)
                     </a>
                 </div>
                 <div class="col-md-4 mb-3">
                     <a href="#" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-file-earmark-pdf me-2"></i> Générer un rapport PDF
+                        <i class="fas fa-file-pdf me-2"></i> Générer un rapport PDF
                     </a>
                 </div>
                 <div class="col-md-4 mb-3">
                     <a href="#" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-envelope me-2"></i> Envoyer par email
+                        <i class="fas fa-envelope me-2"></i> Envoyer par email
                     </a>
                 </div>
             </div>
@@ -488,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Mettre à jour le texte du bouton
             document.getElementById('graphTypeDropdown1').innerHTML = 
-                `<i class="bi bi-bar-chart-fill me-1"></i> ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`;
+                `<i class="fas fa-chart-bar me-1"></i> ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`;
         });
     });
     
@@ -547,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Mettre à jour le texte du bouton
             document.getElementById('graphTypeDropdown2').innerHTML = 
-                `<i class="bi bi-bar-chart-fill me-1"></i> ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`;
+                `<i class="fas fa-chart-bar me-1"></i> ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`;
         });
     });
 });

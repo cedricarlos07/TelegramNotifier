@@ -159,8 +159,13 @@ body {
     transition: background-color var(--animation-duration), border-color var(--animation-duration);
 }
 
-.card-header .text-white {
+/* Fix text color in card headers based on theme */
+[data-bs-theme="dark"] .card-header .text-white {
     color: #f3f4f6 !important;
+}
+
+[data-bs-theme="light"] .card-header .text-white {
+    color: #212529 !important;
 }
 
 .card-body {
@@ -488,6 +493,12 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
+[data-bs-theme="light"] .stat-card .stat-value {
+    background: linear-gradient(90deg, #4338ca, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 /* Customizations for specific pages */
 .rankings-card .card-header {
     background-color: #10b981;
@@ -497,4 +508,65 @@ body {
 .zoom-link-card .card-header {
     background-color: #0ea5e9;
     color: white;
+}
+
+/* Analytics page specific styles */
+.analytics-chart {
+    position: relative;
+    min-height: 300px;
+    margin-bottom: 1rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 100%;
+    min-height: 300px;
+}
+
+/* Make chart container responsive */
+@media (max-width: 768px) {
+    .analytics-chart {
+        min-height: 250px;
+    }
+    
+    .row > [class*="col-md"] {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Adjust stat cards for mobile */
+    .stat-card .stat-value {
+        font-size: 2rem;
+    }
+    
+    .stat-card .stat-icon {
+        font-size: 3rem;
+    }
+    
+    /* Fix tables on small screens */
+    .table-responsive {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+}
+
+/* Fix for Chart.js text colors in light mode */
+[data-bs-theme="light"] canvas {
+    color: #212529 !important;
+}
+
+/* Fix for badges in light mode */
+[data-bs-theme="light"] .badge.bg-success {
+    color: white !important;
+}
+
+[data-bs-theme="light"] .badge.bg-info {
+    color: white !important;
+}
+
+[data-bs-theme="light"] .badge.bg-warning {
+    color: #212529 !important;
+}
+
+[data-bs-theme="light"] .badge.bg-danger {
+    color: white !important;
 }
