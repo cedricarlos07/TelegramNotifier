@@ -540,6 +540,8 @@ def register_routes(app):
     @app.route('/api/check-group', methods=['POST'])
     def check_group():
         """Check if a Telegram group is valid and the bot has access"""
+        import telegram.error
+        
         try:
             group_id = request.form.get('group_id')
             if not group_id:
@@ -547,69 +549,141 @@ def register_routes(app):
             
             bot = init_telegram_bot()
             
+            # Vérifier d'abord l'état du bot
+            bot_status = bot.check_bot_status()
+            if not bot_status["success"]:
+                return jsonify({
+                    'success': False, 
+                    'message': f"Bot is not properly configured: {bot_status['error']}"
+                })
+            
             # Try to get chat info
             try:
                 # Clean group_id
                 group_id = group_id.strip()
+                logger.info(f"Checking group ID: {group_id}")
                 
                 # Try to convert to integer if it's a numeric ID
                 try:
                     if group_id.startswith('-'):
                         numeric_group_id = int(group_id)
                         actual_group_id = numeric_group_id
+                        logger.info(f"Using negative numeric group ID: {actual_group_id}")
                     else:
                         numeric_group_id = int(group_id)
                         actual_group_id = numeric_group_id
+                        logger.info(f"Using positive numeric group ID: {actual_group_id}")
                 except ValueError:
                     actual_group_id = group_id
+                    logger.info(f"Using string group ID: {actual_group_id}")
                 
-                # Get chat info
-                chat_info = bot._run_sync(bot.bot.get_chat(actual_group_id))
-                
-                # Check bot's permissions
                 try:
-                    bot_status = bot.check_bot_status()
-                    member = bot._run_sync(bot.bot.get_chat_member(actual_group_id, bot_status["bot_id"]))
+                    # Essayons d'abord de récupérer les informations du chat
+                    logger.info(f"Attempting to get chat info for: {actual_group_id}")
+                    chat_info = bot._run_sync(bot.bot.get_chat(actual_group_id))
+                    logger.info(f"Successfully got chat info: ID={getattr(chat_info, 'id', 'N/A')}, Type={getattr(chat_info, 'type', 'N/A')}")
                     
-                    # Prepare response
-                    result = {
-                        'success': True,
-                        'chat_id': str(chat_info.id),
-                        'chat_type': chat_info.type,
-                        'chat_title': getattr(chat_info, 'title', 'N/A'),
-                        'bot_status': member.status,
-                        'can_send': member.status in ['administrator', 'creator'] or getattr(chat_info, 'all_members_are_administrators', False)
+                    # Enregistrer tout ce qu'on peut sur le chat
+                    chat_details = {
+                        'id': getattr(chat_info, 'id', None),
+                        'type': getattr(chat_info, 'type', None),
+                        'title': getattr(chat_info, 'title', None),
+                        'description': getattr(chat_info, 'description', None),
+                        'invite_link': getattr(chat_info, 'invite_link', None),
+                        'permissions': getattr(chat_info, 'permissions', None),
                     }
+                    logger.info(f"Chat details: {chat_details}")
                     
-                    # Log the success
-                    log_entry = Log(
-                        level="INFO",
-                        scenario="check_group",
-                        message=f"Successfully checked group {group_id}: {result}"
-                    )
-                    db.session.add(log_entry)
-                    db.session.commit()
-                    
-                    return jsonify(result)
-                except Exception as e:
-                    # The bot might not be in the group
-                    error_msg = f"Bot is not in the group or has no permission: {str(e)}"
+                    # Maintenant, vérifions les permissions du bot
+                    try:
+                        logger.info(f"Checking bot permissions in group {actual_group_id}")
+                        member = bot._run_sync(bot.bot.get_chat_member(actual_group_id, bot_status["bot_id"]))
+                        logger.info(f"Bot status in group: {member.status}")
+                        
+                        # Prepare response
+                        result = {
+                            'success': True,
+                            'chat_id': str(chat_info.id),
+                            'chat_type': chat_info.type,
+                            'chat_title': getattr(chat_info, 'title', 'N/A'),
+                            'bot_status': member.status,
+                            'can_send': member.status in ['administrator', 'creator'] or getattr(chat_info, 'all_members_are_administrators', False)
+                        }
+                        
+                        # Log the success
+                        log_entry = Log(
+                            level="INFO",
+                            scenario="check_group",
+                            message=f"Successfully checked group {group_id}: {result}"
+                        )
+                        db.session.add(log_entry)
+                        db.session.commit()
+                        
+                        return jsonify(result)
+                    except telegram.error.BadRequest as e:
+                        # Erreur spécifique de l'API Telegram
+                        error_msg = f"Bot permissions check failed: {str(e)}"
+                        logger.warning(error_msg)
+                        return jsonify({
+                            'success': False,
+                            'message': error_msg,
+                            'chat_id': str(getattr(chat_info, 'id', 'unknown')),
+                            'chat_title': getattr(chat_info, 'title', 'N/A'),
+                            'chat_type': getattr(chat_info, 'type', 'unknown'),
+                            'error_type': 'BadRequest'
+                        })
+                    except Exception as e:
+                        # Autre erreur lors de la vérification des permissions
+                        error_msg = f"Bot is not in the group or has no permission: {str(e)}"
+                        logger.warning(error_msg)
+                        return jsonify({
+                            'success': False,
+                            'message': error_msg,
+                            'chat_id': str(getattr(chat_info, 'id', 'unknown')),
+                            'chat_title': getattr(chat_info, 'title', 'N/A'),
+                            'chat_type': getattr(chat_info, 'type', 'unknown'),
+                            'error_type': 'Permission'
+                        })
+                except telegram.error.BadRequest as e:
+                    # Chat introuvable ou accès refusé par l'API Telegram
+                    error_msg = f"Chat not found or access denied: {str(e)}"
                     logger.warning(error_msg)
+                    
+                    # Message plus convivial pour l'utilisateur
                     return jsonify({
                         'success': False,
-                        'message': error_msg,
-                        'chat_id': str(chat_info.id),
-                        'chat_title': getattr(chat_info, 'title', 'N/A'),
-                        'chat_type': chat_info.type
+                        'message': "Ce groupe n'est pas accessible. Vérifiez l'ID du groupe et assurez-vous que le bot y a été ajouté et a les permissions nécessaires.",
+                        'error_details': str(e),
+                        'error_type': 'ChatNotFound'
+                    })
+                except Exception as e:
+                    # Autre erreur lors de la récupération des infos du chat
+                    error_msg = f"Failed to get chat info: {str(e)}"
+                    logger.error(error_msg)
+                    return jsonify({
+                        'success': False,
+                        'message': "Erreur lors de la récupération des informations du groupe. Vérifiez l'ID et réessayez.",
+                        'error_details': str(e),
+                        'error_type': 'General'
                     })
             except Exception as e:
-                error_msg = f"Failed to get chat info: {str(e)}"
+                error_msg = f"Error checking group: {str(e)}"
                 logger.error(error_msg)
-                return jsonify({'success': False, 'message': error_msg})
+                return jsonify({
+                    'success': False,
+                    'message': "Une erreur s'est produite lors de la vérification du groupe. Veuillez réessayer.",
+                    'error_details': str(e),
+                    'error_type': 'Unknown'
+                })
         except Exception as e:
-            error_msg = f"Error checking group: {str(e)}"
+            error_msg = f"Unexpected error checking group: {str(e)}"
             logger.error(error_msg)
-            return jsonify({'success': False, 'message': error_msg})
+            return jsonify({
+                'success': False,
+                'message': "Une erreur inattendue s'est produite. Veuillez réessayer plus tard.",
+                'error_details': str(e),
+                'error_type': 'Unexpected'
+            })
             
     @app.route('/rankings')
     def rankings():
