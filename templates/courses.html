@@ -1,28 +1,5 @@
 {% extends 'layout.html' %}
 
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle filter toggle button text
-        const filterToggleBtn = document.querySelector('[data-bs-toggle="collapse"][data-bs-target="#filterCollapse"]');
-        const filterToggleText = document.querySelector('.filter-toggle-text');
-        
-        if (filterToggleBtn && filterToggleText) {
-            filterToggleBtn.addEventListener('click', function() {
-                const isCollapsed = this.getAttribute('aria-expanded') === 'true';
-                filterToggleText.textContent = isCollapsed ? 'Afficher' : 'Masquer';
-                
-                // Change icon as well
-                const icon = this.querySelector('i');
-                if (icon) {
-                    icon.className = isCollapsed ? 'fas fa-chevron-down me-1' : 'fas fa-chevron-up me-1';
-                }
-            });
-        }
-    });
-</script>
-{% endblock %}
-
 {% block page_header %}
 <h1 class="h3 mb-0 text-light">Gestion des Cours</h1>
 {% endblock %}
@@ -551,6 +528,23 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Handle filter toggle button text
+        const filterToggleBtn = document.querySelector('[data-bs-toggle="collapse"][data-bs-target="#filterCollapse"]');
+        const filterToggleText = document.querySelector('.filter-toggle-text');
+        
+        if (filterToggleBtn && filterToggleText) {
+            filterToggleBtn.addEventListener('click', function() {
+                const isCollapsed = this.getAttribute('aria-expanded') === 'true';
+                filterToggleText.textContent = isCollapsed ? 'Afficher' : 'Masquer';
+                
+                // Change icon as well
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = isCollapsed ? 'fas fa-chevron-down me-1' : 'fas fa-chevron-up me-1';
+                }
+            });
+        }
+        
         // Handle Edit Course buttons
         document.querySelectorAll('.edit-course-btn').forEach(function(button) {
             button.addEventListener('click', function() {
