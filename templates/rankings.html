@@ -18,8 +18,28 @@
                             <li><strong>Messages envoyés :</strong> 1 point par message</li>
                             <li><strong>Participation aux réunions Zoom :</strong> 10 points par présence</li>
                         </ul>
-                        Les classements sont calculés hebdomadairement et mensuellement, et peuvent être partagés directement dans les groupes Telegram.
+                        Les classements sont calculés quotidiennement, hebdomadairement et mensuellement, et peuvent être partagés directement dans les groupes Telegram.
                     </p>
+                </div>
+                
+                <!-- Actions globales -->
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Actions globales</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-primary" onclick="sendDailyRankings()">
+                                    <i class="fas fa-paper-plane me-2"></i>Envoyer les classements quotidiens à tous les groupes
+                                </button>
+                                <small class="text-muted ms-2">
+                                    Cela enverra les classements quotidiens à tous les groupes Telegram actifs.
+                                    <br>Cette action s'exécute également automatiquement chaque jour à 20:00.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Filter controls -->
@@ -43,6 +63,7 @@
                         <div class="col-md-4">
                             <label for="period" class="form-label">Période</label>
                             <select class="form-select" id="period" name="period">
+                                <option value="daily" {% if selected_period == 'daily' %}selected{% endif %}>Quotidienne</option>
                                 <option value="weekly" {% if selected_period == 'weekly' %}selected{% endif %}>Hebdomadaire</option>
                                 <option value="monthly" {% if selected_period == 'monthly' %}selected{% endif %}>Mensuelle</option>
                             </select>
@@ -63,7 +84,13 @@
                             <h6 class="mb-0">
                                 <i class="fas fa-list me-2"></i>
                                 Top participants - 
-                                {% if selected_period == 'weekly' %}Classement hebdomadaire{% else %}Classement mensuel{% endif %}
+                                {% if selected_period == 'daily' %}
+                                    Classement quotidien
+                                {% elif selected_period == 'weekly' %}
+                                    Classement hebdomadaire
+                                {% else %}
+                                    Classement mensuel
+                                {% endif %}
                             </h6>
                             <button type="button" class="btn btn-sm btn-light" 
                                     onclick="sendRankings('{{ selected_group }}', '{{ selected_period }}')">
@@ -161,6 +188,37 @@
         })
         .catch(error => {
             alert('Erreur lors de l\'envoi du classement : ' + error);
+        })
+        .finally(() => {
+            // Restore UI elements
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+    
+    function sendDailyRankings() {
+        // Disable UI elements and show loading state
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Envoi en cours...';
+        
+        // Send daily rankings to all groups
+        fetch('{{ url_for("send_daily_rankings") }}', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Success notification
+                alert('Classements quotidiens envoyés avec succès : ' + data.message);
+            } else {
+                // Error notification
+                alert('Erreur lors de l\'envoi des classements : ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erreur lors de l\'envoi des classements : ' + error);
         })
         .finally(() => {
             // Restore UI elements
