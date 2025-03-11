@@ -47,9 +47,15 @@ class TelegramBot:
             settings.simulation_mode = enabled
             if test_group_id:
                 settings.test_group_id = test_group_id
-        db.session.commit()
-        logger.info(f"Simulation mode {'enabled' if enabled else 'disabled'}")
-        return settings.simulation_mode
+        
+        try:
+            db.session.commit()
+            logger.info(f"Simulation mode {'enabled' if enabled else 'disabled'}")
+            return settings.simulation_mode
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error toggling simulation mode: {str(e)}")
+            return False
         
     def send_message(self, chat_id, message, is_simulation=False):
         """

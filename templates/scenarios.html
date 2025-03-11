@@ -152,7 +152,7 @@
         <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Send Test Message</h5>
     </div>
     <div class="card-body">
-        <form id="testMessageForm">
+        <form id="testMessageForm" onsubmit="sendTestMessage(event)">
             <div class="mb-3">
                 <label for="group_id" class="form-label">Telegram Group ID</label>
                 <input type="text" class="form-control" id="group_id" name="group_id" required>

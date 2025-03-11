@@ -442,27 +442,37 @@ def register_routes(app):
             enabled = request.form.get('simulation_mode') == 'on'
             test_group_id = request.form.get('test_group_id')
             
+            if not test_group_id and enabled:
+                flash("Un ID de groupe test est requis quand le mode simulation est activé", "danger")
+                return redirect(url_for('simulation'))
+            
             # Update simulation mode
             bot = init_telegram_bot()
-            bot.toggle_simulation_mode(enabled, test_group_id)
+            result = bot.toggle_simulation_mode(enabled, test_group_id)
             
-            flash(
-                f"Simulation mode {'enabled' if enabled else 'disabled'} successfully!", 
-                "success"
-            )
-            
-            # Log the action
-            status = "enabled" if enabled else "disabled"
-            log_entry = Log(
-                level="INFO",
-                scenario="simulation_mode",
-                message=f"Simulation mode {status} with test group {test_group_id}"
-            )
-            db.session.add(log_entry)
-            db.session.commit()
+            if result:
+                flash(
+                    f"Mode simulation {'activé' if enabled else 'désactivé'} avec succès !", 
+                    "success"
+                )
+                
+                # Log the action
+                status = "activé" if enabled else "désactivé"
+                log_entry = Log(
+                    level="INFO",
+                    scenario="simulation_mode",
+                    message=f"Mode simulation {status} avec groupe test {test_group_id}"
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+            else:
+                flash(
+                    f"Échec de {'l\'activation' if enabled else 'la désactivation'} du mode simulation", 
+                    "danger"
+                )
             
         except Exception as e:
-            error_msg = f"Error updating simulation mode: {str(e)}"
+            error_msg = f"Erreur lors de la mise à jour du mode simulation: {str(e)}"
             logger.error(error_msg)
             flash(error_msg, "danger")
             

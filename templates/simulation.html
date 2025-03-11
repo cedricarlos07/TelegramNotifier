@@ -25,15 +25,15 @@
                     </p>
                 </div>
                 
-                <form action="{{ url_for('toggle_simulation') }}" method="POST">
+                <form action="{{ url_for('toggle_simulation') }}" method="POST" id="simulationForm">
                     <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="simulation_mode" name="simulation_mode" {% if simulation_mode %}checked{% endif %}>
+                        <input class="form-check-input" type="checkbox" id="simulation_mode" name="simulation_mode" {% if simulation_mode %}checked{% endif %} onchange="validateSimulationForm()">
                         <label class="form-check-label" for="simulation_mode">Activer le mode simulation</label>
                     </div>
                     
                     <div class="mb-3">
                         <label for="test_group_id" class="form-label">ID du groupe de test Telegram</label>
-                        <input type="text" class="form-control" id="test_group_id" name="test_group_id" value="{{ test_group_id or '' }}" placeholder="Ex: -1001234567890" required>
+                        <input type="text" class="form-control" id="test_group_id" name="test_group_id" value="{{ test_group_id or '' }}" placeholder="Ex: -1001234567890" {% if simulation_mode %}required{% endif %}>
                         <div class="form-text">
                             Tous les messages en mode simulation seront envoyés à ce groupe Telegram.
                             Assurez-vous que le bot a été ajouté à ce groupe avec les permissions nécessaires.
