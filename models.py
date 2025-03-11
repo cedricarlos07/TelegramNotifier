@@ -83,9 +83,9 @@ class UserRanking(db.Model):
     rank = db.Column(db.Integer, nullable=True)
     last_message_date = db.Column(db.DateTime, nullable=True)
     last_attendance_date = db.Column(db.DateTime, nullable=True)
-    period_start = db.Column(db.DateTime, nullable=False)  # Start of ranking period (week/month)
+    period_start = db.Column(db.DateTime, nullable=False)  # Start of ranking period (day/week/month)
     period_end = db.Column(db.DateTime, nullable=False)  # End of ranking period
-    period_type = db.Column(db.String(10), nullable=False)  # 'weekly' or 'monthly'
+    period_type = db.Column(db.String(10), nullable=False)  # 'daily', 'weekly' or 'monthly'
     
     def __repr__(self):
         return f"<UserRanking {self.user_name} in group {self.telegram_group_id} ({self.period_type})>"
