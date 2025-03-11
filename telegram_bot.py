@@ -57,6 +57,37 @@ class TelegramBot:
             logger.error(f"Error toggling simulation mode: {str(e)}")
             return False
         
+    def check_bot_status(self):
+        """
+        Vérifie l'état du bot et renvoie des informations détaillées.
+        
+        Returns:
+            dict: Informations sur l'état du bot
+        """
+        status = {
+            "success": False,
+            "bot_id": None,
+            "bot_username": None,
+            "bot_first_name": None,
+            "token_valid": False,
+            "error": None
+        }
+        
+        try:
+            bot_info = self.bot.get_me()
+            status["success"] = True
+            status["bot_id"] = bot_info.id
+            status["bot_username"] = bot_info.username
+            status["bot_first_name"] = bot_info.first_name
+            status["token_valid"] = True
+            logger.info(f"Bot status check: ID={bot_info.id}, Username=@{bot_info.username}")
+        except Exception as e:
+            status["error"] = str(e)
+            status["token_valid"] = False
+            logger.error(f"Bot status check failed: {str(e)}")
+        
+        return status
+
     def send_message(self, chat_id, message, is_simulation=False):
         """
         Send a message to a specific Telegram chat.
@@ -69,9 +100,22 @@ class TelegramBot:
         Returns:
             bool: True if successful, False otherwise
         """
+        logger.info(f"Attempt to send message to chat_id: {chat_id}, simulation: {is_simulation}")
+        
+        # Vérifier l'état du bot avant d'envoyer un message
+        bot_status = self.check_bot_status()
+        if not bot_status["success"]:
+            error_msg = f"Bot is not properly configured: {bot_status['error']}"
+            logger.error(error_msg)
+            log_entry = Log(level="ERROR", scenario="telegram_message", message=error_msg)
+            db.session.add(log_entry)
+            db.session.commit()
+            return False
+            
         # Check if simulation mode is active
         if self.is_simulation_mode() and not is_simulation:
             test_group_id = self.get_test_group_id()
+            logger.info(f"Simulation mode active, redirecting to test group ID: {test_group_id}")
             if test_group_id:
                 # Modify the message to indicate it's a simulation
                 simulation_message = f"[SIMULATION]\n\n{message}"
@@ -81,12 +125,65 @@ class TelegramBot:
                 return False
         
         try:
-            self.bot.send_message(
-                chat_id=chat_id,
+            logger.info(f"Sending Telegram message to chat_id: {chat_id}")
+            logger.info(f"Message content: {message[:100]}...")
+            
+            # Vérifions si le chat_id est un nombre ou une chaîne
+            if chat_id and chat_id.strip():
+                # Pour les cas où le chat_id pourrait contenir des caractères non numériques
+                try:
+                    # Tentons de convertir en entier, car Telegram préfère les ID numériques
+                    if chat_id.startswith('-'):
+                        # C'est un ID de groupe (négatif)
+                        numeric_chat_id = int(chat_id)
+                    else:
+                        # C'est un ID d'utilisateur ou de chat privé
+                        numeric_chat_id = int(chat_id)
+                    
+                    logger.info(f"Using numeric chat_id: {numeric_chat_id}")
+                    actual_chat_id = numeric_chat_id
+                except ValueError:
+                    # Si ce n'est pas un nombre, utilisez-le tel quel (par exemple, @username)
+                    logger.info(f"Using string chat_id: {chat_id}")
+                    actual_chat_id = chat_id
+            else:
+                logger.error(f"Invalid chat_id: '{chat_id}'")
+                return False
+            
+            # Ajouter une vérification des permissions du bot dans le groupe
+            try:
+                # Essayer d'obtenir des informations sur le chat pour vérifier les permissions
+                chat_info = self.bot.get_chat(actual_chat_id)
+                logger.info(f"Chat info: ID={chat_info.id}, Type={chat_info.type}, Title={getattr(chat_info, 'title', 'N/A')}")
+                
+                # Si c'est un groupe, vérifier si le bot est administrateur
+                if hasattr(chat_info, 'all_members_are_administrators'):
+                    logger.info(f"All members are admins: {chat_info.all_members_are_administrators}")
+                
+                # Vérifier les permissions du bot si disponible
+                try:
+                    member = self.bot.get_chat_member(actual_chat_id, bot_status["bot_id"])
+                    logger.info(f"Bot's status in the chat: {member.status}")
+                    if member.status not in ['administrator', 'creator']:
+                        logger.warning(f"Bot is not an admin in the group (status: {member.status}). Some features may not work.")
+                except Exception as perm_e:
+                    logger.warning(f"Could not check bot permissions: {str(perm_e)}")
+                    
+            except Exception as chat_e:
+                logger.warning(f"Could not get chat info: {str(chat_e)}")
+            
+            # Envoyer le message
+            response = self.bot.send_message(
+                chat_id=actual_chat_id,
                 text=message,
                 parse_mode='Markdown'
             )
-            logger.info(f"Message sent to chat {chat_id}")
+            
+            logger.info(f"Message sent successfully to chat {chat_id}, response: {response}")
+            # Log the success to the database
+            log_entry = Log(level="INFO", scenario="telegram_message", message=f"Message sent to chat {chat_id}")
+            db.session.add(log_entry)
+            db.session.commit()
             return True
         except Exception as e:
             error_msg = f"Failed to send message to chat {chat_id}: {str(e)}"

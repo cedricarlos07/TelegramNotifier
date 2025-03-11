@@ -355,21 +355,48 @@ def register_routes(app):
             if not group_id:
                 return jsonify({'success': False, 'message': 'Group ID is required'})
             
-            # Send the message
+            # Vérifier et nettoyer group_id
+            group_id = group_id.strip()
+            logger.info(f"Attempting to send test message to group ID: {group_id}")
+            
+            # Log bot status for debugging
             bot = init_telegram_bot()
-            if bot.send_message(group_id, message):
-                # Log the successful send
-                log_entry = Log(
-                    level="INFO",
-                    scenario="test_message",
-                    message=f"Test message sent to group {group_id}"
-                )
+            
+            try:
+                # Vérifier que le bot est correctement initialisé
+                bot_info = bot.bot.get_me()
+                logger.info(f"Bot info: ID={bot_info.id}, Username=@{bot_info.username}, Is_bot={bot_info.is_bot}")
+            except Exception as bot_err:
+                error_msg = f"Error getting bot info: {str(bot_err)}"
+                logger.error(error_msg)
+                log_entry = Log(level="ERROR", scenario="test_message", message=error_msg)
                 db.session.add(log_entry)
                 db.session.commit()
+            
+            # Tenter d'envoyer avec plus de détails sur le succès/échec
+            try:
+                result = bot.send_message(group_id, message)
+                logger.info(f"Message send result: {result}")
                 
-                return jsonify({'success': True, 'message': 'Message sent successfully'})
-            else:
-                return jsonify({'success': False, 'message': 'Failed to send message'})
+                if result:
+                    # Log the successful send
+                    log_entry = Log(
+                        level="INFO",
+                        scenario="test_message",
+                        message=f"Test message sent to group {group_id}"
+                    )
+                    db.session.add(log_entry)
+                    db.session.commit()
+                    
+                    return jsonify({'success': True, 'message': 'Message sent successfully'})
+                else:
+                    error_msg = "Failed to send message, check the logs for details"
+                    logger.error(error_msg)
+                    return jsonify({'success': False, 'message': error_msg})
+            except Exception as msg_err:
+                error_msg = f"Error while sending message: {str(msg_err)}"
+                logger.error(error_msg)
+                return jsonify({'success': False, 'message': error_msg})
                 
         except Exception as e:
             error_msg = f"Error sending test message: {str(e)}"
