@@ -43,6 +43,13 @@
                         
                         <!-- User menu -->
                         <ul class="navbar-nav ms-auto d-flex align-items-center">
+                            <!-- Theme switcher -->
+                            <li class="nav-item me-3">
+                                <button class="btn btn-link nav-link p-1 d-flex align-items-center" id="theme-switcher">
+                                    <i class="fas fa-moon theme-icon-dark"></i>
+                                    <i class="fas fa-sun theme-icon-light d-none"></i>
+                                </button>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <div class="avatar-circle me-2 d-flex align-items-center justify-content-center bg-primary">
@@ -63,6 +70,14 @@
                                             <i class="fas fa-key me-2"></i> Changer le mot de passe
                                         </a>
                                     </li>
+                                    <li>
+                                        <button class="dropdown-item d-flex align-items-center" id="theme-switcher-menu">
+                                            <i class="fas fa-moon me-2 theme-icon-dark"></i>
+                                            <i class="fas fa-sun me-2 theme-icon-light d-none"></i>
+                                            <span class="theme-text-dark">Mode clair</span>
+                                            <span class="theme-text-light d-none">Mode sombre</span>
+                                        </button>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item" href="{{ url_for('logout') }}">
@@ -74,6 +89,13 @@
                         </ul>
                         {% else %}
                         <ul class="navbar-nav ms-auto">
+                            <!-- Theme switcher (not logged in) -->
+                            <li class="nav-item me-3">
+                                <button class="btn btn-link nav-link p-1 d-flex align-items-center" id="theme-switcher">
+                                    <i class="fas fa-moon theme-icon-dark"></i>
+                                    <i class="fas fa-sun theme-icon-light d-none"></i>
+                                </button>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link btn btn-outline-primary px-3 rounded-pill" href="{{ url_for('login') }}">
                                     <i class="fas fa-sign-in-alt me-2"></i> Connexion
@@ -202,6 +224,12 @@
                         <a href="{{ url_for('change_password') }}" class="list-group-item list-group-item-action bg-dark text-light">
                             <i class="fas fa-key me-2"></i> Changer le mot de passe
                         </a>
+                        <button class="list-group-item list-group-item-action bg-dark text-light d-flex align-items-center" id="theme-switcher-mobile">
+                            <i class="fas fa-moon me-2 theme-icon-dark"></i>
+                            <i class="fas fa-sun me-2 theme-icon-light d-none"></i>
+                            <span class="theme-text-dark">Mode clair</span>
+                            <span class="theme-text-light d-none">Mode sombre</span>
+                        </button>
                         <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-dark text-light">
                             <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
                         </a>
@@ -251,6 +279,7 @@
     <!-- Bootstrap and custom JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/scenarios.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
 
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

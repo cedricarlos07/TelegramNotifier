@@ -1,4 +1,4 @@
-/* Modern SaaS Dashboard Styles for Dark Theme */
+/* Modern SaaS Dashboard Styles for Both Light and Dark Themes */
 
 /* Base Styles & Layout */
 :root {
@@ -7,6 +7,50 @@
     --card-border-radius: 10px;
     --btn-border-radius: 8px;
     --animation-duration: 0.2s;
+    
+    /* Dark theme variables (default) */
+    --body-bg: #111827;
+    --body-color: #f3f4f6;
+    --card-bg: #1f2937;
+    --sidebar-bg: #1f2937;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --input-bg: #374151;
+    --input-color: #f3f4f6;
+    --input-border: rgba(255, 255, 255, 0.1);
+    --hover-bg: rgba(255, 255, 255, 0.05);
+    --table-stripe-bg: rgba(255, 255, 255, 0.02);
+    --table-hover-bg: rgba(255, 255, 255, 0.04);
+    --progress-bg: #374151;
+    --modal-bg: #1f2937;
+    --dropdown-bg: #1f2937;
+    --active-nav-bg: #4f46e5;
+    --nav-link-color: #9ca3af;
+    --muted-color: #9ca3af;
+    --heading-color: #e5e7eb;
+    --btn-link-color: #e5e7eb;
+}
+
+/* Light theme variables */
+[data-bs-theme="light"] {
+    --body-bg: #f8f9fa;
+    --body-color: #212529;
+    --card-bg: #ffffff;
+    --sidebar-bg: #f8f9fa;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --input-bg: #ffffff;
+    --input-color: #212529;
+    --input-border: rgba(0, 0, 0, 0.1);
+    --hover-bg: rgba(0, 0, 0, 0.03);
+    --table-stripe-bg: rgba(0, 0, 0, 0.02);
+    --table-hover-bg: rgba(0, 0, 0, 0.04);
+    --progress-bg: #e9ecef;
+    --modal-bg: #ffffff;
+    --dropdown-bg: #ffffff;
+    --active-nav-bg: #4f46e5;
+    --nav-link-color: #495057;
+    --muted-color: #6c757d;
+    --heading-color: #212529;
+    --btn-link-color: #212529;
 }
 
 body {
@@ -14,8 +58,9 @@ body {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
     letter-spacing: -0.015em;
-    background-color: #111827;
-    color: #f3f4f6;
+    background-color: var(--body-bg);
+    color: var(--body-color);
+    transition: background-color var(--animation-duration), color var(--animation-duration);
 }
 
 /* Logo and Branding */
@@ -29,6 +74,11 @@ body {
     height: 36px;
     background-color: #4f46e5;
     border-radius: 50%;
+}
+
+/* Theme switcher */
+#theme-switcher, #theme-switcher-menu, #theme-switcher-mobile {
+    cursor: pointer;
 }
 
 /* Avatar styling */
@@ -49,7 +99,8 @@ body {
     position: sticky;
     top: var(--navbar-height);
     height: calc(100vh - var(--navbar-height));
-    background-color: #1f2937;
+    background-color: var(--sidebar-bg);
+    transition: background-color var(--animation-duration);
 }
 
 .sidebar .nav-link {
@@ -57,17 +108,17 @@ body {
     margin-bottom: 4px;
     padding: 10px 16px;
     font-weight: 500;
-    color: #9ca3af;
+    color: var(--nav-link-color);
     transition: all var(--animation-duration) ease-in-out;
 }
 
 .sidebar .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #f3f4f6;
+    background-color: var(--hover-bg);
+    color: var(--body-color);
 }
 
 .sidebar .nav-link.active {
-    background-color: #4f46e5;
+    background-color: var(--active-nav-bg);
     color: #fff;
     font-weight: 600;
 }
@@ -85,11 +136,12 @@ body {
 /* Card redesign for modern SaaS look */
 .card {
     border-radius: var(--card-border-radius);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: #1f2937;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg);
     margin-bottom: 1.5rem;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transition: transform var(--animation-duration), box-shadow var(--animation-duration);
+    transition: transform var(--animation-duration), box-shadow var(--animation-duration), 
+                background-color var(--animation-duration), border-color var(--animation-duration);
 }
 
 .card:hover {
@@ -98,12 +150,13 @@ body {
 }
 
 .card-header {
-    background-color: rgba(255, 255, 255, 0.02);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: var(--hover-bg);
+    border-bottom: 1px solid var(--border-color);
     border-top-left-radius: var(--card-border-radius) !important;
     border-top-right-radius: var(--card-border-radius) !important;
     padding: 1.25rem 1.5rem;
     font-weight: 600;
+    transition: background-color var(--animation-duration), border-color var(--animation-duration);
 }
 
 .card-header .text-white {
@@ -115,9 +168,10 @@ body {
 }
 
 .card-footer {
-    background-color: rgba(255, 255, 255, 0.02);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: var(--hover-bg);
+    border-top: 1px solid var(--border-color);
     padding: 1rem 1.5rem;
+    transition: background-color var(--animation-duration), border-color var(--animation-duration);
 }
 
 /* Button styling with more modern look */
@@ -174,31 +228,40 @@ body {
     color: white;
 }
 
-/* Table improvements for dark theme */
+.btn-link {
+    color: var(--btn-link-color);
+}
+
+/* Table improvements for both themes */
 .table {
-    border-color: rgba(255, 255, 255, 0.05);
-    color: #f3f4f6;
+    border-color: var(--border-color);
+    color: var(--body-color);
+    transition: border-color var(--animation-duration), color var(--animation-duration);
 }
 
 .table th {
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: var(--hover-bg);
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--heading-color);
     border-bottom-width: 1px;
     padding: 0.75rem 1rem;
+    transition: background-color var(--animation-duration), color var(--animation-duration);
 }
 
 .table td {
     padding: 0.75rem 1rem;
-    border-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--border-color);
+    transition: border-color var(--animation-duration);
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) {
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: var(--table-stripe-bg);
+    transition: background-color var(--animation-duration);
 }
 
 .table-hover > tbody > tr:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: var(--table-hover-bg);
+    transition: background-color var(--animation-duration);
 }
 
 /* Badge styling */
@@ -213,15 +276,18 @@ body {
 .form-control, .form-select {
     border-radius: 8px;
     padding: 0.625rem 1rem;
-    background-color: #374151;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #f3f4f6;
-    transition: border-color var(--animation-duration), box-shadow var(--animation-duration);
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-color);
+    transition: border-color var(--animation-duration), 
+                box-shadow var(--animation-duration), 
+                background-color var(--animation-duration), 
+                color var(--animation-duration);
 }
 
 .form-control:focus, .form-select:focus {
-    background-color: #374151;
-    color: #f3f4f6;
+    background-color: var(--input-bg);
+    color: var(--input-color);
     border-color: #4f46e5;
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
 }
@@ -229,7 +295,13 @@ body {
 .form-label {
     font-weight: 500;
     margin-bottom: 0.5rem;
-    color: #e5e7eb;
+    color: var(--heading-color);
+    transition: color var(--animation-duration);
+}
+
+.form-text {
+    color: var(--muted-color);
+    transition: color var(--animation-duration);
 }
 
 /* Alert styling */
@@ -244,8 +316,9 @@ body {
 .progress {
     border-radius: 8px;
     height: 10px;
-    background-color: #374151;
+    background-color: var(--progress-bg);
     overflow: hidden;
+    transition: background-color var(--animation-duration);
 }
 
 .progress-bar {
@@ -254,26 +327,29 @@ body {
 
 /* Mobile navigation tweaks */
 .fixed-bottom {
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--border-color);
+    transition: border-color var(--animation-duration);
 }
 
 /* Filter section styling */
 .filter-section {
-    background-color: #1f2937;
+    background-color: var(--card-bg);
     border-radius: var(--card-border-radius);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    transition: background-color var(--animation-duration), border-color var(--animation-duration);
 }
 
 /* Tab navigation styling */
 .nav-tabs {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
+    transition: border-color var(--animation-duration);
 }
 
 .nav-tabs .nav-link {
     border: none;
-    color: #9ca3af;
+    color: var(--nav-link-color);
     font-weight: 500;
     padding: 0.75rem 1rem;
     margin-right: 0.5rem;
@@ -281,7 +357,7 @@ body {
 }
 
 .nav-tabs .nav-link:hover {
-    color: #f3f4f6;
+    color: var(--body-color);
     border-color: transparent;
 }
 
@@ -293,23 +369,63 @@ body {
 
 /* Modal enhancements */
 .modal-content {
-    background-color: #1f2937;
+    background-color: var(--modal-bg);
     border-radius: var(--card-border-radius);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    transition: background-color var(--animation-duration), border-color var(--animation-duration);
 }
 
 .modal-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
     padding: 1.5rem;
+    transition: border-color var(--animation-duration);
 }
 
 .modal-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--border-color);
     padding: 1.5rem;
+    transition: border-color var(--animation-duration);
 }
 
 .modal-body {
     padding: 1.5rem;
+}
+
+/* Off-canvas enhancements */
+.offcanvas {
+    transition: background-color var(--animation-duration);
+}
+
+.offcanvas.bg-dark {
+    background-color: var(--sidebar-bg) !important;
+}
+
+.list-group-item.bg-dark {
+    background-color: var(--sidebar-bg) !important;
+    border-color: var(--border-color);
+    transition: background-color var(--animation-duration), border-color var(--animation-duration);
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    background-color: var(--dropdown-bg);
+    border: 1px solid var(--border-color);
+    transition: background-color var(--animation-duration), border-color var(--animation-duration);
+}
+
+.dropdown-item {
+    color: var(--body-color);
+    transition: color var(--animation-duration);
+}
+
+.dropdown-item:hover {
+    background-color: var(--hover-bg);
+    transition: background-color var(--animation-duration);
+}
+
+.dropdown-divider {
+    border-top: 1px solid var(--border-color);
+    transition: border-color var(--animation-duration);
 }
 
 /* Responsive adjustments */
