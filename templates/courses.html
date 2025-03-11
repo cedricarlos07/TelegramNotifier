@@ -288,13 +288,13 @@
                                 <td>
                                     {% if course.schedule_date %}
                                         <div class="d-flex align-items-center">
-                                            <div class="bg-dark rounded-circle p-1 d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px;">
+                                            <div class="bg-primary bg-opacity-25 rounded-circle p-1 d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px;">
                                                 <span class="text-primary fw-bold">{{ course.schedule_date.strftime('%d') }}</span>
                                             </div>
                                             <span>{{ course.schedule_date.strftime('%b %Y') }}</span>
                                         </div>
                                     {% else %}
-                                        <span class="badge bg-warning text-dark">Non planifié</span>
+                                        <span class="badge bg-warning">Non planifié</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-end pe-4">

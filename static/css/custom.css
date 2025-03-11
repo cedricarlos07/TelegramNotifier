@@ -433,6 +433,18 @@ body {
     transition: border-color var(--animation-duration);
 }
 
+/* Adaptation des fond sombres dans les formulaires pour le mode dark */
+[data-bs-theme="dark"] .input-group-text.bg-dark {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f3f4f6;
+}
+
+/* Amélioration des input-group pour tous les modes */
+.input-group-text {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 992px) {
     .container-fluid {
@@ -619,11 +631,15 @@ body {
 [data-bs-theme="light"] {
     --card-text-color: #212529;
     --muted-text-color: #6c757d;
+    --badge-text-light: #212529;
+    --badge-text-dark: #ffffff;
 }
 
 [data-bs-theme="dark"] {
     --card-text-color: #f3f4f6;
     --muted-text-color: #9ca3af;
+    --badge-text-light: #f3f4f6;
+    --badge-text-dark: #f3f4f6;
 }
 
 .card-title, .card-text, .card-body p:not(.stat-value),
@@ -633,6 +649,38 @@ body {
 
 .text-muted {
     color: var(--muted-text-color) !important;
+}
+
+/* Assurer que tous les textes soient visibles en mode sombre */
+[data-bs-theme="dark"] .text-dark {
+    color: #f3f4f6 !important;
+}
+
+/* Meilleur contraste pour le texte sur les cartes en mode sombre */
+[data-bs-theme="dark"] .card {
+    color: #f3f4f6;
+}
+
+/* Améliorer la visibilité des liens */
+[data-bs-theme="dark"] a:not(.btn):not(.nav-link) {
+    color: #a5b4fc !important;
+}
+
+[data-bs-theme="dark"] a:not(.btn):not(.nav-link):hover {
+    color: #818cf8 !important;
+}
+
+/* Correction pour les badges */
+.badge.bg-dark {
+    color: var(--badge-text-light) !important;
+}
+
+.badge.bg-light, .badge.bg-warning {
+    color: var(--badge-text-light) !important;
+}
+
+.badge.bg-primary, .badge.bg-success, .badge.bg-danger, .badge.bg-info {
+    color: var(--badge-text-dark) !important;
 }
 
 /* Fix for badges in light mode */
