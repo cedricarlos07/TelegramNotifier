@@ -44,7 +44,7 @@ class ExcelProcessor:
         Parse time string to time object.
         
         Args:
-            time_str (str): Time string (e.g., "09:00", "14:30")
+            time_str (str): Time string (e.g., "09:00", "14:30", "20h 30 France")
             
         Returns:
             time: Time object
@@ -53,10 +53,24 @@ class ExcelProcessor:
             if pd.isna(time_str) or not time_str:
                 return None
                 
-            # Try different formats
+            time_str = str(time_str).strip()
+            
+            # Format spécifique de votre Excel: "20h 30 France" ou "11h 00 France"
+            if "France" in time_str:
+                # Supprimer la partie "France"
+                time_str = time_str.replace("France", "").strip()
+                
+                # Convertir le format "20h 30" en "20:30"
+                if "h" in time_str:
+                    parts = time_str.split("h")
+                    hours = parts[0].strip()
+                    minutes = parts[1].strip() if len(parts) > 1 and parts[1].strip() else "00"
+                    time_str = f"{hours}:{minutes}"
+            
+            # Try standard formats
             for fmt in ("%H:%M", "%H:%M:%S", "%I:%M %p", "%I:%M%p"):
                 try:
-                    return datetime.strptime(str(time_str).strip(), fmt).time()
+                    return datetime.strptime(time_str, fmt).time()
                 except ValueError:
                     continue
                     
