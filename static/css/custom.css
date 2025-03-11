@@ -473,15 +473,50 @@ body {
 .stat-card {
     position: relative;
     overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Different color for each stat card */
+.stat-card:nth-child(1) .card-body {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(129, 140, 248, 0.08) 100%);
+    border-left: 4px solid #4f46e5;
+}
+
+.stat-card:nth-child(2) .card-body {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(52, 211, 153, 0.08) 100%);
+    border-left: 4px solid #10b981;
+}
+
+.stat-card:nth-child(3) .card-body {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(56, 189, 248, 0.08) 100%);
+    border-left: 4px solid #0ea5e9;
+}
+
+.stat-card:nth-child(4) .card-body {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(167, 139, 250, 0.08) 100%);
+    border-left: 4px solid #8b5cf6;
 }
 
 .stat-card .stat-icon {
     position: absolute;
     right: 1.5rem;
     bottom: 1.5rem;
-    font-size: 4rem;
-    opacity: 0.1;
+    font-size: 3.5rem;
+    opacity: 0.15;
     color: currentColor;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    opacity: 0.25;
+    transform: scale(1.1);
 }
 
 .stat-card .stat-value {
@@ -491,10 +526,36 @@ body {
     background: linear-gradient(90deg, #4f46e5, #a855f7);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 [data-bs-theme="light"] .stat-card .stat-value {
     background: linear-gradient(90deg, #4338ca, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Color-specific stat values */
+.stat-card:nth-child(1) .stat-value {
+    background: linear-gradient(90deg, #4f46e5, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card:nth-child(2) .stat-value {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card:nth-child(3) .stat-value {
+    background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card:nth-child(4) .stat-value {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -552,6 +613,26 @@ body {
 /* Fix for Chart.js text colors in light mode */
 [data-bs-theme="light"] canvas {
     color: #212529 !important;
+}
+
+/* Fix text colors in light mode */
+[data-bs-theme="light"] {
+    --card-text-color: #212529;
+    --muted-text-color: #6c757d;
+}
+
+[data-bs-theme="dark"] {
+    --card-text-color: #f3f4f6;
+    --muted-text-color: #9ca3af;
+}
+
+.card-title, .card-text, .card-body p:not(.stat-value),
+.card-header h5, .table, .form-label {
+    color: var(--card-text-color) !important;
+}
+
+.text-muted {
+    color: var(--muted-text-color) !important;
 }
 
 /* Fix for badges in light mode */

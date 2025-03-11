@@ -3,7 +3,7 @@
 {% block title %}Analyse de Participation{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 px-0">
     <h1 class="mb-4">Analyse Détaillée de Participation</h1>
     
     <!-- Cartes de synthèse -->
@@ -15,7 +15,7 @@
                     <h5 class="card-title text-muted mb-2">Présences totales</h5>
                     <p class="stat-value">{{ total_attendances }}</p>
                     <p class="text-muted mb-0">Enregistrements de participation</p>
-                    <i class="bi bi-people-fill stat-icon"></i>
+                    <i class="fas fa-users stat-icon"></i>
                 </div>
             </div>
         </div>
@@ -27,7 +27,7 @@
                     <h5 class="card-title text-muted mb-2">Cours totaux</h5>
                     <p class="stat-value">{{ total_courses }}</p>
                     <p class="text-muted mb-0">Cours dans le système</p>
-                    <i class="bi bi-camera-video-fill stat-icon"></i>
+                    <i class="fas fa-video stat-icon"></i>
                 </div>
             </div>
         </div>
@@ -39,7 +39,7 @@
                     <h5 class="card-title text-muted mb-2">Taux de participation</h5>
                     <p class="stat-value">{{ avg_attendance_rate }}</p>
                     <p class="text-muted mb-0">Présences par cours en moyenne</p>
-                    <i class="bi bi-graph-up-arrow stat-icon"></i>
+                    <i class="fas fa-chart-line stat-icon"></i>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                     <h5 class="card-title text-muted mb-2">Durée moyenne</h5>
                     <p class="stat-value">{{ average_duration }}</p>
                     <p class="text-muted mb-0">Minutes par présence</p>
-                    <i class="bi bi-hourglass-split stat-icon"></i>
+                    <i class="fas fa-hourglass-half stat-icon"></i>
                 </div>
             </div>
         </div>
