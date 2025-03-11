@@ -1,5 +1,5 @@
 /**
- * Theme Switcher for CourseHub
+ * Theme Switcher for KODJO ENGLISH BOT
  * Allows switching between light and dark themes
  */
 document.addEventListener('DOMContentLoaded', function() {
