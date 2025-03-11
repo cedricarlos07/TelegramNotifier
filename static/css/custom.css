@@ -1,10 +1,13 @@
-/* Additional custom styles beyond Bootstrap */
+/* Additional custom styles beyond Bootstrap for Light Theme */
 
 /* Body and general styles */
 body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
 }
 
 /* Make footer stick to bottom */
@@ -12,84 +15,198 @@ body {
     margin-top: auto;
 }
 
-/* Card styles */
+/* Card styles with softer shadows for light theme */
 .card {
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 1.5rem;
+    border: none;
+    background-color: #ffffff;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 .card-header {
-    border-top-left-radius: 0.5rem !important;
-    border-top-right-radius: 0.5rem !important;
+    background-color: rgba(0, 0, 0, 0.01);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-top-left-radius: 0.75rem !important;
+    border-top-right-radius: 0.75rem !important;
+    font-weight: 600;
+}
+
+/* Improved card header styling */
+.card-header h5, .card-header .h5 {
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
 }
 
 /* Dashboard stats cards */
 .card .display-4 {
     font-weight: 700;
     font-size: 2.5rem;
+    color: #3498db;
 }
 
-/* Improve table readability */
+/* Button styling */
+.btn {
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #3a5fc7;
+    border-color: #3a5fc7;
+}
+
+.btn-success {
+    background-color: #1cc88a;
+    border-color: #1cc88a;
+}
+
+.btn-success:hover {
+    background-color: #17a673;
+    border-color: #17a673;
+}
+
+/* Improve table readability for light theme */
 .table {
     width: 100%;
     margin-bottom: 0;
+    color: #212529;
 }
 
 .table th {
     font-weight: 600;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.table tr:hover {
+    background-color: rgba(0, 0, 0, 0.015);
 }
 
 /* Badge styling */
 .badge {
     font-weight: 500;
     padding: 0.35em 0.65em;
+    border-radius: 0.375rem;
 }
 
-/* Tab styling for course management */
+/* Navbar styling */
+.navbar {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.navbar .nav-link {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+}
+
+.navbar .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.navbar .nav-link.active {
+    font-weight: 600;
+}
+
+/* Tab styling for course management - adapted for light theme */
 .nav-tabs .nav-link {
     border: none;
-    color: rgba(255, 255, 255, 0.75);
+    color: #495057;
     padding: 0.75rem 1rem;
+    font-weight: 500;
 }
 
 .nav-tabs .nav-link.active {
-    color: white;
+    color: #4e73df;
     background-color: transparent;
-    border-bottom: 2px solid white;
+    border-bottom: 2px solid #4e73df;
 }
 
 /* Improve modal styling */
-.modal-header, .modal-footer {
+.modal-content {
+    border-radius: 0.75rem;
     border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
 }
 
 .modal-body {
     padding: 1.5rem;
 }
 
-/* Log level badge colors */
-.badge.bg-info {
-    background-color: var(--bs-info) !important;
+/* Form controls styling */
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #dee2e6;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.badge.bg-warning {
-    background-color: var(--bs-warning) !important;
-}
-
-.badge.bg-danger {
-    background-color: var(--bs-danger) !important;
+.form-control:focus, .form-select:focus {
+    border-color: #a2b9ff;
+    box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.15);
 }
 
 /* Custom spacing for forms */
 form label {
     font-weight: 500;
     margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+/* Alerts styling */
+.alert {
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+}
+
+/* Stats counter animation */
+.counter-value {
+    transition: all 0.5s ease;
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
+    .navbar-nav {
+        margin-top: 1rem;
+    }
+    
     .card .display-4 {
         font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+    
+    .card .display-4 {
+        font-size: 1.8rem;
     }
 }
