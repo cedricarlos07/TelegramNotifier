@@ -564,12 +564,12 @@ def register_routes(app):
                     actual_group_id = group_id
                 
                 # Get chat info
-                chat_info = bot.bot.get_chat(actual_group_id)
+                chat_info = bot._run_sync(bot.bot.get_chat(actual_group_id))
                 
                 # Check bot's permissions
                 try:
                     bot_status = bot.check_bot_status()
-                    member = bot.bot.get_chat_member(actual_group_id, bot_status["bot_id"])
+                    member = bot._run_sync(bot.bot.get_chat_member(actual_group_id, bot_status["bot_id"]))
                     
                     # Prepare response
                     result = {

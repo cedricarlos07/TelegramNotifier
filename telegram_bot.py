@@ -1,7 +1,9 @@
 import logging
 import telegram
 from telegram import Bot
+from telegram.error import TelegramError
 from datetime import datetime, timedelta
+import asyncio
 from config import TELEGRAM_BOT_TOKEN, MESSAGE_TEMPLATE
 from app import db, app
 from models import Log, AppSettings, TelegramMessage, UserRanking
@@ -17,6 +19,22 @@ class TelegramBot:
         self.bot = telegram.Bot(token=TELEGRAM_BOT_TOKEN)
         self._init_app_settings()
         logger.info("Telegram bot initialized")
+        
+    def _run_sync(self, coroutine):
+        """
+        Run a coroutine synchronously
+        
+        Args:
+            coroutine: The coroutine to run
+            
+        Returns:
+            The result of the coroutine
+        """
+        loop = asyncio.new_event_loop()
+        try:
+            return loop.run_until_complete(coroutine)
+        finally:
+            loop.close()
     
     def _init_app_settings(self):
         """Initialize application settings if they don't exist."""
@@ -74,7 +92,9 @@ class TelegramBot:
         }
         
         try:
-            bot_info = self.bot.get_me()
+            # Exécute get_me de manière synchrone
+            bot_info = self._run_sync(self.bot.get_me())
+            
             status["success"] = True
             status["bot_id"] = bot_info.id
             status["bot_username"] = bot_info.username
@@ -153,7 +173,7 @@ class TelegramBot:
             # Ajouter une vérification des permissions du bot dans le groupe
             try:
                 # Essayer d'obtenir des informations sur le chat pour vérifier les permissions
-                chat_info = self.bot.get_chat(actual_chat_id)
+                chat_info = self._run_sync(self.bot.get_chat(actual_chat_id))
                 logger.info(f"Chat info: ID={chat_info.id}, Type={chat_info.type}, Title={getattr(chat_info, 'title', 'N/A')}")
                 
                 # Si c'est un groupe, vérifier si le bot est administrateur
@@ -162,7 +182,7 @@ class TelegramBot:
                 
                 # Vérifier les permissions du bot si disponible
                 try:
-                    member = self.bot.get_chat_member(actual_chat_id, bot_status["bot_id"])
+                    member = self._run_sync(self.bot.get_chat_member(actual_chat_id, bot_status["bot_id"]))
                     logger.info(f"Bot's status in the chat: {member.status}")
                     if member.status not in ['administrator', 'creator']:
                         logger.warning(f"Bot is not an admin in the group (status: {member.status}). Some features may not work.")
@@ -173,11 +193,11 @@ class TelegramBot:
                 logger.warning(f"Could not get chat info: {str(chat_e)}")
             
             # Envoyer le message
-            response = self.bot.send_message(
+            response = self._run_sync(self.bot.send_message(
                 chat_id=actual_chat_id,
                 text=message,
                 parse_mode='Markdown'
-            )
+            ))
             
             logger.info(f"Message sent successfully to chat {chat_id}, response: {response}")
             # Log the success to the database
