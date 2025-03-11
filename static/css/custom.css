@@ -66,8 +66,10 @@ body {
 /* Logo and Branding */
 .navbar-brand {
     font-weight: 700;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: #ffffff !important;
+    word-break: keep-all;
+    white-space: nowrap;
 }
 
 .brand-icon {
@@ -340,6 +342,23 @@ body {
 .fixed-bottom {
     border-top: 1px solid var(--border-color);
     transition: border-color var(--animation-duration);
+    z-index: 1030;
+}
+
+/* Amélioration de la navigation mobile */
+@media (max-width: 767px) {
+    .nav-pills .nav-link {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.5rem;
+    }
+    
+    .fixed-bottom .nav-item .nav-link i {
+        font-size: 1.25rem;
+    }
+    
+    .fixed-bottom .nav-item .nav-link small {
+        font-size: 0.7rem;
+    }
 }
 
 /* Filter section styling */
@@ -467,6 +486,34 @@ body {
 @media (max-width: 576px) {
     .card-body, .modal-body {
         padding: 1.25rem;
+    }
+    
+    /* Amélioration des formulaires en mobile */
+    .form-control, .form-select {
+        font-size: 16px; /* Évite le zoom automatique sur iOS */
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .card-title {
+        font-size: 1.25rem;
+    }
+    
+    /* Plus d'espace pour les boutons sur mobile */
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.925rem;
+    }
+    
+    /* Ajustement des marges et espacements */
+    .container-fluid {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    /* Optimisation des tableaux */
+    .table th, .table td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
     }
 }
 
@@ -625,6 +672,23 @@ body {
     .table-responsive {
         max-height: 400px;
         overflow-y: auto;
+    }
+    
+    /* Optimisation de l'affichage mobile */
+    .offcanvas-bottom {
+        height: auto;
+        max-height: 80vh;
+    }
+    
+    /* Ajuster la hauteur des nav-tabs pour une meilleure accessibilité tactile */
+    .nav-tabs .nav-link {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Style compact pour les cartes */
+    .card-header {
+        padding: 1rem;
     }
 }
 
