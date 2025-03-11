@@ -1,0 +1,101 @@
+### 🚀 **Résumé du Bot Telegram de Gestion de Cours (avec Dashboard Admin Flask)**
+
+Ce projet consiste à automatiser la gestion des cours et des réunions Zoom via un **bot Telegram** développé avec **Python (Flask)**. L'objectif est de simplifier la planification des cours, la création de réunions Zoom et l'envoi d'annonces aux groupes Telegram. Un **dashboard admin** permet de superviser et gérer facilement toutes les opérations.
+
+---
+
+#### 🧠 **Fonctionnalités Principales**
+
+1. **Automatisation Complète des Cours :**
+   - Récupère les informations des cours depuis la feuille **"Fix Schedule"** du fichier Excel.
+   - Génère les dates et heures pour la semaine à venir ou pour tout le mois.
+   - Met à jour dynamiquement les informations chaque semaine.
+
+2. **Création Automatique des Réunions Zoom :**
+   - Pour chaque cours planifié, crée une réunion Zoom.
+   - Génère les liens et les intègre automatiquement dans la feuille **"Fix Schedule"**.
+   - Vérifie les doublons pour éviter la création de réunions en double.
+
+3. **Génération et Envoi des Messages Telegram :**
+   - Crée des messages à partir des informations des cours (date, heure, lien Zoom).
+   - Programme l'envoi quotidien aux groupes Telegram à une heure définie.
+   - Gère les rappels pour tous les cours de la journée.
+
+4. **Dashboard Admin en Flask :**
+   - Interface visuelle pour superviser les opérations.
+   - Visualiser les prochains cours planifiés.
+   - Modifier manuellement les cours et les liens Zoom.
+   - Relancer les scénarios si nécessaire.
+   - Afficher les logs d'activité pour le suivi et la gestion des erreurs.
+
+---
+
+#### 🗓️ **Déroulé des Scénarios**
+
+1. **Scénario 1 - Mise à jour des cours (Dimanche à minuit) :**
+   - Le bot parcourt la feuille **"Fix Schedule"**.
+   - Il met à jour les dates et heures des cours pour la semaine suivante.
+   - Les cours sont planifiés pour la semaine ou le mois en fonction des données disponibles.
+
+2. **Scénario 2 - Création des réunions Zoom (Dimanche, après Scénario 1) :**
+   - Les liens Zoom sont générés pour chaque cours à partir des informations mises à jour.
+   - Les réunions Zoom sont programmées et les liens sont ajoutés dans la feuille **"Fix Schedule"**.
+
+3. **Scénario 3 - Génération des messages Telegram (Dimanche, après Scénario 2) :**
+   - Les messages Telegram sont créés avec les informations des cours et des liens Zoom.
+   - Les messages sont stockés dans la feuille pour vérification et envoi.
+
+4. **Scénario 4 - Envoi quotidien des messages Telegram (Tous les jours à 8h) :**
+   - Le bot vérifie la feuille **"Fix Schedule"** pour les cours du jour.
+   - Les messages sont envoyés aux groupes Telegram concernés.
+
+---
+
+#### 🖥️ **Gestion via Dashboard Admin Flask**
+
+**1. Accès au Dashboard :**  
+- URL : `http://localhost:5000/admin`  
+- Interface conviviale avec une vue d'ensemble des cours et des réunions.  
+
+**2. Fonctions du Dashboard :**  
+- **Visualisation des cours planifiés** (par semaine ou par mois).  
+- **Modification manuelle** des cours (ajout, suppression, mise à jour).  
+- **Relance des scénarios** en cas de mise à jour manuelle.  
+- **Gestion des logs** pour visualiser les erreurs ou les opérations réussies.  
+- **Gestion des liens Zoom** pour corriger les erreurs éventuelles.  
+
+---
+
+#### ⚙️ **Gestion des Scénarios depuis le Dashboard**
+- Relancer manuellement chaque scénario en cas de mise à jour.  
+- Visualiser l'état des tâches planifiées.  
+- Vérifier les liens Zoom générés pour détecter les doublons.  
+
+---
+
+#### 🚀 **Démarrage du Bot**
+1. Installer les dépendances :  
+   ```
+   pip install flask flask-apscheduler pandas python-telegram-bot
+   ```
+2. Lancer le serveur Flask :  
+   ```
+   python bot.py
+   ```
+3. Accéder au dashboard :  
+   ```
+   http://localhost:5000/admin
+   ```
+4. Ajouter le bot Telegram aux groupes concernés pour l'envoi automatique des messages.  
+
+---
+
+#### ✅ **Avantages de ce Système**
+- Automatisation complète sans intervention manuelle.  
+- Tableau de bord pour gérer les cours et surveiller les activités.  
+- Réduction des erreurs humaines grâce aux vérifications de doublons.  
+- Planification dynamique qui s'adapte aux mises à jour du planning.  
+
+---
+
+Si tu veux que je génère le code du bot et du dashboard, fais-moi signe ! 😎
