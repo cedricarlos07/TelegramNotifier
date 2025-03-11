@@ -1,57 +1,90 @@
 {% extends 'layout.html' %}
 
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle filter toggle button text
+        const filterToggleBtn = document.querySelector('[data-bs-toggle="collapse"][data-bs-target="#filterCollapse"]');
+        const filterToggleText = document.querySelector('.filter-toggle-text');
+        
+        if (filterToggleBtn && filterToggleText) {
+            filterToggleBtn.addEventListener('click', function() {
+                const isCollapsed = this.getAttribute('aria-expanded') === 'true';
+                filterToggleText.textContent = isCollapsed ? 'Afficher' : 'Masquer';
+                
+                // Change icon as well
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = isCollapsed ? 'fas fa-chevron-down me-1' : 'fas fa-chevron-up me-1';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+
 {% block page_header %}
 <h1 class="h3 mb-0 text-light">Gestion des Cours</h1>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* Styles spécifiques à la page des cours */
+    .table-hover tbody tr:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <!-- Action buttons & Stats Overview -->
 <div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-0">
-                <!-- Progress stats -->
-                <div class="row g-0">
-                    <div class="col-md-4 p-4 border-end border-dark">
-                        <h6 class="text-muted mb-1 text-uppercase small">Total Cours</h6>
-                        <div class="d-flex align-items-center">
-                            <h3 class="mb-0 me-2 fw-bold">{{ total_courses }}</h3>
-                            <div class="text-primary text-opacity-75">
-                                <i class="fas fa-graduation-cap"></i>
-                            </div>
-                        </div>
+    <div class="col-md-9">
+        <div class="row">
+            <!-- Total Cours -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted mb-2">Total Cours</h5>
+                        <p class="stat-value">{{ total_courses }}</p>
+                        <p class="text-muted mb-0">Cours dans le système</p>
+                        <i class="fas fa-graduation-cap stat-icon"></i>
                     </div>
-                    <div class="col-md-4 p-4 border-end border-dark">
-                        <h6 class="text-muted mb-1 text-uppercase small">Avec Zoom</h6>
-                        <div class="d-flex align-items-center">
-                            <h3 class="mb-0 me-2 fw-bold">{{ courses_with_zoom }}</h3>
-                            <div class="text-info text-opacity-75">
-                                <i class="fas fa-video"></i>
-                            </div>
-                        </div>
+                </div>
+            </div>
+            
+            <!-- Cours avec Zoom -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted mb-2">Avec Zoom</h5>
+                        <p class="stat-value">{{ courses_with_zoom }}</p>
+                        <p class="text-muted mb-0">Cours avec liens vidéo</p>
+                        <i class="fas fa-video stat-icon"></i>
                     </div>
-                    <div class="col-md-4 p-4">
-                        <h6 class="text-muted mb-1 text-uppercase small">Planifiés</h6>
-                        <div class="d-flex align-items-center">
-                            <h3 class="mb-0 me-2 fw-bold">{{ planning_progress }}%</h3>
-                            <div class="text-success text-opacity-75">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                        </div>
+                </div>
+            </div>
+            
+            <!-- Taux de planification -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted mb-2">Planifiés</h5>
+                        <p class="stat-value">{{ planning_progress }}%</p>
+                        <p class="text-muted mb-0">Progression de la planification</p>
+                        <i class="fas fa-calendar-check stat-icon"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-1 fw-bold">Ajouter un nouveau cours</h6>
-                    <p class="text-muted mb-0 small">Créer une nouvelle planification de cours</p>
-                </div>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h6 class="mb-3 fw-bold">Ajouter un nouveau cours</h6>
+                <p class="text-muted mb-3 small">Créer une nouvelle planification de cours et envoyer des notifications automatisées</p>
+                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addCourseModal">
                     <i class="fas fa-plus-circle me-2"></i>Nouveau Cours
                 </button>
             </div>
@@ -63,12 +96,23 @@
 <div class="row mb-4">
     <div class="col-12">
         <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold mb-0">Progression de la planification</h6>
-                    <span class="badge bg-primary rounded-pill px-3">{{ planning_progress }}%</span>
+            <div class="card-header bg-transparent border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tasks text-primary me-2"></i>Progression de la planification
+                    </h5>
+                    {% if planning_progress < 30 %}
+                        {% set badge_color = "bg-danger" %}
+                    {% elif planning_progress < 70 %}
+                        {% set badge_color = "bg-warning" %}
+                    {% else %}
+                        {% set badge_color = "bg-success" %}
+                    {% endif %}
+                    <span class="badge {{ badge_color }} rounded-pill px-3 py-2">{{ planning_progress }}%</span>
                 </div>
-                <div class="progress">
+            </div>
+            <div class="card-body">
+                <div class="progress mb-4" style="height: 10px; border-radius: 0.5rem;">
                     {% if planning_progress < 30 %}
                         {% set progress_color = "bg-danger" %}
                     {% elif planning_progress < 70 %}
@@ -82,18 +126,39 @@
                     </div>
                 </div>
                 
-                <div class="d-flex justify-content-between mt-3">
-                    <div class="d-flex align-items-center">
-                        <div class="dot bg-success me-2"></div>
-                        <small class="text-muted">{{ courses_with_zoom }} avec liens Zoom</small>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div class="progress-stat-icon bg-success rounded-circle p-2 me-3">
+                                <i class="fas fa-video text-white"></i>
+                            </div>
+                            <div>
+                                <div class="progress-stat-value">{{ courses_with_zoom }}</div>
+                                <div class="text-muted">Cours avec liens Zoom</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="d-flex align-items-center">
-                        <div class="dot bg-warning me-2"></div>
-                        <small class="text-muted">{{ total_courses - courses_with_zoom }} en attente</small>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div class="progress-stat-icon bg-warning rounded-circle p-2 me-3">
+                                <i class="fas fa-hourglass-half text-white"></i>
+                            </div>
+                            <div>
+                                <div class="progress-stat-value">{{ total_courses - courses_with_zoom }}</div>
+                                <div class="text-muted">Cours en attente</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="d-flex align-items-center">
-                        <div class="dot bg-info me-2"></div>
-                        <small class="text-muted">{{ total_courses }} cours au total</small>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div class="progress-stat-icon bg-info rounded-circle p-2 me-3">
+                                <i class="fas fa-graduation-cap text-white"></i>
+                            </div>
+                            <div>
+                                <div class="progress-stat-value">{{ total_courses }}</div>
+                                <div class="text-muted">Cours au total</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -102,61 +167,83 @@
 </div>
 
 <!-- Filter section -->
-<div class="filter-section mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0 fw-bold"><i class="fas fa-filter me-2 text-primary"></i>Filtres</h5>
-        <button class="btn btn-sm btn-link text-muted" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
-            <i class="fas fa-chevron-down"></i>
-        </button>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-transparent">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-filter me-2 text-primary"></i>Filtres de recherche
+            </h5>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                <i class="fas fa-chevron-up me-1"></i> <span class="filter-toggle-text">Masquer</span>
+            </button>
+        </div>
     </div>
     
     <div class="collapse show" id="filterCollapse">
-        <form id="filterForm" class="row g-3">
-            <div class="col-md-3">
-                <label for="filter_teacher" class="form-label">Professeur</label>
-                <select class="form-select" id="filter_teacher" name="teacher">
-                    <option value="">Tous les professeurs</option>
-                    {% for teacher in teachers %}
-                        <option value="{{ teacher }}">{{ teacher }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="filter_class" class="form-label">Classe</label>
-                <select class="form-select" id="filter_class" name="class">
-                    <option value="">Toutes les classes</option>
-                    {% for class_name in class_names %}
-                        <option value="{{ class_name }}">{{ class_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="filter_group" class="form-label">Groupe Telegram</label>
-                <select class="form-select" id="filter_group" name="group">
-                    <option value="">Tous les groupes</option>
-                    {% for group in telegram_groups %}
-                        <option value="{{ group }}">{{ group }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="filter_period" class="form-label">Période</label>
-                <select class="form-select" id="filter_period" name="period">
-                    <option value="">Toutes les périodes</option>
-                    <option value="this_week">Cette semaine</option>
-                    <option value="next_week">Semaine prochaine</option>
-                    <option value="this_month">Ce mois</option>
-                </select>
-            </div>
-            <div class="col-12 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-filter me-2"></i>Appliquer les filtres
-                </button>
-                <button type="reset" class="btn btn-outline-secondary">
-                    <i class="fas fa-undo me-2"></i>Réinitialiser
-                </button>
-            </div>
-        </form>
+        <div class="card-body">
+            <form id="filterForm" class="row g-3">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="filter_teacher" class="form-label">
+                            <i class="fas fa-user-tie text-primary me-1"></i> Professeur
+                        </label>
+                        <select class="form-select" id="filter_teacher" name="teacher">
+                            <option value="">Tous les professeurs</option>
+                            {% for teacher in teachers %}
+                                <option value="{{ teacher }}">{{ teacher }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="filter_class" class="form-label">
+                            <i class="fas fa-book text-primary me-1"></i> Classe
+                        </label>
+                        <select class="form-select" id="filter_class" name="class">
+                            <option value="">Toutes les classes</option>
+                            {% for class_name in class_names %}
+                                <option value="{{ class_name }}">{{ class_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="filter_group" class="form-label">
+                            <i class="fas fa-users text-primary me-1"></i> Groupe Telegram
+                        </label>
+                        <select class="form-select" id="filter_group" name="group">
+                            <option value="">Tous les groupes</option>
+                            {% for group in telegram_groups %}
+                                <option value="{{ group }}">{{ group }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="filter_period" class="form-label">
+                            <i class="fas fa-calendar-alt text-primary me-1"></i> Période
+                        </label>
+                        <select class="form-select" id="filter_period" name="period">
+                            <option value="">Toutes les périodes</option>
+                            <option value="this_week">Cette semaine</option>
+                            <option value="next_week">Semaine prochaine</option>
+                            <option value="this_month">Ce mois</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 mt-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-search me-2"></i>Rechercher
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo me-2"></i>Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
