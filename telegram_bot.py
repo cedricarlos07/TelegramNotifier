@@ -370,7 +370,9 @@ class TelegramBot:
             date=date_str,
             time=time_str,
             course_name=course.course_name,
-            zoom_link=course.zoom_link or "Lien non disponible"
+            teacher_name=course.teacher_name,
+            zoom_link=course.zoom_link or "Lien non disponible",
+            zoom_meeting_id=course.zoom_meeting_id or "ID non disponible"
         )
         
         return formatted_message

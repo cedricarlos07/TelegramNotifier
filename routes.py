@@ -834,11 +834,16 @@ def register_routes(app):
             for index, row in df.iterrows():
                 try:
                     # Extraire les données du cours basées sur la structure Excel observée
-                    course_name = row.get('Salma Choufani - ABG - SS - 2:00pm')  # Première colonne contient le nom du cours
-                    teacher_name = row.get('Salma Choufani')  # Deuxième colonne contient le nom de l'enseignant
-                    day_str = row.get('DAY')  # Colonne jour
-                    start_time_str = row.get('TIME (France)')  # Utilisation de l'heure française
-                    telegram_group_id = row.get('TELEGRAM GROUP ID')  # Colonne ID du groupe Telegram
+                    # La première colonne contient le nom du cours
+                    course_name = row.get('Salma Choufani - ABG - SS - 2:00pm')
+                    # La deuxième colonne contient le nom de l'enseignant
+                    teacher_name = row.get('Salma Choufani')
+                    # Colonne jour
+                    day_str = row.get('DAY')
+                    # Utilisation de l'heure française
+                    start_time_str = row.get('TIME (France)')
+                    # Colonne ID du groupe Telegram 
+                    telegram_group_id = row.get('TELEGRAM GROUP ID')
                     
                     # Vérifier les données essentielles
                     if pd.isna(course_name) or pd.isna(day_str) or pd.isna(start_time_str):

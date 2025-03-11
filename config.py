@@ -21,12 +21,31 @@ SCHEDULE_SEND_DAILY_MESSAGES = {"hour": 8, "minute": 0}  # Daily at 8:00 AM
 
 # Message template for Telegram
 MESSAGE_TEMPLATE = """
-📚 **COURS PROGRAMMÉ** 📚
+📚 *RAPPEL DE COURS AUJOURD'HUI* 📚
 
-📅 Date: {date}
-⏰ Heure: {time}
-👨‍🏫 Cours: {course_name}
-🔗 Lien Zoom: {zoom_link}
+⚠️ Si vous prévoyez d'être en retard ou absent, merci d'informer le groupe à l'avance.
 
-Connectez-vous à l'heure, s'il vous plaît!
+👨‍🏫 *COURS*: {course_name}
+👤 *PROFESSEUR*: {teacher_name}
+
+⏰ *HORAIRE*
+• 🌍 {time} GMT
+• 🇫🇷 {time} Heure de France
+
+🔗 *ACCÈS AU COURS*
+• Lien Zoom: {zoom_link}
+• ID de réunion: {zoom_meeting_id}
+• Code d'accès: 123456
+
+📱 *INSTRUCTIONS DE CONNEXION*
+1️⃣ Première utilisation? Téléchargez l'application ZOOM avant le cours
+2️⃣ À l'heure du cours, cliquez sur le lien ci-dessus
+3️⃣ Si demandé, entrez l'ID de réunion
+4️⃣ Activez votre microphone
+5️⃣ Renommez-vous avec votre prénom et nom de famille
+6️⃣ Gardez votre caméra désactivée (cours audio uniquement)
+
+📅 *DATE*: {date}
+
+🎓 Nous vous attendons en classe!
 """
