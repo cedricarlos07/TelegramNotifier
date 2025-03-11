@@ -30,11 +30,22 @@ class TelegramBot:
         Returns:
             The result of the coroutine
         """
-        loop = asyncio.new_event_loop()
         try:
+            # Essayer d'obtenir la boucle d'événements existante
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            # Si aucune boucle d'événements n'est définie, en créer une nouvelle
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+        # Utilisons un modèle plus sûr qui ne ferme pas la boucle
+        if loop.is_running():
+            # Si la boucle est déjà en cours d'exécution, utiliser run_coroutine_threadsafe
+            future = asyncio.run_coroutine_threadsafe(coroutine, loop)
+            return future.result()
+        else:
+            # Sinon, utiliser run_until_complete
             return loop.run_until_complete(coroutine)
-        finally:
-            loop.close()
     
     def _init_app_settings(self):
         """Initialize application settings if they don't exist."""
