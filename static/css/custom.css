@@ -1,155 +1,310 @@
-/* Additional custom styles beyond Bootstrap for Light Theme */
+/* Modern SaaS Dashboard Styles for Dark Theme */
 
-/* Body and general styles */
+/* Base Styles & Layout */
+:root {
+    --sidebar-width: 280px;
+    --navbar-height: 60px;
+    --card-border-radius: 10px;
+    --btn-border-radius: 8px;
+    --animation-duration: 0.2s;
+}
+
 body {
     min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    background-color: #111827;
+    color: #f3f4f6;
+}
+
+/* Logo and Branding */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+
+.brand-icon {
+    width: 36px;
+    height: 36px;
+    background-color: #4f46e5;
+    border-radius: 50%;
+}
+
+/* Avatar styling */
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     display: flex;
-    flex-direction: column;
-    font-family: 'Poppins', sans-serif;
-    background-color: #f8f9fa;
-    color: #212529;
+    align-items: center;
+    justify-content: center;
+    background-color: #4f46e5;
+    color: #fff;
+    font-weight: 600;
 }
 
-/* Make footer stick to bottom */
-.footer {
-    margin-top: auto;
+/* Sidebar styling */
+.sidebar {
+    position: sticky;
+    top: var(--navbar-height);
+    height: calc(100vh - var(--navbar-height));
+    background-color: #1f2937;
 }
 
-/* Card styles with softer shadows for light theme */
+.sidebar .nav-link {
+    border-radius: 6px;
+    margin-bottom: 4px;
+    padding: 10px 16px;
+    font-weight: 500;
+    color: #9ca3af;
+    transition: all var(--animation-duration) ease-in-out;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #f3f4f6;
+}
+
+.sidebar .nav-link.active {
+    background-color: #4f46e5;
+    color: #fff;
+    font-weight: 600;
+}
+
+.content-with-sidebar {
+    margin-left: 0;
+}
+
+@media (min-width: 992px) {
+    .content-with-sidebar {
+        margin-left: var(--sidebar-width);
+    }
+}
+
+/* Card redesign for modern SaaS look */
 .card {
-    border-radius: 0.75rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-radius: var(--card-border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #1f2937;
     margin-bottom: 1.5rem;
-    border: none;
-    background-color: #ffffff;
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: transform var(--animation-duration), box-shadow var(--animation-duration);
 }
 
 .card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .card-header {
-    background-color: rgba(0, 0, 0, 0.01);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    border-top-left-radius: 0.75rem !important;
-    border-top-right-radius: 0.75rem !important;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-top-left-radius: var(--card-border-radius) !important;
+    border-top-right-radius: var(--card-border-radius) !important;
+    padding: 1.25rem 1.5rem;
     font-weight: 600;
 }
 
-/* Improved card header styling */
-.card-header h5, .card-header .h5 {
-    font-weight: 700;
-    color: #2c3e50;
-    margin: 0;
+.card-header .text-white {
+    color: #f3f4f6 !important;
 }
 
-/* Dashboard stats cards */
-.card .display-4 {
-    font-weight: 700;
-    font-size: 2.5rem;
-    color: #3498db;
+.card-body {
+    padding: 1.5rem;
 }
 
-/* Button styling */
+.card-footer {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1rem 1.5rem;
+}
+
+/* Button styling with more modern look */
 .btn {
-    border-radius: 0.5rem;
-    padding: 0.5rem 1.25rem;
+    border-radius: var(--btn-border-radius);
+    padding: 0.6rem 1.25rem;
     font-weight: 500;
-    transition: all 0.2s;
+    transition: all var(--animation-duration);
+    border: none;
 }
 
 .btn-primary {
-    background-color: #4e73df;
-    border-color: #4e73df;
+    background-color: #4f46e5;
+    border-color: #4f46e5;
 }
 
 .btn-primary:hover {
-    background-color: #3a5fc7;
-    border-color: #3a5fc7;
+    background-color: #4338ca;
+    border-color: #4338ca;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
 }
 
 .btn-success {
-    background-color: #1cc88a;
-    border-color: #1cc88a;
+    background-color: #10b981;
+    border-color: #10b981;
 }
 
 .btn-success:hover {
-    background-color: #17a673;
-    border-color: #17a673;
+    background-color: #059669;
+    border-color: #059669;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2), 0 2px 4px -1px rgba(16, 185, 129, 0.1);
 }
 
-/* Improve table readability for light theme */
+.btn-info {
+    background-color: #0ea5e9;
+    border-color: #0ea5e9;
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #0284c7;
+    border-color: #0284c7;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2), 0 2px 4px -1px rgba(14, 165, 233, 0.1);
+}
+
+.btn-outline-primary {
+    border: 1px solid #4f46e5;
+    color: #4f46e5;
+}
+
+.btn-outline-primary:hover {
+    background-color: #4f46e5;
+    color: white;
+}
+
+/* Table improvements for dark theme */
 .table {
-    width: 100%;
-    margin-bottom: 0;
-    color: #212529;
+    border-color: rgba(255, 255, 255, 0.05);
+    color: #f3f4f6;
 }
 
 .table th {
+    background-color: rgba(255, 255, 255, 0.02);
     font-weight: 600;
-    background-color: rgba(0, 0, 0, 0.02);
+    color: #e5e7eb;
+    border-bottom-width: 1px;
+    padding: 0.75rem 1rem;
 }
 
-.table tr:hover {
-    background-color: rgba(0, 0, 0, 0.015);
+.table td {
+    padding: 0.75rem 1rem;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.table-hover > tbody > tr:hover {
+    background-color: rgba(255, 255, 255, 0.04);
 }
 
 /* Badge styling */
 .badge {
     font-weight: 500;
-    padding: 0.35em 0.65em;
-    border-radius: 0.375rem;
+    padding: 0.4em 0.7em;
+    border-radius: 6px;
+    font-size: 0.75rem;
 }
 
-/* Navbar styling */
-.navbar {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+/* Form styling */
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 0.625rem 1rem;
+    background-color: #374151;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+    transition: border-color var(--animation-duration), box-shadow var(--animation-duration);
 }
 
-.navbar .nav-link {
+.form-control:focus, .form-select:focus {
+    background-color: #374151;
+    color: #f3f4f6;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
+}
+
+.form-label {
     font-weight: 500;
-    padding: 0.5rem 1rem;
-    transition: all 0.2s;
+    margin-bottom: 0.5rem;
+    color: #e5e7eb;
 }
 
-.navbar .nav-link:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+/* Alert styling */
+.alert {
+    border-radius: var(--card-border-radius);
+    border: none;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
-.navbar .nav-link.active {
-    font-weight: 600;
+/* Progress bar styling */
+.progress {
+    border-radius: 8px;
+    height: 10px;
+    background-color: #374151;
+    overflow: hidden;
 }
 
-/* Tab styling for course management - adapted for light theme */
+.progress-bar {
+    transition: width 1s ease;
+}
+
+/* Mobile navigation tweaks */
+.fixed-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Filter section styling */
+.filter-section {
+    background-color: #1f2937;
+    border-radius: var(--card-border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Tab navigation styling */
+.nav-tabs {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .nav-tabs .nav-link {
     border: none;
-    color: #495057;
-    padding: 0.75rem 1rem;
+    color: #9ca3af;
     font-weight: 500;
+    padding: 0.75rem 1rem;
+    margin-right: 0.5rem;
+    transition: all var(--animation-duration);
+}
+
+.nav-tabs .nav-link:hover {
+    color: #f3f4f6;
+    border-color: transparent;
 }
 
 .nav-tabs .nav-link.active {
-    color: #4e73df;
+    color: #4f46e5;
     background-color: transparent;
-    border-bottom: 2px solid #4e73df;
+    border-bottom: 2px solid #4f46e5;
 }
 
-/* Improve modal styling */
+/* Modal enhancements */
 .modal-content {
-    border-radius: 0.75rem;
-    border: none;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    background-color: #1f2937;
+    border-radius: var(--card-border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .modal-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding: 1.5rem;
 }
 
 .modal-footer {
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     padding: 1.5rem;
 }
 
@@ -157,56 +312,65 @@ body {
     padding: 1.5rem;
 }
 
-/* Form controls styling */
-.form-control, .form-select {
-    border-radius: 0.5rem;
-    padding: 0.625rem 0.75rem;
-    border: 1px solid #dee2e6;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #a2b9ff;
-    box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.15);
-}
-
-/* Custom spacing for forms */
-form label {
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: #495057;
-}
-
-/* Alerts styling */
-.alert {
-    border-radius: 0.5rem;
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
-}
-
-/* Stats counter animation */
-.counter-value {
-    transition: all 0.5s ease;
-}
-
 /* Responsive adjustments */
 @media (max-width: 992px) {
-    .navbar-nav {
-        margin-top: 1rem;
-    }
-    
-    .card .display-4 {
-        font-size: 2rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
+    .container-fluid {
         padding-left: 1.25rem;
         padding-right: 1.25rem;
     }
     
-    .card .display-4 {
-        font-size: 1.8rem;
+    /* Add bottom padding to create space for the mobile nav bar */
+    main {
+        padding-bottom: 5rem !important;
     }
+}
+
+@media (max-width: 576px) {
+    .card-body, .modal-body {
+        padding: 1.25rem;
+    }
+}
+
+/* Utility classes for spacing and alignment */
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-3 {
+    gap: 1rem;
+}
+
+/* Special styling for stats cards */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card .stat-icon {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    font-size: 4rem;
+    opacity: 0.1;
+    color: currentColor;
+}
+
+.stat-card .stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(90deg, #4f46e5, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Customizations for specific pages */
+.rankings-card .card-header {
+    background-color: #10b981;
+    color: white;
+}
+
+.zoom-link-card .card-header {
+    background-color: #0ea5e9;
+    color: white;
 }

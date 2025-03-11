@@ -1,146 +1,252 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Course Bot - Admin Dashboard</title>
+    <title>CourseHub - Plateforme de Gestion de Cours</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
 
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Custom styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('dashboard') }}">
-                <i class="fas fa-robot text-primary me-2"></i>Telegram Course Bot
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if current_user.is_authenticated %}
-                    <li class="nav-item mx-1">
-                        <a class="nav-link rounded {% if request.path == '/' or request.path == '/admin' %}active bg-light{% endif %}" 
-                           href="{{ url_for('dashboard') }}">
-                            <i class="fas fa-tachometer-alt me-1 text-primary"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link rounded {% if request.path == '/courses' %}active bg-light{% endif %}" 
-                           href="{{ url_for('courses') }}">
-                            <i class="fas fa-graduation-cap me-1 text-success"></i> Courses
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link rounded {% if request.path == '/zoom-links' %}active bg-light{% endif %}" 
-                           href="{{ url_for('zoom_links') }}">
-                            <i class="fas fa-video me-1 text-info"></i> Zoom Links
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link rounded {% if request.path == '/scenarios' %}active bg-light{% endif %}" 
-                           href="{{ url_for('scenarios') }}">
-                            <i class="fas fa-tasks me-1 text-warning"></i> Scenarios
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link rounded {% if request.path == '/logs' %}active bg-light{% endif %}" 
-                           href="{{ url_for('logs') }}">
-                            <i class="fas fa-list-alt me-1 text-dark"></i> Logs
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link rounded {% if request.path == '/rankings' %}active bg-light{% endif %}" 
-                           href="{{ url_for('rankings') }}">
-                            <i class="fas fa-trophy me-1 text-warning"></i> Rankings
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link rounded {% if request.path == '/simulation' %}active bg-light{% endif %}" 
-                           href="{{ url_for('simulation') }}">
-                            <i class="fas fa-vial me-1 text-danger"></i> Simulation
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link rounded {% if request.path == '/bot-status' %}active bg-light{% endif %}" 
-                           href="{{ url_for('bot_status') }}">
-                            <i class="fas fa-heartbeat me-1 text-danger"></i> Bot Status
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown ms-1">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-shield me-1 text-primary"></i> {{ current_user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            {% if current_user.is_admin %}
-                            <li>
-                                <a class="dropdown-item {% if request.path == '/admin-users' %}active{% endif %}" href="{{ url_for('admin_users') }}">
-                                    <i class="fas fa-users-cog me-1"></i> Gérer les utilisateurs
+    <div class="d-flex flex-column min-vh-100">
+        <!-- Navbar -->
+        <header class="sticky-top">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                <div class="container-fluid px-4">
+                    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
+                        <div class="brand-icon me-2 d-flex align-items-center justify-content-center rounded-circle">
+                            <i class="fas fa-graduation-cap fs-4"></i>
+                        </div>
+                        <span class="fw-bold">CourseHub</span>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        {% if current_user.is_authenticated %}
+                        <!-- Show this side navigation on larger screens -->
+                        <div class="d-none d-lg-flex me-auto">
+                            <!-- Empty space for sidebar on large screens -->
+                        </div>
+                        
+                        <!-- User menu -->
+                        <ul class="navbar-nav ms-auto d-flex align-items-center">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="avatar-circle me-2 d-flex align-items-center justify-content-center bg-primary">
+                                        <span>{{ current_user.username[0]|upper }}</span>
+                                    </div>
+                                    <span class="d-none d-md-inline">{{ current_user.username }}</span>
                                 </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
+                                    {% if current_user.is_admin %}
+                                    <li>
+                                        <a class="dropdown-item {% if request.path == '/admin-users' %}active{% endif %}" href="{{ url_for('admin_users') }}">
+                                            <i class="fas fa-users-cog me-2"></i> Gérer les utilisateurs
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li>
+                                        <a class="dropdown-item {% if request.path == '/change-password' %}active{% endif %}" href="{{ url_for('change_password') }}">
+                                            <i class="fas fa-key me-2"></i> Changer le mot de passe
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('logout') }}">
+                                            <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
-                            {% endif %}
-                            <li>
-                                <a class="dropdown-item {% if request.path == '/change-password' %}active{% endif %}" href="{{ url_for('change_password') }}">
-                                    <i class="fas fa-key me-1"></i> Changer le mot de passe
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="{{ url_for('logout') }}">
-                                    <i class="fas fa-sign-out-alt me-1"></i> Déconnexion
+                        </ul>
+                        {% else %}
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-outline-primary px-3 rounded-pill" href="{{ url_for('login') }}">
+                                    <i class="fas fa-sign-in-alt me-2"></i> Connexion
                                 </a>
                             </li>
                         </ul>
-                    </li>
-                    {% else %}
-                    <li class="nav-item mx-1">
-                        <a class="nav-link rounded {% if request.path == '/login' %}active bg-light{% endif %}" 
-                           href="{{ url_for('login') }}">
-                            <i class="fas fa-sign-in-alt me-1 text-primary"></i> Connexion
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main content -->
-    <div class="container mt-4 mb-5">
-        <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        {% endif %}
                     </div>
-                {% endfor %}
+                </div>
+            </nav>
+        </header>
+
+        <div class="d-flex flex-grow-1">
+            {% if current_user.is_authenticated %}
+            <!-- Sidebar for desktop -->
+            <aside class="sidebar bg-dark text-light d-none d-lg-flex">
+                <div class="d-flex flex-column flex-shrink-0 p-3 h-100" style="width: 280px;">
+                    <ul class="nav nav-pills flex-column mb-auto mt-2">
+                        <li class="nav-item mb-1">
+                            <a class="nav-link {% if request.path == '/' or request.path == '/admin' %}active{% else %}link-light{% endif %}" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link {% if request.path == '/courses' %}active{% else %}link-light{% endif %}" href="{{ url_for('courses') }}">
+                                <i class="fas fa-graduation-cap me-2"></i> Cours
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link {% if request.path == '/zoom-links' %}active{% else %}link-light{% endif %}" href="{{ url_for('zoom_links') }}">
+                                <i class="fas fa-video me-2"></i> Liens Zoom
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link {% if request.path == '/scenarios' %}active{% else %}link-light{% endif %}" href="{{ url_for('scenarios') }}">
+                                <i class="fas fa-tasks me-2"></i> Scénarios
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link {% if request.path == '/rankings' %}active{% else %}link-light{% endif %}" href="{{ url_for('rankings') }}">
+                                <i class="fas fa-trophy me-2"></i> Classements
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link {% if request.path == '/simulation' %}active{% else %}link-light{% endif %}" href="{{ url_for('simulation') }}">
+                                <i class="fas fa-vial me-2"></i> Simulation
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link {% if request.path == '/bot-status' %}active{% else %}link-light{% endif %}" href="{{ url_for('bot_status') }}">
+                                <i class="fas fa-heartbeat me-2"></i> État du Bot
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link {% if request.path == '/logs' %}active{% else %}link-light{% endif %}" href="{{ url_for('logs') }}">
+                                <i class="fas fa-list-alt me-2"></i> Logs
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+            
+            <!-- Mobile Navigation (shown on smaller screens) -->
+            <nav class="navbar navbar-dark bg-dark fixed-bottom d-lg-none">
+                <div class="container-fluid px-0">
+                    <ul class="nav nav-pills nav-fill w-100">
+                        <li class="nav-item">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/' or request.path == '/admin' %}active{% else %}text-light{% endif %}" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt d-block mb-1"></i>
+                                <small>Dashboard</small>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/courses' %}active{% else %}text-light{% endif %}" href="{{ url_for('courses') }}">
+                                <i class="fas fa-graduation-cap d-block mb-1"></i>
+                                <small>Cours</small>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/rankings' %}active{% else %}text-light{% endif %}" href="{{ url_for('rankings') }}">
+                                <i class="fas fa-trophy d-block mb-1"></i>
+                                <small>Classements</small>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/bot-status' %}active{% else %}text-light{% endif %}" href="{{ url_for('bot_status') }}">
+                                <i class="fas fa-heartbeat d-block mb-1"></i>
+                                <small>Bot</small>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-center py-1 px-2" href="#" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                                <i class="fas fa-ellipsis-h d-block mb-1"></i>
+                                <small>Plus</small>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <!-- Off-canvas menu for additional options on mobile -->
+            <div class="offcanvas offcanvas-bottom bg-dark text-light" tabindex="-1" id="mobileMenu">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">Menu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <div class="list-group list-group-flush bg-dark">
+                        <a href="{{ url_for('zoom_links') }}" class="list-group-item list-group-item-action bg-dark text-light">
+                            <i class="fas fa-video me-2"></i> Liens Zoom
+                        </a>
+                        <a href="{{ url_for('scenarios') }}" class="list-group-item list-group-item-action bg-dark text-light">
+                            <i class="fas fa-tasks me-2"></i> Scénarios
+                        </a>
+                        <a href="{{ url_for('simulation') }}" class="list-group-item list-group-item-action bg-dark text-light">
+                            <i class="fas fa-vial me-2"></i> Simulation
+                        </a>
+                        <a href="{{ url_for('logs') }}" class="list-group-item list-group-item-action bg-dark text-light">
+                            <i class="fas fa-list-alt me-2"></i> Logs
+                        </a>
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin_users') }}" class="list-group-item list-group-item-action bg-dark text-light">
+                            <i class="fas fa-users-cog me-2"></i> Gérer les utilisateurs
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('change_password') }}" class="list-group-item list-group-item-action bg-dark text-light">
+                            <i class="fas fa-key me-2"></i> Changer le mot de passe
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-dark text-light">
+                            <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
+                        </a>
+                    </div>
+                </div>
+            </div>
             {% endif %}
-        {% endwith %}
 
-        <!-- Page content -->
-        {% block content %}{% endblock %}
-    </div>
+            <!-- Main content -->
+            <main class="flex-grow-1 pt-4 pb-5 {% if current_user.is_authenticated %}content-with-sidebar{% endif %}">
+                <div class="container-fluid px-4 pb-5">
+                    <!-- Page heading and breadcrumb -->
+                    {% if current_user.is_authenticated %}
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div>
+                            {% block page_header %}{% endblock %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Flash messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
 
-    <!-- Footer -->
-    <footer class="footer bg-light py-3 mt-auto border-top">
-        <div class="container text-center">
-            <span class="text-muted">© 2025 Telegram Course Bot Admin Dashboard</span>
+                    <!-- Page content -->
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
         </div>
-    </footer>
+
+        <!-- Footer -->
+        <footer class="footer py-3 mt-auto border-top">
+            <div class="container-fluid px-4 text-center">
+                <span class="text-muted">© 2025 CourseHub - Plateforme de Gestion de Cours</span>
+            </div>
+        </footer>
+    </div>
 
     <!-- Bootstrap and custom JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

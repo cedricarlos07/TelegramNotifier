@@ -1,124 +1,187 @@
 {% extends 'layout.html' %}
 
+{% block page_header %}
+<h1 class="h3 mb-0 text-light">Tableau de bord</h1>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">Dashboard</h1>
-    </div>
-</div>
-
-<!-- Stats cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-bg-primary mb-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h5 class="card-title">Total Courses</h5>
-                        <h2 class="display-4">{{ course_count }}</h2>
-                    </div>
-                    <i class="fas fa-graduation-cap fa-3x"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="card text-bg-success mb-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h5 class="card-title">Today's Courses</h5>
-                        <h2 class="display-4">{{ today_courses }}</h2>
-                    </div>
-                    <i class="fas fa-calendar-day fa-3x"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="card text-bg-info mb-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h5 class="card-title">Messages</h5>
-                        <h2 class="display-4">{{ message_count }}</h2>
-                    </div>
-                    <i class="fas fa-comments fa-3x"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="card text-bg-warning mb-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h5 class="card-title">Attendances</h5>
-                        <h2 class="display-4">{{ attendance_count }}</h2>
-                    </div>
-                    <i class="fas fa-users fa-3x"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Simulation mode alert -->
 {% if simulation_mode %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="alert alert-warning d-flex align-items-center" role="alert">
-            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-            <div>
-                <h4 class="alert-heading">Mode Simulation actif !</h4>
-                <p class="mb-0">
-                    Tous les messages seront redirigés vers le groupe de test : 
-                    <strong>{{ test_group_id }}</strong>.
-                    <a href="{{ url_for('simulation') }}" class="alert-link">Modifier les paramètres</a>
-                </p>
-            </div>
+<div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4" role="alert">
+    <div class="d-flex align-items-center">
+        <div class="rounded-circle bg-warning bg-opacity-25 p-3 me-3">
+            <i class="fas fa-flask fs-4 text-warning"></i>
+        </div>
+        <div>
+            <h5 class="alert-heading mb-1">Mode Simulation actif</h5>
+            <p class="mb-0">
+                Les notifications seront envoyées au groupe de test: 
+                <span class="badge bg-dark">{{ test_group_id }}</span>
+                <a href="{{ url_for('simulation') }}" class="alert-link ms-2"><i class="fas fa-cog"></i> Paramètres</a>
+            </p>
         </div>
     </div>
 </div>
 {% endif %}
 
+<!-- Stats overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">TOTAL COURS</h6>
+                <div class="stat-value">{{ course_count }}</div>
+                <div class="d-flex align-items-center text-muted">
+                    <span>{{ today_courses }} aujourd'hui</span>
+                    {% if today_courses > 0 %}
+                    <span class="ms-2 badge bg-success">Actif</span>
+                    {% endif %}
+                </div>
+                <i class="fas fa-graduation-cap stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">INTERACTIONS</h6>
+                <div class="stat-value">{{ message_count }}</div>
+                <div class="d-flex align-items-center text-muted">
+                    <span>Messages envoyés</span>
+                </div>
+                <i class="fas fa-comment-dots stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">PRÉSENCES</h6>
+                <div class="stat-value">{{ attendance_count }}</div>
+                <div class="d-flex align-items-center text-muted">
+                    <span>Participations enregistrées</span>
+                </div>
+                <i class="fas fa-users stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">PLANIFICATION</h6>
+                <div class="stat-value">
+                    {% set percent = (course_count > 0) and ((upcoming_courses|length / course_count) * 100)|round or 0 %}
+                    {{ percent }}%
+                </div>
+                <div class="d-flex align-items-center text-muted">
+                    <span>Cours planifiés</span>
+                </div>
+                <i class="fas fa-calendar-check stat-icon"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action buttons row -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body d-flex flex-wrap gap-2">
+                <a href="{{ url_for('courses') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>Nouveau cours
+                </a>
+                <a href="{{ url_for('scenarios') }}" class="btn btn-success">
+                    <i class="fas fa-play me-2"></i>Exécuter scénarios
+                </a>
+                <a href="{{ url_for('simulation') }}" class="btn btn-warning">
+                    <i class="fas fa-flask me-2"></i>
+                    {% if simulation_mode %}Désactiver simulation{% else %}Activer simulation{% endif %}
+                </a>
+                <a href="{{ url_for('rankings') }}" class="btn btn-info">
+                    <i class="fas fa-trophy me-2"></i>Classements
+                </a>
+                <button id="exportExcelBtn" class="btn btn-secondary">
+                    <i class="fas fa-file-excel me-2"></i>Exporter Excel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <!-- Upcoming courses -->
     <div class="col-lg-8">
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Upcoming Courses (Next 7 Days)</h5>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar me-2 text-primary"></i>Cours à venir</h5>
+                <span class="badge bg-primary">7 prochains jours</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if upcoming_courses %}
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Course</th>
-                                    <th>Teacher</th>
-                                    <th>Zoom</th>
+                                    <th class="ps-4">Date</th>
+                                    <th>Heure</th>
+                                    <th>Cours</th>
+                                    <th>Enseignant</th>
+                                    <th class="text-end pe-4">Zoom</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for course in upcoming_courses %}
                                 <tr>
-                                    <td>{{ course.schedule_date.strftime('%a, %d %b') }}</td>
-                                    <td>{{ course.start_time.strftime('%H:%M') }} - {{ course.end_time.strftime('%H:%M') }}</td>
-                                    <td>{{ course.course_name }}</td>
-                                    <td>{{ course.teacher_name }}</td>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% set day_class = {
+                                                0: 'text-indigo', 
+                                                1: 'text-blue', 
+                                                2: 'text-cyan', 
+                                                3: 'text-teal', 
+                                                4: 'text-green', 
+                                                5: 'text-yellow', 
+                                                6: 'text-orange'
+                                            } %}
+                                            <div class="bg-dark rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                <span class="{{ day_class.get(course.day_of_week, 'text-primary') }} fw-bold">
+                                                    {{ course.schedule_date.strftime('%d') }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">{{ course.schedule_date.strftime('%B') }}</span>
+                                                <span class="fw-semibold">{{ course.schedule_date.strftime('%A') }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>
+                                        <span class="badge bg-dark">{{ course.start_time.strftime('%H:%M') }}</span>
+                                        <span class="text-muted">-</span>
+                                        <span class="badge bg-dark">{{ course.end_time.strftime('%H:%M') }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{{ course.course_name }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2 bg-secondary" style="width: 28px; height: 28px; font-size: 0.8rem;">
+                                                <span>{{ course.teacher_name[0]|upper }}</span>
+                                            </div>
+                                            <span>{{ course.teacher_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end pe-4">
                                         {% if course.zoom_link %}
                                             <a href="{{ course.zoom_link }}" target="_blank" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-video me-1"></i> Link
+                                                <i class="fas fa-video me-1"></i> Rejoindre
                                             </a>
                                         {% else %}
-                                            <span class="badge bg-warning text-dark">Missing</span>
+                                            <a href="{{ url_for('zoom_links') }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-plus me-1"></i> Ajouter
+                                            </a>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -127,105 +190,191 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="alert alert-info">No upcoming courses for the next week.</div>
+                    <div class="text-center p-5">
+                        <div class="mb-3">
+                            <i class="fas fa-calendar-times fa-3x text-muted opacity-25"></i>
+                        </div>
+                        <h6 class="fw-bold">Aucun cours à venir</h6>
+                        <p class="text-muted">Aucun cours n'est planifié pour les 7 prochains jours</p>
+                        <a href="{{ url_for('courses') }}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Planifier un cours
+                        </a>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
     
-    <!-- Recent logs -->
+    <!-- Sidebar widgets -->
     <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activities</h5>
+        <!-- Recent activities -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2 text-info"></i>Activités récentes</h5>
+                <a href="{{ url_for('logs') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-external-link-alt me-1"></i>Tous
+                </a>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if recent_logs %}
-                    <div class="list-group">
-                        {% for log in recent_logs %}
-                        <div class="list-group-item list-group-item-action flex-column align-items-start">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">
+                    <div class="list-group list-group-flush">
+                        {% for log in recent_logs[:5] %}
+                        <div class="list-group-item bg-transparent">
+                            <div class="d-flex">
+                                <div class="me-3">
                                     {% if log.level == 'INFO' %}
-                                        <span class="badge bg-info text-dark">INFO</span>
+                                        <div class="rounded-circle bg-info bg-opacity-10 p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <i class="fas fa-info text-info"></i>
+                                        </div>
                                     {% elif log.level == 'WARNING' %}
-                                        <span class="badge bg-warning text-dark">WARNING</span>
+                                        <div class="rounded-circle bg-warning bg-opacity-10 p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <i class="fas fa-exclamation text-warning"></i>
+                                        </div>
                                     {% elif log.level == 'ERROR' %}
-                                        <span class="badge bg-danger">ERROR</span>
+                                        <div class="rounded-circle bg-danger bg-opacity-10 p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <i class="fas fa-times text-danger"></i>
+                                        </div>
                                     {% endif %}
-                                    {{ log.scenario or 'System' }}
-                                </h6>
-                                <small>{{ log.timestamp.strftime('%H:%M') }}</small>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="mb-0 fw-semibold">{{ log.scenario or 'Système' }}</h6>
+                                        <small class="text-muted">{{ log.timestamp.strftime('%H:%M') }}</small>
+                                    </div>
+                                    <p class="mb-0 text-muted small">{{ log.message }}</p>
+                                </div>
                             </div>
-                            <p class="mb-1">{{ log.message }}</p>
-                            <small>{{ log.timestamp.strftime('%Y-%m-%d') }}</small>
                         </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="alert alert-info">No recent activities.</div>
+                    <div class="text-center p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-history fa-3x text-muted opacity-25"></i>
+                        </div>
+                        <h6>Aucune activité récente</h6>
+                        <p class="text-muted small">Les activités récentes apparaîtront ici</p>
+                    </div>
                 {% endif %}
-                
-                <div class="mt-3 text-center">
-                    <a href="{{ url_for('logs') }}" class="btn btn-sm btn-outline-warning">View All Logs</a>
-                </div>
             </div>
         </div>
         
         <!-- Top Groups -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Groupes</h5>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-trophy me-2 text-warning"></i>Groupes les plus actifs</h5>
+                <a href="{{ url_for('rankings') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-external-link-alt me-1"></i>Classements
+                </a>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if top_groups %}
-                    <div class="list-group">
+                    <div class="list-group list-group-flush">
                         {% for group in top_groups %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>
-                                <i class="fas fa-users me-2"></i>{{ group.telegram_group_id }}
-                            </span>
-                            <span class="badge bg-primary rounded-pill">{{ group.total_points }} pts</span>
+                        <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded bg-dark p-2 d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
+                                    <span class="fw-bold">{{ loop.index }}</span>
+                                </div>
+                                <span>{{ group.telegram_group_id }}</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2">{{ group.total_points }} pts</span>
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
-                    <div class="mt-3 text-center">
-                        <a href="{{ url_for('rankings') }}" class="btn btn-sm btn-outline-primary">Voir tous les classements</a>
-                    </div>
                 {% else %}
-                    <div class="alert alert-info">Aucune activité de groupe enregistrée.</div>
+                    <div class="text-center p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-trophy fa-3x text-muted opacity-25"></i>
+                        </div>
+                        <h6>Aucun classement disponible</h6>
+                        <p class="text-muted small">Les groupes actifs apparaîtront ici</p>
+                    </div>
                 {% endif %}
-            </div>
-        </div>
-        
-        <!-- Quick Actions -->
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Actions Rapides</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('courses') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-plus-circle me-2"></i>Ajouter un cours
-                    </a>
-                    <a href="{{ url_for('scenarios') }}" class="btn btn-outline-success">
-                        <i class="fas fa-play me-2"></i>Exécuter scénarios
-                    </a>
-                    <a href="{{ url_for('simulation') }}" class="btn btn-outline-warning">
-                        <i class="fas fa-vial me-2"></i>
-                        {% if simulation_mode %}Désactiver simulation{% else %}Activer simulation{% endif %}
-                    </a>
-                    <a href="{{ url_for('rankings') }}" class="btn btn-outline-danger">
-                        <i class="fas fa-trophy me-2"></i>Voir classements
-                    </a>
-                    <button id="exportExcelBtn" class="btn btn-outline-info">
-                        <i class="fas fa-file-excel me-2"></i>Exporter en Excel
-                    </button>
-                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Export to Excel button
+        document.getElementById('exportExcelBtn').addEventListener('click', function() {
+            const button = this;
+            const originalHtml = button.innerHTML;
+            
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exportation...';
+            
+            fetch('/api/export-excel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    button.innerHTML = '<i class="fas fa-check me-2"></i>Exporté !';
+                    setTimeout(() => {
+                        button.innerHTML = originalHtml;
+                        button.disabled = false;
+                    }, 2000);
+                    
+                    // Show success notification instead of alert
+                    const toast = document.createElement('div');
+                    toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3';
+                    toast.setAttribute('role', 'alert');
+                    toast.setAttribute('aria-live', 'assertive');
+                    toast.setAttribute('aria-atomic', 'true');
+                    toast.style.zIndex = '1050';
+                    
+                    toast.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas fa-check-circle me-2"></i>Export Excel réussi !
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(toast);
+                    const bsToast = new bootstrap.Toast(toast);
+                    bsToast.show();
+                    
+                    // Auto remove toast after it's hidden
+                    toast.addEventListener('hidden.bs.toast', function () {
+                        document.body.removeChild(toast);
+                    });
+                    
+                } else {
+                    button.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Erreur';
+                    setTimeout(() => {
+                        button.innerHTML = originalHtml;
+                        button.disabled = false;
+                    }, 2000);
+                    
+                    alert('Erreur: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                button.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Erreur';
+                setTimeout(() => {
+                    button.innerHTML = originalHtml;
+                    button.disabled = false;
+                }, 2000);
+                
+                alert('Une erreur est survenue lors de l\'exportation.');
+            });
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}
 
 {% block scripts %}
