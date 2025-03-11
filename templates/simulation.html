@@ -52,6 +52,118 @@
 <div class="row">
     <div class="col-12">
         <div class="card shadow mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-flask me-2"></i>Démonstration de Cours
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if simulation_mode %}
+                <form action="{{ url_for('create_demo_course') }}" method="POST" id="demoCourseForm">
+                    <div class="mb-3">
+                        <label for="course_name" class="form-label">Nom du cours démo</label>
+                        <input type="text" class="form-control" id="course_name" name="course_name" placeholder="Ex: Anglais - Niveau Intermédiaire" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="teacher_name" class="form-label">Nom du professeur</label>
+                        <input type="text" class="form-control" id="teacher_name" name="teacher_name" placeholder="Ex: Prof. Jean Dupont" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="day_of_week" class="form-label">Jour de la semaine</label>
+                            <select class="form-select" id="day_of_week" name="day_of_week" required>
+                                <option value="0">Lundi</option>
+                                <option value="1">Mardi</option>
+                                <option value="2">Mercredi</option>
+                                <option value="3">Jeudi</option>
+                                <option value="4">Vendredi</option>
+                                <option value="5">Samedi</option>
+                                <option value="6">Dimanche</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="start_time" class="form-label">Heure de début</label>
+                            <input type="time" class="form-control" id="start_time" name="start_time" value="10:00" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_time" class="form-label">Heure de fin</label>
+                            <input type="time" class="form-control" id="end_time" name="end_time" value="12:00" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 d-none">
+                        <label for="demo_group_id" class="form-label">ID du groupe de démonstration</label>
+                        <input type="text" class="form-control" id="demo_group_id" name="demo_group_id" value="{{ test_group_id or '' }}">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-plus-circle me-2"></i>Créer un cours démo
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('send_demo_notification') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer notification démo
+                            </a>
+                        </div>
+                    </div>
+                </form>
+                
+                {% if demo_courses %}
+                <div class="table-responsive mt-4">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Cours</th>
+                                <th>Professeur</th>
+                                <th>Horaire</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in demo_courses %}
+                            <tr>
+                                <td>{{ course.course_name }}</td>
+                                <td>{{ course.teacher_name }}</td>
+                                <td>
+                                    {{ ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][course.day_of_week] }}
+                                    {{ course.start_time.strftime('%H:%M') }} - {{ course.end_time.strftime('%H:%M') }}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('send_demo_course', course_id=course.id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-paper-plane"></i> Envoyer
+                                    </a>
+                                    <a href="{{ url_for('delete_demo_course', course_id=course.id) }}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>Aucun cours de démonstration créé. Utilisez le formulaire ci-dessus pour en ajouter.
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Vous devez d'abord activer le mode simulation et définir un groupe de test pour utiliser la démonstration de cours.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
             <div class="card-header bg-info text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-question-circle me-2"></i>Comment utiliser le mode simulation
@@ -62,6 +174,7 @@
                     <li class="mb-2">Créez un <strong>groupe de test</strong> dans Telegram et notez son ID.</li>
                     <li class="mb-2">Ajoutez votre bot Telegram à ce groupe avec les <strong>permissions d'administrateur</strong>.</li>
                     <li class="mb-2">Activez le mode simulation et entrez l'ID du groupe de test ci-dessus.</li>
+                    <li class="mb-2">Utilisez la section <strong>Démonstration de Cours</strong> pour créer des cours fictifs et envoyer des notifications.</li>
                     <li class="mb-2">Exécutez vos scénarios normalement - tous les messages seront redirigés vers le groupe de test.</li>
                     <li>Lorsque vous êtes prêt à utiliser le système en production, désactivez le mode simulation.</li>
                 </ol>

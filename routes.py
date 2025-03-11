@@ -1,4 +1,5 @@
 import logging
+import random
 from datetime import datetime, timedelta
 from flask import render_template, request, redirect, url_for, jsonify, flash
 from app import app, db
@@ -455,10 +456,16 @@ def register_routes(app):
         simulation_mode = bot.is_simulation_mode()
         test_group_id = bot.get_test_group_id()
         
+        # Get demo courses (if any)
+        demo_courses = []
+        if simulation_mode and test_group_id:
+            demo_courses = Course.query.filter_by(telegram_group_id=test_group_id).all()
+        
         return render_template(
             'simulation.html',
             simulation_mode=simulation_mode,
-            test_group_id=test_group_id
+            test_group_id=test_group_id,
+            demo_courses=demo_courses
         )
     
     @app.route('/simulation/toggle', methods=['POST'])
@@ -716,6 +723,190 @@ def register_routes(app):
             rankings=rankings_data
         )
     
+    @app.route('/simulation/create-demo-course', methods=['POST'])
+    def create_demo_course():
+        """Create a demo course for simulation purposes"""
+        try:
+            # Vérifier que le mode simulation est actif
+            bot = init_telegram_bot()
+            if not bot.is_simulation_mode():
+                flash("Le mode simulation doit être activé pour créer des cours démo", "danger")
+                return redirect(url_for('simulation'))
+            
+            test_group_id = bot.get_test_group_id()
+            if not test_group_id:
+                flash("Un ID de groupe test est requis pour créer des cours démo", "danger")
+                return redirect(url_for('simulation'))
+            
+            # Récupérer les données du formulaire
+            course_name = request.form.get('course_name')
+            teacher_name = request.form.get('teacher_name')
+            day_of_week = int(request.form.get('day_of_week', 0))
+            start_time_str = request.form.get('start_time', '10:00')
+            end_time_str = request.form.get('end_time', '12:00')
+            
+            # Convertir les heures en objets time
+            start_time = datetime.strptime(start_time_str, '%H:%M').time()
+            end_time = datetime.strptime(end_time_str, '%H:%M').time()
+            
+            # Calculer la prochaine date d'occurrence pour ce jour de la semaine
+            today = datetime.now().date()
+            days_ahead = day_of_week - today.weekday()
+            if days_ahead < 0:  # Déjà passé cette semaine
+                days_ahead += 7
+            next_date = today + timedelta(days=days_ahead)
+            
+            # Générer un lien Zoom fictif
+            zoom_link = f"https://zoom.us/j/{random.randint(10000000000, 99999999999)}"
+            zoom_meeting_id = str(random.randint(100000000, 999999999))
+            
+            # Créer le cours
+            course = Course(
+                course_name=course_name,
+                teacher_name=teacher_name,
+                telegram_group_id=test_group_id,
+                day_of_week=day_of_week,
+                start_time=start_time,
+                end_time=end_time,
+                schedule_date=next_date,
+                zoom_link=zoom_link,
+                zoom_meeting_id=zoom_meeting_id
+            )
+            
+            db.session.add(course)
+            db.session.commit()
+            
+            # Journaliser la création
+            log_entry = Log(
+                level="INFO",
+                scenario="demo_course",
+                message=f"Cours de démonstration créé: {course_name} ({teacher_name})"
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            flash(f"Cours de démonstration '{course_name}' créé avec succès", "success")
+            return redirect(url_for('simulation'))
+            
+        except Exception as e:
+            flash(f"Erreur lors de la création du cours démo: {str(e)}", "danger")
+            logger.error(f"Error creating demo course: {str(e)}")
+            return redirect(url_for('simulation'))
+    
+    @app.route('/simulation/send-demo-notification')
+    def send_demo_notification():
+        """Send a demo notification to the test group"""
+        try:
+            # Vérifier que le mode simulation est actif
+            bot = init_telegram_bot()
+            if not bot.is_simulation_mode():
+                flash("Le mode simulation doit être activé pour envoyer des notifications démo", "danger")
+                return redirect(url_for('simulation'))
+            
+            test_group_id = bot.get_test_group_id()
+            if not test_group_id:
+                flash("Un ID de groupe test est requis pour envoyer des notifications démo", "danger")
+                return redirect(url_for('simulation'))
+            
+            # Récupérer tous les cours de démonstration
+            demo_courses = Course.query.filter_by(telegram_group_id=test_group_id).all()
+            
+            if not demo_courses:
+                # Créer un message générique s'il n'y a pas de cours
+                message = """📣 *DÉMONSTRATION*
+
+Voici une notification de démonstration du système de gestion de cours Telegram!
+
+Vous pouvez utiliser ce système pour:
+• Envoyer des notifications automatiques pour les cours
+• Créer des liens Zoom automatiquement
+• Suivre l'engagement des participants
+• Et bien plus encore!"""
+                
+                result = bot.send_message(test_group_id, message, is_simulation=True)
+                if result:
+                    flash("Message de démonstration envoyé avec succès", "success")
+                else:
+                    flash("Erreur lors de l'envoi du message de démonstration", "danger")
+            else:
+                # Envoyer un message pour chaque cours
+                success = 0
+                for course in demo_courses:
+                    # Formater le message du cours
+                    msg = bot.format_course_message(course)
+                    if msg and bot.send_message(test_group_id, msg, is_simulation=True):
+                        success += 1
+                
+                if success > 0:
+                    flash(f"{success} notification(s) de cours envoyée(s) avec succès", "success")
+                else:
+                    flash("Aucune notification de cours n'a pu être envoyée", "danger")
+            
+            # Journal
+            log_entry = Log(
+                level="INFO",
+                scenario="demo_notification",
+                message=f"Notification de démonstration envoyée au groupe {test_group_id}"
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            return redirect(url_for('simulation'))
+            
+        except Exception as e:
+            flash(f"Erreur lors de l'envoi de la notification démo: {str(e)}", "danger")
+            logger.error(f"Error sending demo notification: {str(e)}")
+            return redirect(url_for('simulation'))
+    
+    @app.route('/simulation/send-demo-course/<int:course_id>')
+    def send_demo_course(course_id):
+        """Send a specific demo course notification"""
+        try:
+            # Vérifier que le mode simulation est actif
+            bot = init_telegram_bot()
+            if not bot.is_simulation_mode():
+                flash("Le mode simulation doit être activé pour envoyer des notifications démo", "danger")
+                return redirect(url_for('simulation'))
+            
+            # Récupérer le cours
+            course = Course.query.get_or_404(course_id)
+            
+            # Formater et envoyer le message
+            msg = bot.format_course_message(course)
+            if msg and bot.send_message(course.telegram_group_id, msg, is_simulation=True):
+                flash(f"Notification pour le cours '{course.course_name}' envoyée avec succès", "success")
+            else:
+                flash(f"Erreur lors de l'envoi de la notification pour '{course.course_name}'", "danger")
+            
+            return redirect(url_for('simulation'))
+            
+        except Exception as e:
+            flash(f"Erreur: {str(e)}", "danger")
+            logger.error(f"Error sending demo course: {str(e)}")
+            return redirect(url_for('simulation'))
+    
+    @app.route('/simulation/delete-demo-course/<int:course_id>')
+    def delete_demo_course(course_id):
+        """Delete a demo course"""
+        try:
+            # Récupérer le cours
+            course = Course.query.get_or_404(course_id)
+            
+            # Stocker les informations pour le message
+            course_name = course.course_name
+            
+            # Supprimer le cours
+            db.session.delete(course)
+            db.session.commit()
+            
+            flash(f"Cours de démonstration '{course_name}' supprimé avec succès", "success")
+            return redirect(url_for('simulation'))
+            
+        except Exception as e:
+            flash(f"Erreur lors de la suppression du cours: {str(e)}", "danger")
+            logger.error(f"Error deleting demo course: {str(e)}")
+            return redirect(url_for('simulation'))
+            
     @app.route('/api/send-rankings', methods=['POST'])
     def send_rankings():
         """Send rankings to a Telegram group"""
