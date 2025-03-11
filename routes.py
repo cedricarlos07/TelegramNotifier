@@ -270,18 +270,75 @@ def register_routes(app):
     @login_required
     def courses():
         """Course management page"""
-        # Get all courses
-        all_courses = Course.query.order_by(Course.day_of_week, Course.start_time).all()
+        # Get filter parameters
+        teacher_filter = request.args.get('teacher')
+        class_filter = request.args.get('class')
+        group_filter = request.args.get('group')
+        period_filter = request.args.get('period')
+        
+        # Start with all courses query
+        query = Course.query
+        
+        # Apply filters
+        if teacher_filter:
+            query = query.filter(Course.teacher_name == teacher_filter)
+        
+        if class_filter:
+            query = query.filter(Course.course_name == class_filter)
+            
+        if group_filter:
+            query = query.filter(Course.telegram_group_id == group_filter)
+            
+        if period_filter:
+            today = datetime.now().date()
+            if period_filter == 'this_week':
+                # This week (from today to next 7 days)
+                end_date = today + timedelta(days=7)
+                query = query.filter(Course.schedule_date >= today, Course.schedule_date < end_date)
+            elif period_filter == 'next_week':
+                # Next week
+                start_date = today + timedelta(days=7)
+                end_date = start_date + timedelta(days=7)
+                query = query.filter(Course.schedule_date >= start_date, Course.schedule_date < end_date)
+            elif period_filter == 'this_month':
+                # This month
+                next_month = today.replace(day=28) + timedelta(days=4)
+                end_date = next_month.replace(day=1)
+                query = query.filter(Course.schedule_date >= today, Course.schedule_date < end_date)
+        
+        # Execute query with ordering
+        filtered_courses = query.order_by(Course.day_of_week, Course.start_time).all()
+        
+        # Get unique values for filters
+        all_courses = Course.query.all()
+        teachers = sorted(list(set(course.teacher_name for course in all_courses)))
+        class_names = sorted(list(set(course.course_name for course in all_courses)))
+        telegram_groups = sorted(list(set(course.telegram_group_id for course in all_courses)))
+        
+        # Calculate planning progress
+        total_courses = len(all_courses)
+        courses_with_zoom = Course.query.filter(Course.zoom_link.isnot(None)).count()
+        planning_progress = round(courses_with_zoom / total_courses * 100) if total_courses > 0 else 0
         
         # Group by day of week
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
         courses_by_day = {day: [] for day in days}
         
-        for course in all_courses:
+        for course in filtered_courses:
             day_name = days[course.day_of_week]
             courses_by_day[day_name].append(course)
         
-        return render_template('courses.html', courses_by_day=courses_by_day, days=days)
+        return render_template(
+            'courses.html',
+            courses_by_day=courses_by_day,
+            days=days,
+            teachers=teachers,
+            class_names=class_names,
+            telegram_groups=telegram_groups,
+            planning_progress=planning_progress,
+            courses_with_zoom=courses_with_zoom,
+            total_courses=total_courses
+        )
     
     @app.route('/courses/add', methods=['POST'])
     @login_required
@@ -651,6 +708,76 @@ def register_routes(app):
             db.session.commit()
             
             return jsonify({'success': False, 'message': error_msg})
+    
+    @app.route('/api/check-course-conflict', methods=['POST'])
+    @login_required
+    def check_course_conflict():
+        """Vérifier s'il existe déjà un cours similaire (anti-doublons)"""
+        try:
+            # Récupérer les données du formulaire
+            day_of_week = int(request.form.get('day_of_week', 0))
+            start_time_str = request.form.get('start_time')
+            end_time_str = request.form.get('end_time')
+            teacher_name = request.form.get('teacher_name')
+            course_id = request.form.get('course_id')  # Optionnel, pour ignorer le cours actuel
+            
+            # Convertir en objets time
+            start_time = datetime.strptime(start_time_str, "%H:%M").time()
+            end_time = datetime.strptime(end_time_str, "%H:%M").time()
+            
+            # Construire la requête pour vérifier les conflits
+            query = Course.query.filter(
+                Course.day_of_week == day_of_week,
+                Course.teacher_name == teacher_name
+            )
+            
+            # Si nous éditons un cours existant, nous devons l'exclure de la vérification
+            if course_id:
+                query = query.filter(Course.id != int(course_id))
+            
+            # Vérifier les chevauchements horaires
+            potential_conflicts = query.all()
+            conflict = None
+            
+            for course in potential_conflicts:
+                # Vérifier si les horaires se chevauchent
+                if (start_time <= course.end_time and end_time >= course.start_time):
+                    conflict = course
+                    break
+            
+            if conflict:
+                # Formater les détails du conflit
+                day_names = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
+                day_name = day_names[conflict.day_of_week]
+                conflict_details = (
+                    f"Cours: {conflict.course_name}\n"
+                    f"Professeur: {conflict.teacher_name}\n"
+                    f"Jour: {day_name}\n"
+                    f"Horaire: {conflict.start_time.strftime('%H:%M')} - {conflict.end_time.strftime('%H:%M')}"
+                )
+                
+                return jsonify({
+                    'conflict': True, 
+                    'details': conflict_details,
+                    'course_id': conflict.id
+                })
+            else:
+                return jsonify({'conflict': False})
+                
+        except Exception as e:
+            error_msg = f"Erreur lors de la vérification des conflits de cours: {str(e)}"
+            logger.error(error_msg)
+            
+            # Log de l'erreur
+            log_entry = Log(
+                level="ERROR",
+                scenario="check_course_conflict",
+                message=error_msg
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            return jsonify({'error': True, 'message': error_msg})
             
     @app.route('/simulation')
     @login_required
