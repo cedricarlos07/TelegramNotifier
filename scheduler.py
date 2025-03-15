@@ -203,6 +203,47 @@ def send_daily_rankings_job():
         error_msg = f"Error in send_daily_rankings_job: {str(e)}"
         log_job_execution("send_daily_rankings", False, error_msg)
 
+def run_custom_python_code(scenario_name, python_code):
+    """
+    Execute custom Python code for a scenario.
+    
+    Args:
+        scenario_name (str): Name of the scenario
+        python_code (str): Custom Python code to execute
+        
+    Returns:
+        tuple: (success, message)
+    """
+    try:
+        # Create a local namespace to execute the code
+        local_namespace = {
+            'db': db,
+            'app': app,
+            'Course': Course,
+            'ScheduledMessage': ScheduledMessage,
+            'Log': Log,
+            'logger': logger,
+            'datetime': datetime,
+            'timedelta': timedelta,
+            'excel_processor': excel_processor,
+            'init_telegram_bot': init_telegram_bot
+        }
+        
+        # Execute the custom code
+        exec(python_code, globals(), local_namespace)
+        
+        # Check if the code defined a run_scenario function
+        if 'run_scenario' in local_namespace and callable(local_namespace['run_scenario']):
+            # Call the run_scenario function from the custom code
+            success, message = local_namespace['run_scenario']()
+            return success, message
+        else:
+            return False, "Custom code must define a run_scenario() function that returns (success, message)"
+    except Exception as e:
+        error_msg = f"Error executing custom Python code: {str(e)}"
+        logger.error(error_msg)
+        return False, error_msg
+
 def run_job(job_name):
     """
     Run a specific job by name.
@@ -213,8 +254,30 @@ def run_job(job_name):
     Returns:
         bool: True if successful, False otherwise
     """
+    from models import Scenario
+    
     try:
-        if job_name == "update_courses":
+        # Check if this is a custom scenario with Python code
+        scenario = Scenario.query.filter_by(name=job_name).first()
+        
+        if scenario and scenario.is_custom_code and scenario.python_code:
+            # Run custom Python code
+            success, message = run_custom_python_code(job_name, scenario.python_code)
+            
+            # Log the results
+            log_level = "INFO" if success else "ERROR"
+            log_entry = Log(
+                level=log_level,
+                scenario=job_name,
+                message=message
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            return success
+        
+        # Otherwise, run the built-in function
+        elif job_name == "update_courses":
             update_courses_job()
         elif job_name == "create_zoom_links":
             create_zoom_links_job()

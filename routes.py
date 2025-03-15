@@ -780,6 +780,10 @@ def register_routes(app):
                 icon = request.form.get('icon', 'fa-calendar-alt')
                 color = request.form.get('color', 'primary')
                 
+                # Récupérer les données de code personnalisé
+                is_custom_code = 'is_custom_code' in request.form
+                python_code = request.form.get('python_code', '')
+                
                 # Vérifier que le nom du scénario est unique
                 existing_scenario = Scenario.query.filter_by(name=name).first()
                 if existing_scenario:
@@ -794,7 +798,9 @@ def register_routes(app):
                     schedule=schedule,
                     actions=actions,
                     icon=icon,
-                    color=color
+                    color=color,
+                    is_custom_code=is_custom_code,
+                    python_code=python_code if is_custom_code else None
                 )
                 
                 db.session.add(scenario)
@@ -856,6 +862,10 @@ def register_routes(app):
                 icon = request.form.get('icon')
                 color = request.form.get('color')
                 
+                # Récupérer les données de code personnalisé
+                is_custom_code = 'is_custom_code' in request.form
+                python_code = request.form.get('python_code', '')
+                
                 # Mettre à jour le scénario
                 scenario.display_name = display_name
                 scenario.description = description
@@ -863,6 +873,8 @@ def register_routes(app):
                 scenario.actions = actions
                 scenario.icon = icon
                 scenario.color = color
+                scenario.is_custom_code = is_custom_code
+                scenario.python_code = python_code if is_custom_code else None
                 
                 db.session.commit()
                 

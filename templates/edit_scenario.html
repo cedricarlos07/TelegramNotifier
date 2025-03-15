@@ -13,57 +13,114 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-8 offset-lg-2">
+    <div class="col-lg-10 offset-lg-1">
         <div class="card mb-4">
             <div class="card-header bg-{{ scenario.color }} {% if scenario.color not in ['warning', 'light'] %}text-white{% else %}text-dark{% endif %}">
                 <h5 class="mb-0"><i class="fas {{ scenario.icon }} me-2"></i>Edit: {{ scenario.display_name }}</h5>
             </div>
             <div class="card-body">
+                <ul class="nav nav-tabs mb-4" id="scenarioTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" 
+                                type="button" role="tab" aria-controls="basic" aria-selected="true">
+                            <i class="fas fa-info-circle me-2"></i>Basic Info
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="code-tab" data-bs-toggle="tab" data-bs-target="#code" 
+                                type="button" role="tab" aria-controls="code" aria-selected="false">
+                            <i class="fas fa-code me-2"></i>Python Code
+                        </button>
+                    </li>
+                </ul>
+                
                 <form method="POST" action="{{ url_for('edit_scenario', scenario_id=scenario.id) }}">
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Scenario Internal Name</label>
-                        <input type="text" class="form-control" id="name" value="{{ scenario.name }}" readonly disabled>
-                        <div class="form-text">The internal name cannot be changed.</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="display_name" class="form-label">Display Name</label>
-                        <input type="text" class="form-control" id="display_name" name="display_name" value="{{ scenario.display_name }}" required>
-                        <div class="form-text">This is the name displayed in the interface.</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ scenario.description }}</textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="schedule" class="form-label">Schedule</label>
-                        <input type="text" class="form-control" id="schedule" name="schedule" value="{{ scenario.schedule }}" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="actions" class="form-label">Actions</label>
-                        <textarea class="form-control" id="actions" name="actions" rows="5" required>{{ scenario.actions }}</textarea>
-                        <div class="form-text">Enter one action per line, these will be displayed as bullet points.</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="icon" class="form-label">Icon</label>
-                            <select class="form-select" id="icon" name="icon" required>
-                                {% for icon in icons %}
-                                <option value="{{ icon }}" {% if scenario.icon == icon %}selected{% endif %}>{{ icon }}</option>
-                                {% endfor %}
-                            </select>
+                    <div class="tab-content" id="scenarioTabsContent">
+                        <!-- Basic Info Tab -->
+                        <div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Scenario Internal Name</label>
+                                <input type="text" class="form-control" id="name" value="{{ scenario.name }}" readonly disabled>
+                                <div class="form-text">The internal name cannot be changed.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="display_name" class="form-label">Display Name</label>
+                                <input type="text" class="form-control" id="display_name" name="display_name" value="{{ scenario.display_name }}" required>
+                                <div class="form-text">This is the name displayed in the interface.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" required>{{ scenario.description }}</textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="schedule" class="form-label">Schedule</label>
+                                <input type="text" class="form-control" id="schedule" name="schedule" value="{{ scenario.schedule }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="actions" class="form-label">Actions</label>
+                                <textarea class="form-control" id="actions" name="actions" rows="5" required>{{ scenario.actions }}</textarea>
+                                <div class="form-text">Enter one action per line, these will be displayed as bullet points.</div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="icon" class="form-label">Icon</label>
+                                    <select class="form-select" id="icon" name="icon" required>
+                                        {% for icon in icons %}
+                                        <option value="{{ icon }}" {% if scenario.icon == icon %}selected{% endif %}>{{ icon }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="color" class="form-label">Color</label>
+                                    <select class="form-select" id="color" name="color" required>
+                                        {% for color in colors %}
+                                        <option value="{{ color }}" {% if scenario.color == color %}selected{% endif %}>{{ color|capitalize }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="color" class="form-label">Color</label>
-                            <select class="form-select" id="color" name="color" required>
-                                {% for color in colors %}
-                                <option value="{{ color }}" {% if scenario.color == color %}selected{% endif %}>{{ color|capitalize }}</option>
-                                {% endfor %}
-                            </select>
+                        
+                        <!-- Python Code Tab -->
+                        <div class="tab-pane fade" id="code" role="tabpanel" aria-labelledby="code-tab">
+                            <div class="alert alert-info mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Write custom Python code for this scenario. This code will be executed when the scenario runs.
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="is_custom_code" name="is_custom_code" {% if scenario.is_custom_code %}checked{% endif %}>
+                                <label class="form-check-label" for="is_custom_code">
+                                    Use custom Python code instead of built-in function
+                                </label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="python_code" class="form-label">Python Code</label>
+                                <textarea class="form-control code-editor" id="python_code" name="python_code" rows="15">{{ scenario.python_code or "def run_scenario():
+    # Your custom code here
+    try:
+        # Example: query the database
+        courses = Course.query.all()
+        
+        # Process data
+        for course in courses:
+            print(f'Processing course: {course.course_name}')
+            
+        # Return success message
+        return True, 'Scenario completed successfully'
+    except Exception as e:
+        # Log error and return failure
+        return False, f'Error in scenario: {str(e)}'" }}</textarea>
+                                <div class="form-text">
+                                    Your code should include a <code>run_scenario()</code> function that returns a tuple of (success, message).
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -110,6 +167,25 @@
         
         iconSelect.addEventListener('change', updatePreview);
         colorSelect.addEventListener('change', updatePreview);
+        
+        // Toggle code editor based on checkbox
+        const isCustomCodeCheckbox = document.getElementById('is_custom_code');
+        const pythonCodeTextarea = document.getElementById('python_code');
+        
+        isCustomCodeCheckbox.addEventListener('change', function() {
+            pythonCodeTextarea.disabled = !this.checked;
+            if (this.checked) {
+                pythonCodeTextarea.classList.add('bg-dark', 'text-light');
+            } else {
+                pythonCodeTextarea.classList.remove('bg-dark', 'text-light');
+            }
+        });
+        
+        // Initial state
+        pythonCodeTextarea.disabled = !isCustomCodeCheckbox.checked;
+        if (isCustomCodeCheckbox.checked) {
+            pythonCodeTextarea.classList.add('bg-dark', 'text-light');
+        }
     });
 </script>
 {% endblock %}

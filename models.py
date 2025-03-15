@@ -222,6 +222,8 @@ class Scenario(db.Model):
     actions = db.Column(db.Text, nullable=False)
     icon = db.Column(db.String(50), nullable=False, default="fa-calendar-alt")
     color = db.Column(db.String(50), nullable=False, default="primary")
+    python_code = db.Column(db.Text, nullable=True)
+    is_custom_code = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -238,6 +240,8 @@ class Scenario(db.Model):
             'actions': self.actions,
             'icon': self.icon,
             'color': self.color,
+            'python_code': self.python_code,
+            'is_custom_code': self.is_custom_code,
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             'updated_at': self.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         }
