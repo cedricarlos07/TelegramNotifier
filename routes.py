@@ -360,6 +360,66 @@ def register_routes(app):
          .order_by(db.func.sum(UserRanking.total_points).desc()) \
          .limit(5).all()
         
+        # Data for course distribution chart by day of week
+        days_of_week = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
+        course_days_values = [0] * 7  # Initialize with zeros for each day
+        
+        # Count courses for each day of the week
+        day_counts = db.session.query(
+            Course.day_of_week,
+            db.func.count(Course.id).label('count')
+        ).group_by(Course.day_of_week).all()
+        
+        # Fill in the counts
+        for day, count in day_counts:
+            if 0 <= day < 7:  # Ensure day is valid
+                course_days_values[day] = count
+        
+        # Prepare data for activity trend chart (last 7 days)
+        past_week_start = today - timedelta(days=6)
+        date_range = [(past_week_start + timedelta(days=i)) for i in range(7)]
+        date_labels = [d.strftime('%d/%m') for d in date_range]
+        
+        # Initialize arrays for message and attendance trends
+        message_trend = [0] * 7
+        attendance_trend = [0] * 7
+        
+        # Get message counts by day for the past week
+        message_counts = db.session.query(
+            db.func.date(TelegramMessage.timestamp).label('date'),
+            db.func.count(TelegramMessage.id).label('count')
+        ).filter(
+            db.func.date(TelegramMessage.timestamp) >= past_week_start,
+            db.func.date(TelegramMessage.timestamp) <= today
+        ).group_by(db.func.date(TelegramMessage.timestamp)).all()
+        
+        # Fill in message trend data
+        for date_count in message_counts:
+            msg_date = date_count.date
+            if isinstance(msg_date, str):
+                msg_date = datetime.strptime(msg_date, '%Y-%m-%d').date()
+            days_ago = (today - msg_date).days
+            if 0 <= days_ago < 7:
+                message_trend[6 - days_ago] = date_count.count
+        
+        # Get attendance counts by day for the past week
+        attendance_counts = db.session.query(
+            db.func.date(ZoomAttendance.join_time).label('date'),
+            db.func.count(ZoomAttendance.id).label('count')
+        ).filter(
+            db.func.date(ZoomAttendance.join_time) >= past_week_start,
+            db.func.date(ZoomAttendance.join_time) <= today
+        ).group_by(db.func.date(ZoomAttendance.join_time)).all()
+        
+        # Fill in attendance trend data
+        for date_count in attendance_counts:
+            att_date = date_count.date
+            if isinstance(att_date, str):
+                att_date = datetime.strptime(att_date, '%Y-%m-%d').date()
+            days_ago = (today - att_date).days
+            if 0 <= days_ago < 7:
+                attendance_trend[6 - days_ago] = date_count.count
+        
         return render_template(
             'dashboard.html',
             course_count=course_count,
@@ -370,7 +430,13 @@ def register_routes(app):
             test_group_id=test_group_id,
             message_count=message_count,
             attendance_count=attendance_count,
-            top_groups=top_groups
+            top_groups=top_groups,
+            # Chart data
+            course_days_labels=days_of_week,
+            course_days_values=course_days_values,
+            activity_dates=date_labels,
+            message_trend=message_trend,
+            attendance_trend=attendance_trend
         )
     
     @app.route('/courses')
