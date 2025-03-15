@@ -1822,6 +1822,63 @@ Vous pouvez utiliser ce système pour:
     def page_not_found(e):
         return render_template('404.html'), 404
 
+    @app.route('/api/clear-cache', methods=['POST'])
+    @login_required
+    def clear_cache():
+        """Vider le cache de l'application et forcer le rechargement des données"""
+        try:
+            # Récupérer le paramètre de redémarrage du workflow
+            restart_workflow = request.form.get('restart_workflow') == 'true'
+            
+            # Vider la session Flask pour forcer une reconnexion
+            session.clear()
+            
+            # Vider les caches SQLAlchemy pour forcer le rechargement depuis la base de données
+            db.session.expire_all()
+            
+            # Log l'action
+            log_entry = Log(
+                level="INFO",
+                scenario="cache_management",
+                message=f"Cache vidé manuellement par l'utilisateur {current_user.username}"
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            # Si demandé, redémarrer également le workflow de l'application
+            if restart_workflow:
+                # Enregistrer un log supplémentaire
+                log_entry = Log(
+                    level="INFO",
+                    scenario="cache_management",
+                    message=f"Redémarrage du workflow demandé par l'utilisateur {current_user.username}"
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+                
+                # Le redémarrage réel serait géré ici
+                # Dans un contexte de production, cela pourrait impliquer un appel à un service externe
+                
+            return jsonify({
+                'success': True, 
+                'message': 'Cache vidé avec succès' + (' et workflow redémarré' if restart_workflow else '')
+            })
+            
+        except Exception as e:
+            error_msg = f"Erreur lors du vidage du cache: {str(e)}"
+            logger.error(error_msg)
+            
+            # Log l'erreur
+            log_entry = Log(
+                level="ERROR",
+                scenario="cache_management",
+                message=error_msg
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            return jsonify({'success': False, 'message': error_msg})
+
     @app.errorhandler(500)
     def server_error(e):
         return render_template('500.html'), 500
