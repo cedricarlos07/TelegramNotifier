@@ -1831,6 +1831,7 @@ Vous pouvez utiliser ce système pour:
             restart_workflow = request.form.get('restart_workflow') == 'true'
             
             # Vider la session Flask pour forcer une reconnexion
+            from flask import session
             session.clear()
             
             # Vider les caches SQLAlchemy pour forcer le rechargement depuis la base de données

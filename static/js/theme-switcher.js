@@ -1,65 +1,98 @@
 /**
  * Theme Switcher for KODJO ENGLISH BOT
  * Allows switching between light and dark themes
+ * with smooth transitions and persistent settings via localStorage
  */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Get HTML element
-    const htmlElement = document.documentElement;
+    // Theme switching elements
+    const themeSwitcher = document.getElementById('theme-switcher');
+    const themeSwitcherMenu = document.getElementById('theme-switcher-menu');
+    const themeSwitcherMobile = document.getElementById('theme-switcher-mobile');
+    const html = document.documentElement;
     
-    // Theme switcher elements
-    const themeSwitchers = [
-        document.getElementById('theme-switcher'),
-        document.getElementById('theme-switcher-menu'),
-        document.getElementById('theme-switcher-mobile')
-    ].filter(Boolean); // Filter out null elements if they don't exist
-    
-    // Theme icons and text
+    // Theme mode indicators
     const darkIcons = document.querySelectorAll('.theme-icon-dark');
     const lightIcons = document.querySelectorAll('.theme-icon-light');
     const darkTexts = document.querySelectorAll('.theme-text-dark');
     const lightTexts = document.querySelectorAll('.theme-text-light');
     
-    // Function to get current theme from localStorage or default to dark
-    const getCurrentTheme = () => {
-        return localStorage.getItem('theme') || 'dark';
-    };
+    // Check if the user has a preferred theme saved in localStorage
+    const savedTheme = localStorage.getItem('kodjo-theme');
     
-    // Function to set theme
-    const setTheme = (theme) => {
-        // Set data-bs-theme attribute
-        htmlElement.setAttribute('data-bs-theme', theme);
-        
-        // Store theme preference in localStorage
-        localStorage.setItem('theme', theme);
-        
-        // Update UI elements
+    // Apply the saved theme or default to dark theme
+    if (savedTheme) {
+        applyTheme(savedTheme);
+    } else {
+        // Check if user has system preference for light mode
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            applyTheme('light');
+        } else {
+            applyTheme('dark');
+        }
+    }
+    
+    // Theme switching functions
+    function applyTheme(theme) {
         if (theme === 'light') {
+            html.setAttribute('data-bs-theme', 'light');
+            toggleThemeVisuals('light');
+            localStorage.setItem('kodjo-theme', 'light');
+        } else {
+            html.setAttribute('data-bs-theme', 'dark');
+            toggleThemeVisuals('dark');
+            localStorage.setItem('kodjo-theme', 'dark');
+        }
+    }
+    
+    function toggleThemeVisuals(theme) {
+        if (theme === 'light') {
+            // Show sun icons, hide moon icons
             darkIcons.forEach(icon => icon.classList.add('d-none'));
             lightIcons.forEach(icon => icon.classList.remove('d-none'));
+            
+            // Show dark mode text, hide light mode text
             darkTexts.forEach(text => text.classList.add('d-none'));
             lightTexts.forEach(text => text.classList.remove('d-none'));
         } else {
+            // Show moon icons, hide sun icons
             darkIcons.forEach(icon => icon.classList.remove('d-none'));
             lightIcons.forEach(icon => icon.classList.add('d-none'));
+            
+            // Show light mode text, hide dark mode text
             darkTexts.forEach(text => text.classList.remove('d-none'));
             lightTexts.forEach(text => text.classList.add('d-none'));
         }
-    };
+    }
     
-    // Toggle theme function
-    const toggleTheme = () => {
-        const currentTheme = getCurrentTheme();
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        setTheme(newTheme);
-    };
-    
-    // Add click event to all theme switcher buttons
-    themeSwitchers.forEach(switcher => {
-        if (switcher) {
-            switcher.addEventListener('click', toggleTheme);
+    function toggleTheme() {
+        const currentTheme = html.getAttribute('data-bs-theme');
+        if (currentTheme === 'dark') {
+            applyTheme('light');
+        } else {
+            applyTheme('dark');
         }
-    });
+    }
     
-    // Set initial theme on page load
-    setTheme(getCurrentTheme());
+    // Add event listeners to theme toggles
+    if (themeSwitcher) {
+        themeSwitcher.addEventListener('click', toggleTheme);
+    }
+    
+    if (themeSwitcherMenu) {
+        themeSwitcherMenu.addEventListener('click', toggleTheme);
+    }
+    
+    if (themeSwitcherMobile) {
+        themeSwitcherMobile.addEventListener('click', toggleTheme);
+    }
+    
+    // Listen for system theme changes
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('kodjo-theme')) {
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    }
 });
