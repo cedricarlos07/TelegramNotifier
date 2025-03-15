@@ -111,6 +111,53 @@
     </div>
 </div>
 
+<!-- Data visualization row -->
+<div class="row mb-4">
+    <!-- Course distribution chart -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4 h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-primary"></i>Distribution des cours</h5>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div class="text-center text-muted mb-2 small">Répartition des cours par jour de la semaine</div>
+                <div class="chart-container flex-grow-1" style="position: relative; height: 220px;">
+                    <canvas id="courseDistributionChart"></canvas>
+                </div>
+                {% if not course_days_labels %}
+                <div class="text-center text-muted mt-3">
+                    <i class="fas fa-info-circle me-1"></i>Aucune donnée disponible
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity trend chart -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm mb-4 h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2 text-success"></i>Tendance d'activité</h5>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary active">7 jours</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">30 jours</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="text-center text-muted mb-2 small">Messages et présences enregistrés</div>
+                <div class="chart-container" style="position: relative; height: 220px;">
+                    <canvas id="activityTrendChart"></canvas>
+                </div>
+                {% if not activity_dates %}
+                <div class="text-center text-muted mt-3">
+                    <i class="fas fa-info-circle me-1"></i>Aucune donnée disponible
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <!-- Upcoming courses -->
     <div class="col-lg-8">
@@ -310,95 +357,24 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<!-- Initialize chart data -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Navigation buttons for courses table
-        const tableResponsive = document.querySelector('.table-responsive');
-        if (tableResponsive) {
-            document.querySelectorAll('.courses-nav-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const direction = this.getAttribute('data-slide');
-                    const scrollAmount = 300; // Adjust this value to scroll more or less
-                    
-                    if (direction === 'prev') {
-                        tableResponsive.scrollLeft -= scrollAmount;
-                    } else {
-                        tableResponsive.scrollLeft += scrollAmount;
-                    }
-                });
-            });
-        }
-        
-        // Export to Excel button
-        document.getElementById('exportExcelBtn').addEventListener('click', function() {
-            const button = this;
-            const originalHtml = button.innerHTML;
-            
-            button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exportation...';
-            
-            fetch('/api/export-excel', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    button.innerHTML = '<i class="fas fa-check me-2"></i>Exporté !';
-                    setTimeout(() => {
-                        button.innerHTML = originalHtml;
-                        button.disabled = false;
-                    }, 2000);
-                    
-                    // Show success notification instead of alert
-                    const toast = document.createElement('div');
-                    toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3';
-                    toast.setAttribute('role', 'alert');
-                    toast.setAttribute('aria-live', 'assertive');
-                    toast.setAttribute('aria-atomic', 'true');
-                    toast.style.zIndex = '1050';
-                    
-                    toast.innerHTML = `
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                <i class="fas fa-check-circle me-2"></i>Export Excel réussi !
-                            </div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                        </div>
-                    `;
-                    
-                    document.body.appendChild(toast);
-                    const bsToast = new bootstrap.Toast(toast);
-                    bsToast.show();
-                    
-                    // Auto remove toast after it's hidden
-                    toast.addEventListener('hidden.bs.toast', function () {
-                        document.body.removeChild(toast);
-                    });
-                    
-                } else {
-                    button.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Erreur';
-                    setTimeout(() => {
-                        button.innerHTML = originalHtml;
-                        button.disabled = false;
-                    }, 2000);
-                    
-                    alert('Erreur: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                button.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Erreur';
-                setTimeout(() => {
-                    button.innerHTML = originalHtml;
-                    button.disabled = false;
-                }, 2000);
-                
-                alert('Une erreur est survenue lors de l\'exportation.');
-            });
-        });
-    });
+    // Chart data passed from Flask
+    window.courseDistributionData = {
+        labels: {{ course_days_labels|safe if course_days_labels else '[]'|safe }},
+        values: {{ course_days_values|safe if course_days_values else '[]'|safe }}
+    };
+    
+    window.activityTrendData = {
+        labels: {{ activity_dates|safe if activity_dates else '[]'|safe }},
+        messages: {{ message_trend|safe if message_trend else '[]'|safe }},
+        attendances: {{ attendance_trend|safe if attendance_trend else '[]'|safe }}
+    };
 </script>
+
+<!-- Dashboard.js with charts and UI enhancements -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

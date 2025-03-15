@@ -891,6 +891,7 @@ dependencies = [
     { name = "telegram" },
     { name = "twilio" },
     { name = "werkzeug" },
+    { name = "wtforms" },
 ]
 
 [package.metadata]
@@ -913,6 +914,7 @@ requires-dist = [
     { name = "telegram", specifier = ">=0.0.1" },
     { name = "twilio", specifier = ">=9.5.0" },
     { name = "werkzeug", specifier = ">=3.1.3" },
+    { name = "wtforms", specifier = ">=3.2.1" },
 ]
 
 [[package]]
