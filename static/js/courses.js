@@ -65,6 +65,13 @@ function initDynamicFiltering() {
         
         // Filtrer les groupes par coach
         filterSelectByCoach(groupSelect, originalGroups, selectedCoach);
+        
+        // Sélectionner automatiquement le premier cours de ce coach s'il n'y a pas déjà un cours sélectionné
+        if (!courseSelect.value && courseSelect.options.length > 1) {
+            courseSelect.selectedIndex = 1; // Premier cours après l'option "Tous"
+            // Si on change aussi le groupe automatiquement, on peut déclencher l'événement change
+            courseSelect.dispatchEvent(new Event('change'));
+        }
     });
     
     // Event Listener pour le changement de cours
