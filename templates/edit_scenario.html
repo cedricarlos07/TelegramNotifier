@@ -56,9 +56,101 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="schedule" class="form-label">Schedule</label>
-                                <input type="text" class="form-control" id="schedule" name="schedule" value="{{ scenario.schedule }}" required>
+                                <label for="schedule" class="form-label">Schedule Configuration</label>
+                                <div class="schedule-config">
+                                    <select class="form-select mb-2" id="schedule_type" name="schedule_type">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                    
+                                    <div id="time_config" class="mb-2">
+                                        <label>Time</label>
+                                        <input type="time" class="form-control" id="schedule_time" name="schedule_time" value="00:00">
+                                    </div>
+                                    
+                                    <div id="day_config" class="mb-2" style="display:none;">
+                                        <label>Day</label>
+                                        <select class="form-select" id="schedule_day" name="schedule_day">
+                                            <option value="0">Monday</option>
+                                            <option value="1">Tuesday</option>
+                                            <option value="2">Wednesday</option>
+                                            <option value="3">Thursday</option>
+                                            <option value="4">Friday</option>
+                                            <option value="5">Saturday</option>
+                                            <option value="6">Sunday</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div id="date_config" class="mb-2" style="display:none;">
+                                        <label>Date of Month</label>
+                                        <input type="number" class="form-control" id="schedule_date" name="schedule_date" min="1" max="31" value="1">
+                                    </div>
+                                    
+                                    <div id="custom_config" class="mb-2" style="display:none;">
+                                        <label>Custom Cron Expression</label>
+                                        <input type="text" class="form-control" id="schedule_custom" name="schedule_custom" placeholder="* * * * *">
+                                        <small class="form-text text-muted">Format: minute hour day month day_of_week</small>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="schedule" name="schedule" value="{{ scenario.schedule }}">
                             </div>
+
+                            <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const scheduleType = document.getElementById('schedule_type');
+                                const timeConfig = document.getElementById('time_config');
+                                const dayConfig = document.getElementById('day_config');
+                                const dateConfig = document.getElementById('date_config');
+                                const customConfig = document.getElementById('custom_config');
+                                const scheduleInput = document.getElementById('schedule');
+
+                                function updateSchedule() {
+                                    const type = scheduleType.value;
+                                    const time = document.getElementById('schedule_time').value;
+                                    const [hours, minutes] = time.split(':');
+                                    
+                                    let schedule = '';
+                                    
+                                    switch(type) {
+                                        case 'daily':
+                                            schedule = `Every day at ${time}`;
+                                            break;
+                                        case 'weekly':
+                                            const day = document.getElementById('schedule_day');
+                                            const dayText = day.options[day.selectedIndex].text;
+                                            schedule = `Every ${dayText} at ${time}`;
+                                            break;
+                                        case 'monthly':
+                                            const date = document.getElementById('schedule_date').value;
+                                            schedule = `Every ${date}th of the month at ${time}`;
+                                            break;
+                                        case 'custom':
+                                            schedule = document.getElementById('schedule_custom').value;
+                                            break;
+                                    }
+                                    
+                                    scheduleInput.value = schedule;
+                                }
+
+                                function updateVisibility() {
+                                    const type = scheduleType.value;
+                                    timeConfig.style.display = type !== 'custom' ? 'block' : 'none';
+                                    dayConfig.style.display = type === 'weekly' ? 'block' : 'none';
+                                    dateConfig.style.display = type === 'monthly' ? 'block' : 'none';
+                                    customConfig.style.display = type === 'custom' ? 'block' : 'none';
+                                    updateSchedule();
+                                }
+
+                                scheduleType.addEventListener('change', updateVisibility);
+                                document.querySelectorAll('.schedule-config input, .schedule-config select').forEach(el => {
+                                    el.addEventListener('change', updateSchedule);
+                                });
+
+                                updateVisibility();
+                            });
+                            </script>
                             
                             <div class="mb-3">
                                 <label for="actions" class="form-label">Actions</label>
