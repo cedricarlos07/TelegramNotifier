@@ -307,6 +307,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Données pour les graphiques

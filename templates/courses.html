@@ -526,6 +526,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/courses.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Handle filter toggle button text
