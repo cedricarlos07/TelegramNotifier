@@ -162,10 +162,10 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="filter_teacher" class="form-label">
-                            <i class="fas fa-user-tie text-primary me-1"></i> Professeur
+                            <i class="fas fa-user-tie text-primary me-1"></i> Coach
                         </label>
                         <select class="form-select" id="filter_teacher" name="teacher">
-                            <option value="">Tous les professeurs</option>
+                            <option value="">Tous les coachs</option>
                             {% for teacher in teachers %}
                                 <option value="{{ teacher }}">{{ teacher }}</option>
                             {% endfor %}
@@ -175,10 +175,10 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="filter_class" class="form-label">
-                            <i class="fas fa-book text-primary me-1"></i> Classe
+                            <i class="fas fa-book text-primary me-1"></i> Cours
                         </label>
                         <select class="form-select" id="filter_class" name="class">
-                            <option value="">Toutes les classes</option>
+                            <option value="">Tous les cours</option>
                             {% for class_name in class_names %}
                                 <option value="{{ class_name }}">{{ class_name }}</option>
                             {% endfor %}
@@ -259,7 +259,7 @@
                             <tr>
                                 <th class="ps-4">Horaire</th>
                                 <th>Cours</th>
-                                <th>Professeur</th>
+                                <th>Coach</th>
                                 <th>Groupe Telegram</th>
                                 <th>Prochaine Date</th>
                                 <th class="text-end pe-4">Actions</th>
@@ -365,7 +365,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label for="teacher_name" class="form-label">Nom du professeur</label>
+                                <label for="teacher_name" class="form-label">Nom du coach</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-dark"><i class="fas fa-user-tie"></i></span>
                                     <input type="text" class="form-control" id="teacher_name" name="teacher_name" placeholder="Ex: John Smith" required>
@@ -441,7 +441,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label for="edit_teacher_name" class="form-label">Nom du professeur</label>
+                            <label for="edit_teacher_name" class="form-label">Nom du coach</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-dark"><i class="fas fa-user-tie"></i></span>
                                 <input type="text" class="form-control" id="edit_teacher_name" name="teacher_name" required>
