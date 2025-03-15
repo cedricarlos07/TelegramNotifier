@@ -2,54 +2,83 @@ import logging
 import requests
 import json
 import time
-import jwt
+import base64
 from datetime import datetime, timedelta
-from config import ZOOM_API_KEY, ZOOM_API_SECRET, ZOOM_USER_ID
+from config import ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET, ZOOM_ACCOUNT_ID, ZOOM_USER_ID
 from app import db
 from models import Log
 
 logger = logging.getLogger(__name__)
 
 class ZoomAPI:
-    """Class to handle Zoom API interactions"""
+    """Class to handle Zoom API interactions using OAuth authentication"""
     
     def __init__(self):
-        """Initialize the Zoom API with credentials"""
-        self.api_key = ZOOM_API_KEY
-        self.api_secret = ZOOM_API_SECRET
+        """Initialize the Zoom API with OAuth credentials"""
+        self.client_id = ZOOM_CLIENT_ID
+        self.client_secret = ZOOM_CLIENT_SECRET
+        self.account_id = ZOOM_ACCOUNT_ID
         self.user_id = ZOOM_USER_ID
+        self.access_token = None
+        self.token_expires_at = None
         
-        if not self.api_key or not self.api_secret:
+        if not self.client_id or not self.client_secret:
             logger.warning("Zoom API credentials not found. Zoom integration will be simulated.")
         else:
-            logger.info("Zoom API initialized")
+            logger.info("Zoom API initialized with OAuth")
     
-    def _generate_jwt_token(self):
+    def _get_oauth_token(self):
         """
-        Generate a JWT token for Zoom API authentication.
+        Get an OAuth access token for Zoom API authentication.
         
         Returns:
-            str: JWT token
+            str: OAuth access token or None if failed
         """
-        if not self.api_key or not self.api_secret:
+        # Return existing token if it's still valid
+        if self.access_token and self.token_expires_at and datetime.utcnow() < self.token_expires_at:
+            return self.access_token
+            
+        if not self.client_id or not self.client_secret:
             return None
             
-        # Set token expiration time (1 hour)
-        token_exp = datetime.utcnow() + timedelta(hours=1)
+        # Prepare authentication string
+        auth_string = f"{self.client_id}:{self.client_secret}"
+        encoded_auth = base64.b64encode(auth_string.encode()).decode()
         
-        # Create payload
-        payload = {
-            'iss': self.api_key,
-            'exp': int(token_exp.timestamp())
+        # OAuth token endpoint
+        endpoint = "https://zoom.us/oauth/token"
+        
+        # Headers
+        headers = {
+            "Authorization": f"Basic {encoded_auth}",
+            "Content-Type": "application/x-www-form-urlencoded"
         }
         
-        # Generate token
-        token = jwt.encode(payload, self.api_secret, algorithm='HS256')
+        # Request body
+        data = {
+            "grant_type": "account_credentials",
+            "account_id": self.account_id
+        }
         
-        # If token is bytes, convert to string (depends on jwt version)
-        if isinstance(token, bytes):
-            return token.decode('utf-8')
-        return token
+        try:
+            # Make request to get OAuth token
+            response = requests.post(endpoint, headers=headers, data=data)
+            
+            if response.status_code == 200:
+                token_data = response.json()
+                self.access_token = token_data.get('access_token')
+                expires_in = token_data.get('expires_in', 3600)  # Default to 1 hour
+                self.token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+                
+                logger.info("Successfully obtained Zoom OAuth token")
+                return self.access_token
+            else:
+                logger.error(f"Failed to get Zoom OAuth token: {response.text}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Exception when getting Zoom OAuth token: {str(e)}")
+            return None
     
     def create_meeting(self, course):
         """
@@ -62,7 +91,7 @@ class ZoomAPI:
             dict: Dictionary with meeting details including join_url
         """
         # If missing API credentials, return a simulated response
-        if not self.api_key or not self.api_secret:
+        if not self.client_id or not self.client_secret:
             logger.warning("Using simulated Zoom meeting creation")
             # Create a simulated meeting link
             simulated_id = f"{int(time.time())}-{course.id}"
@@ -72,10 +101,16 @@ class ZoomAPI:
                 "simulated": True
             }
         
-        token = self._generate_jwt_token()
+        token = self._get_oauth_token()
         if not token:
-            logger.error("Failed to generate JWT token for Zoom API")
-            return None
+            logger.error("Failed to obtain OAuth token for Zoom API")
+            # Create a simulated meeting link as fallback
+            simulated_id = f"{int(time.time())}-{course.id}"
+            return {
+                "id": simulated_id,
+                "join_url": f"https://zoom.us/j/{simulated_id}",
+                "simulated": True
+            }
             
         # Format the meeting details
         start_time = datetime.combine(course.schedule_date, course.start_time)
@@ -163,13 +198,13 @@ class ZoomAPI:
         Returns:
             bool: True if meeting exists, False otherwise
         """
-        # If missing API credentials, return True for testing
-        if not self.api_key or not self.api_secret or not meeting_id:
+        # If missing API credentials or meeting ID, return False
+        if not self.client_id or not self.client_secret or not meeting_id:
             return False
             
-        token = self._generate_jwt_token()
+        token = self._get_oauth_token()
         if not token:
-            logger.error("Failed to generate JWT token for Zoom API")
+            logger.error("Failed to obtain OAuth token for Zoom API")
             return False
             
         # API endpoint

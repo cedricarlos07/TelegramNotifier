@@ -4,10 +4,11 @@ from datetime import time
 # Telegram bot configuration
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "7244520668:AAHhLLrMyNUvK1IWW9UJQ38nP7Kwh-N2UBE")
 
-# Zoom API configuration
-ZOOM_API_KEY = os.environ.get("ZOOM_API_KEY", "")
-ZOOM_API_SECRET = os.environ.get("ZOOM_API_SECRET", "")
-ZOOM_USER_ID = os.environ.get("ZOOM_USER_ID", "")
+# Zoom API configuration (OAuth)
+ZOOM_ACCOUNT_ID = os.environ.get("ZOOM_ACCOUNT_ID", "jBMcxBpSSAadxLI-wxo5eA")
+ZOOM_CLIENT_ID = os.environ.get("ZOOM_CLIENT_ID", "662d8EhQS7u79XCoo7LvbA")
+ZOOM_CLIENT_SECRET = os.environ.get("ZOOM_CLIENT_SECRET", "eAelg2hxNYvTPp1jZuYivVEwB8inlZn0")
+ZOOM_USER_ID = os.environ.get("ZOOM_USER_ID", "me")  # "me" refers to the authenticated user
 
 # Excel file configuration
 EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", "attached_assets/Kodjo English - Classes Schedules (1).xlsx")
