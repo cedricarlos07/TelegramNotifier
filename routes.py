@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, time
 from flask import render_template, request, redirect, url_for, jsonify, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app, db
-from models import Course, ScheduledMessage, Log, UserRanking, AppSettings, TelegramMessage, ZoomAttendance, User
+from models import Course, ScheduledMessage, Log, UserRanking, AppSettings, TelegramMessage, ZoomAttendance, User, Scenario
 from forms import LoginForm, ChangePasswordForm, AddAdminForm
 from scheduler import run_job
 from excel_processor import excel_processor
@@ -668,7 +668,67 @@ def register_routes(app):
     @login_required
     def scenarios():
         """Scenarios management page"""
-        return render_template('scenarios.html')
+        # Chercher les scénarios dans la base de données
+        db_scenarios = Scenario.query.all()
+        
+        # Si aucun scénario n'existe, initialiser avec les scénarios par défaut
+        if not db_scenarios:
+            default_scenarios = [
+                {
+                    'name': 'update_courses',
+                    'display_name': 'Update Courses',
+                    'description': 'Reads the Excel file, updates course schedules for the upcoming week or month.',
+                    'schedule': 'Every Sunday at midnight',
+                    'actions': 'Read course information from Excel\nUpdate or create courses in the database\nCalculate next occurrence dates',
+                    'icon': 'fa-calendar-alt',
+                    'color': 'primary'
+                },
+                {
+                    'name': 'create_zoom_links',
+                    'display_name': 'Create Zoom Links',
+                    'description': 'Creates Zoom meetings for all courses that don\'t have a Zoom link yet.',
+                    'schedule': 'Every Sunday at 00:05 AM (after Scenario 1)',
+                    'actions': 'Find courses without Zoom links\nCreate Zoom meetings for each course\nUpdate courses with Zoom meeting links',
+                    'icon': 'fa-video',
+                    'color': 'info'
+                },
+                {
+                    'name': 'generate_messages',
+                    'display_name': 'Generate Messages',
+                    'description': 'Generates Telegram messages for all courses in the upcoming week.',
+                    'schedule': 'Every Sunday at 00:10 AM (after Scenario 2)',
+                    'actions': 'Find all courses for the upcoming week\nCreate message templates with course details\nSchedule messages for sending',
+                    'icon': 'fa-comment-alt',
+                    'color': 'success'
+                },
+                {
+                    'name': 'send_daily_messages',
+                    'display_name': 'Send Daily Messages',
+                    'description': 'Sends scheduled Telegram messages for today\'s courses.',
+                    'schedule': 'Every day at 8:00 AM',
+                    'actions': 'Find all scheduled messages for today\nSend messages to appropriate Telegram groups\nMark messages as sent',
+                    'icon': 'fa-paper-plane',
+                    'color': 'warning'
+                },
+                {
+                    'name': 'send_daily_rankings',
+                    'display_name': 'Send Daily Rankings',
+                    'description': 'Sends daily rankings to all Telegram groups with active courses.',
+                    'schedule': 'Every day at 8:00 PM',
+                    'actions': 'Calculate rankings for all active groups\nFormat ranking messages with user scores\nSend ranking messages to groups',
+                    'icon': 'fa-trophy',
+                    'color': 'danger'
+                }
+            ]
+            
+            for scenario_data in default_scenarios:
+                scenario = Scenario(**scenario_data)
+                db.session.add(scenario)
+            
+            db.session.commit()
+            db_scenarios = Scenario.query.all()
+        
+        return render_template('scenarios.html', scenarios=db_scenarios)
     
     @app.route('/scenarios/run/<scenario_name>', methods=['POST'])
     def run_scenario(scenario_name):
@@ -703,6 +763,186 @@ def register_routes(app):
             db.session.add(log_entry)
             db.session.commit()
         
+        return redirect(url_for('scenarios'))
+    
+    @app.route('/scenarios/add', methods=['GET', 'POST'])
+    @login_required
+    def add_scenario():
+        """Add a new scenario"""
+        if request.method == 'POST':
+            try:
+                # Récupérer les données du formulaire
+                name = request.form.get('name')
+                display_name = request.form.get('display_name')
+                description = request.form.get('description')
+                schedule = request.form.get('schedule')
+                actions = request.form.get('actions')
+                icon = request.form.get('icon', 'fa-calendar-alt')
+                color = request.form.get('color', 'primary')
+                
+                # Vérifier que le nom du scénario est unique
+                existing_scenario = Scenario.query.filter_by(name=name).first()
+                if existing_scenario:
+                    flash(f"Le nom de scénario '{name}' existe déjà.", "danger")
+                    return redirect(url_for('add_scenario'))
+                
+                # Créer un nouveau scénario
+                scenario = Scenario(
+                    name=name,
+                    display_name=display_name,
+                    description=description,
+                    schedule=schedule,
+                    actions=actions,
+                    icon=icon,
+                    color=color
+                )
+                
+                db.session.add(scenario)
+                db.session.commit()
+                
+                # Log de création de scénario
+                log_entry = Log(
+                    level="INFO",
+                    scenario="scenario_management",
+                    message=f"Scénario '{display_name}' créé"
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+                
+                flash(f"Scénario '{display_name}' créé avec succès!", "success")
+                return redirect(url_for('scenarios'))
+                
+            except Exception as e:
+                error_msg = f"Erreur lors de la création du scénario: {str(e)}"
+                logger.error(error_msg)
+                flash(error_msg, "danger")
+                
+                # Log de l'erreur
+                log_entry = Log(
+                    level="ERROR",
+                    scenario="scenario_management",
+                    message=error_msg
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+                
+        # Liste des icônes et couleurs disponibles
+        icons = [
+            'fa-calendar-alt', 'fa-video', 'fa-comment-alt', 'fa-paper-plane', 
+            'fa-trophy', 'fa-sync', 'fa-clock', 'fa-bell', 'fa-chart-line'
+        ]
+        
+        colors = [
+            'primary', 'secondary', 'success', 'danger', 
+            'warning', 'info', 'dark', 'light'
+        ]
+        
+        return render_template('add_scenario.html', icons=icons, colors=colors)
+    
+    @app.route('/scenarios/edit/<int:scenario_id>', methods=['GET', 'POST'])
+    @login_required
+    def edit_scenario(scenario_id):
+        """Edit an existing scenario"""
+        # Récupérer le scénario
+        scenario = Scenario.query.get_or_404(scenario_id)
+        
+        if request.method == 'POST':
+            try:
+                # Récupérer les données du formulaire
+                display_name = request.form.get('display_name')
+                description = request.form.get('description')
+                schedule = request.form.get('schedule')
+                actions = request.form.get('actions')
+                icon = request.form.get('icon')
+                color = request.form.get('color')
+                
+                # Mettre à jour le scénario
+                scenario.display_name = display_name
+                scenario.description = description
+                scenario.schedule = schedule
+                scenario.actions = actions
+                scenario.icon = icon
+                scenario.color = color
+                
+                db.session.commit()
+                
+                # Log de mise à jour de scénario
+                log_entry = Log(
+                    level="INFO",
+                    scenario="scenario_management",
+                    message=f"Scénario '{display_name}' mis à jour"
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+                
+                flash(f"Scénario '{display_name}' mis à jour avec succès!", "success")
+                return redirect(url_for('scenarios'))
+                
+            except Exception as e:
+                error_msg = f"Erreur lors de la mise à jour du scénario: {str(e)}"
+                logger.error(error_msg)
+                flash(error_msg, "danger")
+                
+                # Log de l'erreur
+                log_entry = Log(
+                    level="ERROR",
+                    scenario="scenario_management",
+                    message=error_msg
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+        
+        # Liste des icônes et couleurs disponibles
+        icons = [
+            'fa-calendar-alt', 'fa-video', 'fa-comment-alt', 'fa-paper-plane', 
+            'fa-trophy', 'fa-sync', 'fa-clock', 'fa-bell', 'fa-chart-line'
+        ]
+        
+        colors = [
+            'primary', 'secondary', 'success', 'danger', 
+            'warning', 'info', 'dark', 'light'
+        ]
+        
+        return render_template('edit_scenario.html', scenario=scenario, icons=icons, colors=colors)
+    
+    @app.route('/scenarios/delete/<int:scenario_id>', methods=['POST'])
+    @login_required
+    def delete_scenario(scenario_id):
+        """Delete a scenario"""
+        try:
+            # Récupérer le scénario
+            scenario = Scenario.query.get_or_404(scenario_id)
+            display_name = scenario.display_name
+            
+            # Supprimer le scénario
+            db.session.delete(scenario)
+            db.session.commit()
+            
+            # Log de suppression de scénario
+            log_entry = Log(
+                level="INFO",
+                scenario="scenario_management",
+                message=f"Scénario '{display_name}' supprimé"
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            flash(f"Scénario '{display_name}' supprimé avec succès!", "success")
+            
+        except Exception as e:
+            error_msg = f"Erreur lors de la suppression du scénario: {str(e)}"
+            logger.error(error_msg)
+            flash(error_msg, "danger")
+            
+            # Log de l'erreur
+            log_entry = Log(
+                level="ERROR",
+                scenario="scenario_management",
+                message=error_msg
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
         return redirect(url_for('scenarios'))
     
     @app.route('/logs')

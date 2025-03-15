@@ -1,0 +1,105 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Add New Scenario</h1>
+            <a href="{{ url_for('scenarios') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Scenarios
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>New Scenario Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_scenario') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Scenario Internal Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="e.g. update_courses" required>
+                        <div class="form-text">This is the internal name used in code. Use lowercase and underscores only.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="display_name" class="form-label">Display Name</label>
+                        <input type="text" class="form-control" id="display_name" name="display_name" placeholder="e.g. Update Courses" required>
+                        <div class="form-text">This is the name displayed in the interface.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe what this scenario does..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="schedule" class="form-label">Schedule</label>
+                        <input type="text" class="form-control" id="schedule" name="schedule" placeholder="e.g. Every Sunday at midnight" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="actions" class="form-label">Actions</label>
+                        <textarea class="form-control" id="actions" name="actions" rows="5" placeholder="List the actions, one per line" required></textarea>
+                        <div class="form-text">Enter one action per line, these will be displayed as bullet points.</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="icon" class="form-label">Icon</label>
+                            <select class="form-select" id="icon" name="icon" required>
+                                {% for icon in icons %}
+                                <option value="{{ icon }}">{{ icon }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="color" class="form-label">Color</label>
+                            <select class="form-select" id="color" name="color" required>
+                                {% for color in colors %}
+                                <option value="{{ color }}">{{ color|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('scenarios') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Scenario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Icon preview
+        const iconSelect = document.getElementById('icon');
+        const colorSelect = document.getElementById('color');
+        
+        // Update icon preview when selections change
+        function updateIconPreview() {
+            const iconClass = iconSelect.value;
+            const color = colorSelect.value;
+            
+            // You could add preview functionality here if needed
+        }
+        
+        iconSelect.addEventListener('change', updateIconPreview);
+        colorSelect.addEventListener('change', updateIconPreview);
+        
+        // Initialize preview
+        updateIconPreview();
+    });
+</script>
+{% endblock %}

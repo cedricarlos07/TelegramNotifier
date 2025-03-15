@@ -2,8 +2,11 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">Scenario Management</h1>
+    <div class="col-12 d-flex justify-content-between align-items-center mb-4">
+        <h1>Scenario Management</h1>
+        <a href="{{ url_for('add_scenario') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add New Scenario
+        </a>
     </div>
 </div>
 
@@ -17,133 +20,78 @@
 </div>
 
 <div class="row">
-    <!-- Scenario 1: Update Courses -->
+    {% for scenario in scenarios %}
     <div class="col-md-6 mb-4">
         <div class="card h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Scenario 1: Update Courses</h5>
+            <div class="card-header bg-{{ scenario.color }} {% if scenario.color not in ['warning', 'light'] %}text-white{% else %}text-dark{% endif %}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas {{ scenario.icon }} me-2"></i>{{ scenario.display_name }}</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-{{ scenario.color }} {% if scenario.color not in ['warning', 'light'] %}text-white{% else %}text-dark{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('edit_scenario', scenario_id=scenario.id) }}">
+                                    <i class="fas fa-edit me-2"></i>Edit
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deleteScenarioModal{{ scenario.id }}">
+                                    <i class="fas fa-trash-alt me-2"></i>Delete
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <p class="card-text">
-                    <strong>Description:</strong> Reads the Excel file, updates course schedules for the upcoming week or month.
+                    <strong>Description:</strong> {{ scenario.description }}
                 </p>
                 <p class="card-text">
-                    <strong>Schedule:</strong> Every Sunday at midnight
+                    <strong>Schedule:</strong> {{ scenario.schedule }}
                 </p>
                 <p class="card-text">
                     <strong>Actions:</strong>
                     <ul>
-                        <li>Read course information from Excel</li>
-                        <li>Update or create courses in the database</li>
-                        <li>Calculate next occurrence dates</li>
+                        {% for action in scenario.actions.split('\n') %}
+                            <li>{{ action }}</li>
+                        {% endfor %}
                     </ul>
                 </p>
             </div>
             <div class="card-footer">
-                <form method="POST" action="{{ url_for('run_scenario', scenario_name='update_courses') }}">
-                    <button type="submit" class="btn btn-primary">
+                <form method="POST" action="{{ url_for('run_scenario', scenario_name=scenario.name) }}">
+                    <button type="submit" class="btn btn-{{ scenario.color }} {% if scenario.color not in ['warning', 'light'] %}text-white{% else %}text-dark{% endif %}">
                         <i class="fas fa-play me-2"></i>Run Now
                     </button>
                 </form>
             </div>
         </div>
-    </div>
-    
-    <!-- Scenario 2: Create Zoom Links -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="fas fa-video me-2"></i>Scenario 2: Create Zoom Links</h5>
-            </div>
-            <div class="card-body">
-                <p class="card-text">
-                    <strong>Description:</strong> Creates Zoom meetings for all courses that don't have a Zoom link yet.
-                </p>
-                <p class="card-text">
-                    <strong>Schedule:</strong> Every Sunday at 00:05 AM (after Scenario 1)
-                </p>
-                <p class="card-text">
-                    <strong>Actions:</strong>
-                    <ul>
-                        <li>Find courses without Zoom links</li>
-                        <li>Create Zoom meetings for each course</li>
-                        <li>Update courses with Zoom meeting links</li>
-                    </ul>
-                </p>
-            </div>
-            <div class="card-footer">
-                <form method="POST" action="{{ url_for('run_scenario', scenario_name='create_zoom_links') }}">
-                    <button type="submit" class="btn btn-info text-white">
-                        <i class="fas fa-play me-2"></i>Run Now
-                    </button>
-                </form>
+        
+        <!-- Delete Modal -->
+        <div class="modal fade" id="deleteScenarioModal{{ scenario.id }}" tabindex="-1" aria-labelledby="deleteScenarioModalLabel{{ scenario.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteScenarioModalLabel{{ scenario.id }}">Delete Scenario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete the scenario "{{ scenario.display_name }}"?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="{{ url_for('delete_scenario', scenario_id=scenario.id) }}">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    
-    <!-- Scenario 3: Generate Messages -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-comment-alt me-2"></i>Scenario 3: Generate Messages</h5>
-            </div>
-            <div class="card-body">
-                <p class="card-text">
-                    <strong>Description:</strong> Generates Telegram messages for all courses in the upcoming week.
-                </p>
-                <p class="card-text">
-                    <strong>Schedule:</strong> Every Sunday at 00:10 AM (after Scenario 2)
-                </p>
-                <p class="card-text">
-                    <strong>Actions:</strong>
-                    <ul>
-                        <li>Find all courses for the upcoming week</li>
-                        <li>Create message templates with course details</li>
-                        <li>Schedule messages for sending</li>
-                    </ul>
-                </p>
-            </div>
-            <div class="card-footer">
-                <form method="POST" action="{{ url_for('run_scenario', scenario_name='generate_messages') }}">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-play me-2"></i>Run Now
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Scenario 4: Send Daily Messages -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Scenario 4: Send Daily Messages</h5>
-            </div>
-            <div class="card-body">
-                <p class="card-text">
-                    <strong>Description:</strong> Sends scheduled Telegram messages for today's courses.
-                </p>
-                <p class="card-text">
-                    <strong>Schedule:</strong> Every day at 8:00 AM
-                </p>
-                <p class="card-text">
-                    <strong>Actions:</strong>
-                    <ul>
-                        <li>Find all scheduled messages for today</li>
-                        <li>Send messages to appropriate Telegram groups</li>
-                        <li>Mark messages as sent</li>
-                    </ul>
-                </p>
-            </div>
-            <div class="card-footer">
-                <form method="POST" action="{{ url_for('run_scenario', scenario_name='send_daily_messages') }}">
-                    <button type="submit" class="btn btn-warning text-dark">
-                        <i class="fas fa-play me-2"></i>Run Now
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
+    {% endfor %}
 </div>
 
 <!-- Telegram Test Message -->

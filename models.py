@@ -212,3 +212,32 @@ class Log(db.Model):
             'message': self.message,
             'timestamp': self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
         }
+
+class Scenario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    display_name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    schedule = db.Column(db.String(100), nullable=False)
+    actions = db.Column(db.Text, nullable=False)
+    icon = db.Column(db.String(50), nullable=False, default="fa-calendar-alt")
+    color = db.Column(db.String(50), nullable=False, default="primary")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"<Scenario {self.name}>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'display_name': self.display_name,
+            'description': self.description,
+            'schedule': self.schedule,
+            'actions': self.actions,
+            'icon': self.icon,
+            'color': self.color,
+            'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'updated_at': self.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        }

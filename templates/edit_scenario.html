@@ -1,0 +1,115 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Edit Scenario</h1>
+            <a href="{{ url_for('scenarios') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Scenarios
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card mb-4">
+            <div class="card-header bg-{{ scenario.color }} {% if scenario.color not in ['warning', 'light'] %}text-white{% else %}text-dark{% endif %}">
+                <h5 class="mb-0"><i class="fas {{ scenario.icon }} me-2"></i>Edit: {{ scenario.display_name }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_scenario', scenario_id=scenario.id) }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Scenario Internal Name</label>
+                        <input type="text" class="form-control" id="name" value="{{ scenario.name }}" readonly disabled>
+                        <div class="form-text">The internal name cannot be changed.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="display_name" class="form-label">Display Name</label>
+                        <input type="text" class="form-control" id="display_name" name="display_name" value="{{ scenario.display_name }}" required>
+                        <div class="form-text">This is the name displayed in the interface.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ scenario.description }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="schedule" class="form-label">Schedule</label>
+                        <input type="text" class="form-control" id="schedule" name="schedule" value="{{ scenario.schedule }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="actions" class="form-label">Actions</label>
+                        <textarea class="form-control" id="actions" name="actions" rows="5" required>{{ scenario.actions }}</textarea>
+                        <div class="form-text">Enter one action per line, these will be displayed as bullet points.</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="icon" class="form-label">Icon</label>
+                            <select class="form-select" id="icon" name="icon" required>
+                                {% for icon in icons %}
+                                <option value="{{ icon }}" {% if scenario.icon == icon %}selected{% endif %}>{{ icon }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="color" class="form-label">Color</label>
+                            <select class="form-select" id="color" name="color" required>
+                                {% for color in colors %}
+                                <option value="{{ color }}" {% if scenario.color == color %}selected{% endif %}>{{ color|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('scenarios') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Icon preview
+        const iconSelect = document.getElementById('icon');
+        const colorSelect = document.getElementById('color');
+        
+        // Update icon and card header color when selections change
+        function updatePreview() {
+            const iconClass = iconSelect.value;
+            const color = colorSelect.value;
+            const cardHeader = document.querySelector('.card-header');
+            const headerIcon = cardHeader.querySelector('i');
+            
+            // Update card header
+            cardHeader.className = 'card-header bg-' + color;
+            if (color !== 'warning' && color !== 'light') {
+                cardHeader.classList.add('text-white');
+                cardHeader.classList.remove('text-dark');
+            } else {
+                cardHeader.classList.add('text-dark');
+                cardHeader.classList.remove('text-white');
+            }
+            
+            // Update icon
+            headerIcon.className = 'fas ' + iconClass + ' me-2';
+        }
+        
+        iconSelect.addEventListener('change', updatePreview);
+        colorSelect.addEventListener('change', updatePreview);
+    });
+</script>
+{% endblock %}
