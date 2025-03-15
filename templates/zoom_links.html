@@ -279,6 +279,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/zoom_links.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Handle Edit Zoom Link buttons
@@ -324,5 +325,4 @@
         });
     });
 </script>
-<script src="{{ url_for('static', filename='js/zoom_links.js') }}"></script>
 {% endblock %}

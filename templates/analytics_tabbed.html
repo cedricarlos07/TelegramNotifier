@@ -398,6 +398,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Précharger les paramètres de l'URL dans les filtres
