@@ -29,22 +29,52 @@ function initDynamicFiltering() {
     }));
     
     // Fonction helper pour déterminer quel coach est associé à un cours ou groupe
-    // Note: Dans un système réel, ces informations viendraient de l'API ou des données en cache
+    // En analysant les données présentes dans le tableau des cours
     function getRelatedCoach(itemValue) {
-        // Cette fonction serait normalement implémentée avec des données réelles
-        // Pour l'instant, nous allons simplement récupérer les relations depuis les attributs de données
-        const courseRows = document.querySelectorAll('tbody tr');
+        if (!itemValue) return '';
+        
+        const courseRows = document.querySelectorAll('.table tbody tr');
         let relatedCoach = '';
         
         courseRows.forEach(row => {
-            const courseName = row.querySelector('td:nth-child(2)').textContent.trim();
-            const groupId = row.querySelector('td:nth-child(4) .badge').textContent.trim();
-            const coachName = row.querySelector('td:nth-child(3) span:last-child').textContent.trim();
+            // Récupérer le nom du cours
+            const courseCell = row.querySelector('td:nth-child(2)');
+            if (!courseCell) return;
+            const courseName = courseCell.textContent.trim();
             
+            // Récupérer le nom du coach
+            const coachCell = row.querySelector('td:nth-child(3)');
+            if (!coachCell) return;
+            // Le coach est dans le second span ou directement dans la cellule
+            const coachSpan = coachCell.querySelector('span:last-child');
+            const coachName = coachSpan ? coachSpan.textContent.trim() : coachCell.textContent.trim();
+            
+            // Récupérer l'ID du groupe Telegram
+            const groupCell = row.querySelector('td:nth-child(4)');
+            if (!groupCell) return;
+            // L'ID du groupe est peut-être dans un badge ou directement dans la cellule
+            const groupBadge = groupCell.querySelector('.badge');
+            const groupId = groupBadge ? groupBadge.textContent.trim() : groupCell.textContent.trim();
+            
+            // Vérifier si l'élément correspond à un cours ou un groupe
             if (itemValue === courseName || itemValue === groupId) {
                 relatedCoach = coachName;
             }
         });
+        
+        // Si on n'a pas trouvé, essayons avec les boutons d'édition qui ont des data-attributes
+        if (!relatedCoach) {
+            document.querySelectorAll('.edit-course-btn').forEach(button => {
+                const courseId = button.getAttribute('data-course-id');
+                const courseName = button.getAttribute('data-course-name');
+                const teacherName = button.getAttribute('data-teacher-name');
+                const telegramGroupId = button.getAttribute('data-telegram-group-id');
+                
+                if (itemValue === courseName || itemValue === telegramGroupId) {
+                    relatedCoach = teacherName;
+                }
+            });
+        }
         
         return relatedCoach;
     }

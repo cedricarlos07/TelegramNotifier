@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         coach: getRelatedCoach(opt.value)
     }));
     
-    // Récupérer les coachs liés à chaque cours
+    // Récupérer les coachs liés à chaque cours en analysant la structure HTML
     function getRelatedCoach(courseName) {
         if (!courseName) return '';
         
@@ -31,16 +31,54 @@ document.addEventListener('DOMContentLoaded', function() {
             const courseRows = table.querySelectorAll('tbody tr');
             
             courseRows.forEach(row => {
-                // Essayer de trouver le nom du cours dans cette ligne
-                const courseNameCell = row.querySelector('td:nth-child(3)');
-                if (courseNameCell && courseNameCell.textContent.trim() === courseName) {
-                    const coachNameCell = row.querySelector('td:nth-child(4)');
-                    if (coachNameCell) {
-                        relatedCoach = coachNameCell.textContent.trim();
+                // Rechercher les différentes structures possibles du tableau
+                // Essayons d'abord les cellules classiques
+                let courseNameCell = null;
+                let coachNameCell = null;
+                
+                // Essayer les différentes colonnes possibles (selon le layout du tableau)
+                const cells = row.querySelectorAll('td');
+                cells.forEach((cell, index) => {
+                    // Si la cellule contient le nom du cours
+                    if (cell.textContent.trim() === courseName) {
+                        courseNameCell = cell;
+                        
+                        // Chercher le nom du coach dans la même ligne
+                        // Le coach pourrait être dans différentes positions selon le tableau
+                        const cellIndexes = [2, 3, 4]; // Positions probables du coach
+                        cellIndexes.forEach(idx => {
+                            if (cells[idx] && !coachNameCell) {
+                                const potential = cells[idx].textContent.trim();
+                                // Vérifier si cette cellule ressemble à un coach (pas un ID, une date, etc.)
+                                if (potential && !potential.match(/^\d+$/) && potential.length > 2) {
+                                    coachNameCell = cells[idx];
+                                }
+                            }
+                        });
                     }
+                });
+                
+                // Si on trouve le cours, on extrait le coach
+                if (courseNameCell && coachNameCell) {
+                    relatedCoach = coachNameCell.textContent.trim();
                 }
             });
         });
+        
+        // Si on n'a pas trouvé avec la méthode classique, essayons avec les attributs de données
+        if (!relatedCoach) {
+            // Certains boutons d'édition contiennent les informations dans des attributs de données
+            const buttons = document.querySelectorAll('[data-course-name]');
+            buttons.forEach(button => {
+                const btnCourseName = button.getAttribute('data-course-name');
+                if (btnCourseName === courseName) {
+                    const teacherName = button.getAttribute('data-teacher-name');
+                    if (teacherName) {
+                        relatedCoach = teacherName;
+                    }
+                }
+            });
+        }
         
         return relatedCoach;
     }
