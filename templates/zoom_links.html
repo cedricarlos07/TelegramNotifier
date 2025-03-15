@@ -3,7 +3,91 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="mb-4">Zoom Links Management</h1>
+        <h1 class="mb-4">Gestion des Liens Zoom</h1>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header bg-transparent">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-filter me-2 text-primary"></i>Filtres rapides
+            </h5>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                <i class="fas fa-chevron-up me-1"></i> <span class="filter-toggle-text">Masquer</span>
+            </button>
+        </div>
+    </div>
+    
+    <div class="collapse show" id="filterCollapse">
+        <div class="card-body">
+            <form id="filterForm" class="row g-3">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="filter_teacher" class="form-label">
+                            <i class="fas fa-user-tie text-primary me-1"></i> Coach
+                        </label>
+                        <select class="form-select" id="filter_teacher" name="teacher">
+                            <option value="">Tous les coachs</option>
+                            {% for teacher in teachers %}
+                                <option value="{{ teacher }}">{{ teacher }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="filter_class" class="form-label">
+                            <i class="fas fa-book text-primary me-1"></i> Cours
+                        </label>
+                        <select class="form-select" id="filter_class" name="class">
+                            <option value="">Tous les cours</option>
+                            {% for class_name in class_names %}
+                                <option value="{{ class_name }}">{{ class_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="filter_day" class="form-label">
+                            <i class="fas fa-calendar-day text-primary me-1"></i> Jour
+                        </label>
+                        <select class="form-select" id="filter_day" name="day">
+                            <option value="">Tous les jours</option>
+                            <option value="0">Lundi</option>
+                            <option value="1">Mardi</option>
+                            <option value="2">Mercredi</option>
+                            <option value="3">Jeudi</option>
+                            <option value="4">Vendredi</option>
+                            <option value="5">Samedi</option>
+                            <option value="6">Dimanche</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="filter_status" class="form-label">
+                            <i class="fas fa-check-circle text-primary me-1"></i> Statut Zoom
+                        </label>
+                        <select class="form-select" id="filter_status" name="status">
+                            <option value="">Tous les statuts</option>
+                            <option value="with_zoom">Avec lien Zoom</option>
+                            <option value="without_zoom">Sans lien Zoom</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 mt-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-search me-2"></i>Rechercher
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo me-2"></i>Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -238,6 +322,202 @@
                 modal.show();
             });
         });
+        
+        // Handle filter toggle button text
+        const filterToggleBtn = document.querySelector('[data-bs-toggle="collapse"][data-bs-target="#filterCollapse"]');
+        const filterToggleText = document.querySelector('.filter-toggle-text');
+        
+        if (filterToggleBtn && filterToggleText) {
+            filterToggleBtn.addEventListener('click', function() {
+                const isCollapsed = this.getAttribute('aria-expanded') === 'true';
+                filterToggleText.textContent = isCollapsed ? 'Afficher' : 'Masquer';
+                
+                // Change icon as well
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = isCollapsed ? 'fas fa-chevron-down me-1' : 'fas fa-chevron-up me-1';
+                }
+            });
+        }
+        
+        // Initialiser le système de filtrage dynamique
+        initDynamicFiltering();
+        
+        /**
+         * Système de filtrage dynamique pour la page Zoom Links
+         */
+        function initDynamicFiltering() {
+            const coachSelect = document.getElementById('filter_teacher');
+            const courseSelect = document.getElementById('filter_class');
+            const daySelect = document.getElementById('filter_day');
+            const statusSelect = document.getElementById('filter_status');
+            const filterForm = document.getElementById('filterForm');
+            
+            if (!coachSelect || !courseSelect || !daySelect || !statusSelect || !filterForm) return;
+            
+            // Stocker les options originales
+            const originalCourses = Array.from(courseSelect.options).map(opt => ({
+                value: opt.value,
+                text: opt.text,
+                coach: getRelatedCoach(opt.value)
+            }));
+            
+            // Récupérer les coachs liés à chaque cours
+            function getRelatedCoach(courseName) {
+                if (!courseName) return '';
+                
+                // Parcourir toutes les lignes de table pour trouver le coach associé
+                let relatedCoach = '';
+                const courseRows = document.querySelectorAll('tbody tr');
+                
+                courseRows.forEach(row => {
+                    // Essayer de trouver le nom du cours dans cette ligne
+                    const courseNameCell = row.querySelector('td:nth-child(3)');
+                    if (courseNameCell && courseNameCell.textContent.trim() === courseName) {
+                        const coachNameCell = row.querySelector('td:nth-child(4)');
+                        if (coachNameCell) {
+                            relatedCoach = coachNameCell.textContent.trim();
+                        }
+                    }
+                });
+                
+                return relatedCoach;
+            }
+            
+            // Event Listener pour le changement de coach
+            coachSelect.addEventListener('change', function() {
+                const selectedCoach = this.value;
+                
+                if (!selectedCoach) {
+                    // Réinitialiser la liste des cours si aucun coach n'est sélectionné
+                    resetSelect(courseSelect, originalCourses);
+                    return;
+                }
+                
+                // Filtrer les cours par coach
+                filterCoursesByCoach(selectedCoach);
+            });
+            
+            // Event Listener pour le changement de cours
+            courseSelect.addEventListener('change', function() {
+                const selectedCourse = this.value;
+                
+                if (selectedCourse && !coachSelect.value) {
+                    // Si un cours est sélectionné et qu'aucun coach n'est sélectionné,
+                    // sélectionner automatiquement le coach associé
+                    const relatedCoach = originalCourses.find(c => c.value === selectedCourse)?.coach;
+                    if (relatedCoach) {
+                        coachSelect.value = relatedCoach;
+                    }
+                }
+            });
+            
+            // Fonction pour réinitialiser un select
+            function resetSelect(select, originalOptions) {
+                select.innerHTML = '';
+                
+                originalOptions.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.textContent = opt.text;
+                    select.appendChild(option);
+                });
+            }
+            
+            // Fonction pour filtrer les cours par coach
+            function filterCoursesByCoach(coachName) {
+                // Sauvegarder la valeur sélectionnée
+                const selectedValue = courseSelect.value;
+                
+                // Vider le select
+                courseSelect.innerHTML = '';
+                
+                // Ajouter l'option "Tous"
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Tous les cours';
+                courseSelect.appendChild(defaultOption);
+                
+                // Filtrer les cours par coach
+                const filteredCourses = originalCourses.filter(course => 
+                    !course.coach || course.coach === coachName || course.value === ''
+                );
+                
+                // Ajouter les options filtrées
+                filteredCourses.forEach(course => {
+                    if (course.value === '') return; // Sauter l'option vide
+                    
+                    const option = document.createElement('option');
+                    option.value = course.value;
+                    option.textContent = course.text;
+                    courseSelect.appendChild(option);
+                });
+                
+                // Restaurer la valeur si possible
+                if (Array.from(courseSelect.options).some(opt => opt.value === selectedValue)) {
+                    courseSelect.value = selectedValue;
+                } else {
+                    courseSelect.value = '';
+                }
+            }
+            
+            // Handle form submission
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const teacher = coachSelect.value;
+                const course = courseSelect.value;
+                const day = daySelect.value;
+                const status = statusSelect.value;
+                
+                // Construire l'URL avec les paramètres
+                let url = window.location.pathname;
+                const params = new URLSearchParams();
+                
+                if (teacher) params.append('teacher', teacher);
+                if (course) params.append('course', course);
+                if (day) params.append('day', day);
+                if (status) params.append('status', status);
+                
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                window.location.href = url;
+            });
+            
+            // Handle reset button
+            filterForm.querySelector('button[type="reset"]').addEventListener('click', function() {
+                // Réinitialiser tous les selects
+                coachSelect.value = '';
+                courseSelect.value = '';
+                daySelect.value = '';
+                statusSelect.value = '';
+                
+                // Réinitialiser les options du select cours
+                resetSelect(courseSelect, originalCourses);
+                
+                // Rediriger vers l'URL de base
+                window.location.href = window.location.pathname;
+            });
+            
+            // Pré-remplir les filtres depuis l'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('teacher')) {
+                coachSelect.value = urlParams.get('teacher');
+                // Déclencher l'événement change pour mettre à jour les autres filtres
+                coachSelect.dispatchEvent(new Event('change'));
+            }
+            if (urlParams.has('course')) {
+                courseSelect.value = urlParams.get('course');
+            }
+            if (urlParams.has('day')) {
+                daySelect.value = urlParams.get('day');
+            }
+            if (urlParams.has('status')) {
+                statusSelect.value = urlParams.get('status');
+            }
+        }
     });
 </script>
 {% endblock %}

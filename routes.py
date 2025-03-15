@@ -107,7 +107,13 @@ def register_routes(app):
         # Trier par taux de présence
         course_attendance_rates = sorted(course_attendance_rates, key=lambda x: x['rate'], reverse=True)
         
-        return render_template('analytics.html',
+        # Vérifier si l'utilisateur a demandé la vue par onglets
+        use_tabbed_view = request.args.get('view') == 'tabbed'
+        
+        # Utiliser le template par onglets ou original en fonction du paramètre
+        template = 'analytics_tabbed.html' if use_tabbed_view else 'analytics.html'
+        
+        return render_template(template,
                               total_attendances=total_attendances,
                               total_courses=total_courses,
                               avg_attendance_rate=avg_attendance_rate,
