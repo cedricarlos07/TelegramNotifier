@@ -1894,7 +1894,7 @@ Vous pouvez utiliser ce système pour:
             return jsonify({'success': False, 'message': error_msg})
 
     @app.route('/api/export-stats', methods=['POST'])
-def export_stats():
+    def export_stats():
     """Export statistics to Excel and PDF"""
     try:
         export_format = request.form.get('format', 'excel')
