@@ -1156,15 +1156,6 @@ def register_routes(app):
             'courses': [c[0] for c in courses if c[0]],
             'groups': [g[0] for g in groups if g[0]]
         })
-
-                level="ERROR",
-                scenario="export_excel",
-                message=error_msg
-            )
-            db.session.add(log_entry)
-            db.session.commit()
-            
-            return jsonify({'success': False, 'message': error_msg})
     
     @app.route('/api/check-course-conflict', methods=['POST'])
     @login_required
