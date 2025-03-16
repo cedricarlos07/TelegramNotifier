@@ -45,7 +45,31 @@
                 <!-- Filter controls -->
                 <div class="mb-4">
                     <form method="GET" class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-3">
+                            <label for="coach" class="form-label">Coach</label>
+                            <select class="form-select" id="coach" name="coach">
+                                <option value="">Tous les coachs</option>
+                                {% for teacher in teachers %}
+                                    <option value="{{ teacher }}" {% if teacher == selected_coach %}selected{% endif %}>
+                                        {{ teacher }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="course" class="form-label">Cours</label>
+                            <select class="form-select" id="course" name="course">
+                                <option value="">Tous les cours</option>
+                                {% for course in courses %}
+                                    <option value="{{ course }}" {% if course == selected_course %}selected{% endif %}>
+                                        {{ course }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
                             <label for="group" class="form-label">Groupe Telegram</label>
                             <select class="form-select" id="group" name="group" {% if not groups %}disabled{% endif %}>
                                 {% if not groups %}
@@ -155,6 +179,52 @@
 
 {% block scripts %}
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const coachSelect = document.getElementById('coach');
+        const courseSelect = document.getElementById('course');
+        const groupSelect = document.getElementById('group');
+        
+        if (!coachSelect || !courseSelect || !groupSelect) return;
+        
+        // Store original options
+        const originalCourses = Array.from(courseSelect.options);
+        const originalGroups = Array.from(groupSelect.options);
+        
+        // Filter options based on coach
+        function filterByCoach(coach) {
+            // Reset courses
+            courseSelect.innerHTML = '<option value="">Tous les cours</option>';
+            originalCourses.forEach(option => {
+                if (!coach || option.dataset.coach === coach) {
+                    courseSelect.appendChild(option.cloneNode(true));
+                }
+            });
+            
+            // Reset groups
+            groupSelect.innerHTML = '<option value="">Tous les groupes</option>';
+            originalGroups.forEach(option => {
+                if (!coach || option.dataset.coach === coach) {
+                    groupSelect.appendChild(option.cloneNode(true));
+                }
+            });
+        }
+        
+        // Event listeners
+        coachSelect.addEventListener('change', function() {
+            filterByCoach(this.value);
+        });
+        
+        courseSelect.addEventListener('change', function() {
+            if (this.value && !coachSelect.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.dataset.coach) {
+                    coachSelect.value = selectedOption.dataset.coach;
+                    filterByCoach(coachSelect.value);
+                }
+            }
+        });
+    });
+
     function sendRankings(groupId, periodType) {
         if (!groupId) {
             alert('Aucun groupe Telegram sélectionné.');
