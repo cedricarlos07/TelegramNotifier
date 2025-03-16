@@ -1895,11 +1895,11 @@ Vous pouvez utiliser ce système pour:
 
     @app.route('/api/export-stats', methods=['POST'])
     def export_stats():
-    """Export statistics to Excel and PDF"""
-    try:
-        export_format = request.form.get('format', 'excel')
-        
-        if export_format == 'excel':
+        """Export statistics to Excel and PDF"""
+        try:
+            export_format = request.form.get('format', 'excel')
+            
+            if export_format == 'excel':
             # Create Excel workbook
             output = pd.ExcelWriter('statistics_export.xlsx', engine='xlsxwriter')
             
