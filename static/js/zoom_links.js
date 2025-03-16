@@ -9,9 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const daySelect = document.getElementById('filter_day');
     const statusSelect = document.getElementById('filter_status');
     const filterForm = document.getElementById('filterForm');
-    
+
     if (!coachSelect || !courseSelect || !daySelect || !statusSelect || !filterForm) return;
-    
+
     // Store original options
     const originalCourses = Array.from(courseSelect.options);
 
@@ -20,24 +20,29 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get all course rows
         const courseRows = document.querySelectorAll('.table tbody tr');
 
-        // Filter courses
+        // Reset courses
         courseSelect.innerHTML = '<option value="">Tous les cours</option>';
-        originalCourses.forEach(option => {
-            if (!option.value) return; // Skip empty option
+        const seenCourses = new Set();
 
-            let include = !coach;
-            courseRows.forEach(row => {
-                const courseCell = row.querySelector('td:nth-child(3)');
-                const coachCell = row.querySelector('td:nth-child(4)');
-                if (courseCell && coachCell && 
-                    courseCell.textContent.trim() === option.value &&
-                    coachCell.textContent.trim() === coach) {
-                    include = true;
+        // Populate filtered options
+        courseRows.forEach(row => {
+            const courseCell = row.querySelector('td:nth-child(2)');
+            const coachCell = row.querySelector('td:nth-child(3)');
+
+            if (courseCell && coachCell) {
+                const courseName = courseCell.textContent.trim();
+                const coachName = coachCell.textContent.trim();
+
+                if (!coach || coachName === coach) {
+                    // Add course if not already added
+                    if (!seenCourses.has(courseName)) {
+                        seenCourses.add(courseName);
+                        const option = document.createElement('option');
+                        option.value = courseName;
+                        option.textContent = courseName;
+                        courseSelect.appendChild(option);
+                    }
                 }
-            });
-
-            if (include) {
-                courseSelect.appendChild(option.cloneNode(true));
             }
         });
     }
@@ -49,12 +54,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     courseSelect.addEventListener('change', function() {
         if (this.value && !coachSelect.value) {
-            // Find related coach
             const courseRows = document.querySelectorAll('.table tbody tr');
             courseRows.forEach(row => {
-                const courseCell = row.querySelector('td:nth-child(3)');
+                const courseCell = row.querySelector('td:nth-child(2)');
                 if (courseCell && courseCell.textContent.trim() === this.value) {
-                    const coachCell = row.querySelector('td:nth-child(4)');
+                    const coachCell = row.querySelector('td:nth-child(3)');
                     if (coachCell) {
                         coachSelect.value = coachCell.textContent.trim();
                         filterByCoach(coachSelect.value);
@@ -63,32 +67,32 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
+
     // Handle form submission
     filterForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         const teacher = coachSelect.value;
         const course = courseSelect.value;
         const day = daySelect.value;
         const status = statusSelect.value;
-        
-        // Construire l'URL avec les paramètres
+
+        // Build URL with parameters
         let url = window.location.pathname;
         const params = new URLSearchParams();
-        
+
         if (teacher) params.append('teacher', teacher);
         if (course) params.append('course', course);
         if (day) params.append('day', day);
         if (status) params.append('status', status);
-        
+
         if (params.toString()) {
             url += '?' + params.toString();
         }
-        
+
         window.location.href = url;
     });
-    
+
     // Handle reset button
     filterForm.querySelector('button[type="reset"]').addEventListener('click', function() {
         // Réinitialiser tous les selects
@@ -96,15 +100,15 @@ document.addEventListener('DOMContentLoaded', function() {
         courseSelect.value = '';
         daySelect.value = '';
         statusSelect.value = '';
-        
+
         // Réinitialiser les options du select cours
         courseSelect.innerHTML = '';
         originalCourses.forEach(opt => courseSelect.appendChild(opt.cloneNode(true)));
-        
+
         // Rediriger vers l'URL de base
         window.location.href = window.location.pathname;
     });
-    
+
     // Pré-remplir les filtres depuis l'URL
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('teacher')) {
@@ -121,16 +125,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (urlParams.has('status')) {
         statusSelect.value = urlParams.get('status');
     }
-    
+
     // Handle filter toggle button text
     const filterToggleBtn = document.querySelector('[data-bs-toggle="collapse"][data-bs-target="#filterCollapse"]');
     const filterToggleText = document.querySelector('.filter-toggle-text');
-    
+
     if (filterToggleBtn && filterToggleText) {
         filterToggleBtn.addEventListener('click', function() {
             const isCollapsed = this.getAttribute('aria-expanded') === 'true';
             filterToggleText.textContent = isCollapsed ? 'Afficher' : 'Masquer';
-            
+
             // Change icon as well
             const icon = this.querySelector('i');
             if (icon) {
