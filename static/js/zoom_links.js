@@ -1,8 +1,3 @@
-/**
- * Système de filtrage dynamique pour la page Zoom Links
- * - Filtre automatiquement les cours lorsqu'un coach est sélectionné
- * - Sélectionne automatiquement un coach lorsqu'un cours est sélectionné
- */
 document.addEventListener('DOMContentLoaded', function() {
     const coachSelect = document.getElementById('filter_teacher');
     const courseSelect = document.getElementById('filter_class');
@@ -12,26 +7,96 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!coachSelect || !courseSelect || !daySelect || !statusSelect || !filterForm) return;
 
-    // Store original options
-    const originalCourses = Array.from(courseSelect.options);
+    // Get all table rows for with/without zoom
+    const courseRows = {
+        with_zoom: document.querySelectorAll('.courses-with-zoom tbody tr'),
+        without_zoom: document.querySelectorAll('.courses-without-zoom tbody tr')
+    };
 
-    // Filter options based on coach
-    function filterByCoach(coach) {
-        // Get all course rows
-        const courseRows = document.querySelectorAll('.table tbody tr');
+    function filterCourses() {
+        const selectedTeacher = coachSelect.value;
+        const selectedClass = courseSelect.value;
+        const selectedDay = daySelect.value;
+        const selectedStatus = statusSelect.value;
 
-        // Reset courses
-        courseSelect.innerHTML = '<option value="">Tous les cours</option>';
-        const seenCourses = new Set();
+        // Function to check if a row matches filters
+        function rowMatchesFilters(row) {
+            const teacherCell = row.querySelector('td:nth-child(4)');
+            const courseCell = row.querySelector('td:nth-child(3)');
+            const dateCell = row.querySelector('td:nth-child(1)');
 
-        // Populate filtered options
-        courseRows.forEach(row => {
-            const courseCell = row.querySelector('td:nth-child(2)');
-            const coachCell = row.querySelector('td:nth-child(3)');
+            const teacherMatch = !selectedTeacher || (teacherCell && teacherCell.textContent.trim() === selectedTeacher);
+            const courseMatch = !selectedClass || (courseCell && courseCell.textContent.trim() === selectedClass);
+            const dayMatch = !selectedDay || (dateCell && matchesDay(dateCell.textContent.trim(), selectedDay));
 
-            if (courseCell && coachCell) {
-                const courseName = courseCell.textContent.trim();
-                const coachName = coachCell.textContent.trim();
+            return teacherMatch && courseMatch && dayMatch;
+        }
+
+        // Function to match day
+        function matchesDay(dateText, dayIndex) {
+            if (!dateText || dateText === 'Not scheduled') return true;
+            const date = new Date(dateText.split('-').reverse().join('-'));
+            return date.getDay().toString() === dayIndex;
+        }
+
+        // Hide/show rows based on filters
+        Object.entries(courseRows).forEach(([type, rows]) => {
+            const show = !selectedStatus || 
+                        (selectedStatus === 'with_zoom' && type === 'with_zoom') ||
+                        (selectedStatus === 'without_zoom' && type === 'without_zoom');
+
+            rows.forEach(row => {
+                const matches = show && rowMatchesFilters(row);
+                row.style.display = matches ? '' : 'none';
+            });
+        });
+
+        // Update dropdowns
+        updateDropdowns();
+    }
+
+    function updateDropdowns() {
+        const visibleRows = Array.from(document.querySelectorAll('tbody tr')).filter(row => 
+            row.style.display !== 'none'
+        );
+
+        // Get unique values from visible rows
+        const teachers = new Set();
+        const courses = new Set();
+
+        visibleRows.forEach(row => {
+            const teacherCell = row.querySelector('td:nth-child(4)');
+            const courseCell = row.querySelector('td:nth-child(3)');
+
+            if (teacherCell) teachers.add(teacherCell.textContent.trim());
+            if (courseCell) courses.add(courseCell.textContent.trim());
+        });
+
+        // Update dropdowns while preserving selected values
+        updateDropdown(coachSelect, Array.from(teachers));
+        updateDropdown(courseSelect, Array.from(courses));
+    }
+
+    function updateDropdown(select, values) {
+        const currentValue = select.value;
+        select.innerHTML = `<option value="">Tous</option>`;
+        values.sort().forEach(value => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            if (value === currentValue) option.selected = true;
+            select.appendChild(option);
+        });
+    }
+
+    // Add event listeners
+    [coachSelect, courseSelect, daySelect, statusSelect].forEach(select => {
+        select.addEventListener('change', filterCourses);
+    });
+
+    // Initial filtering
+    filterCourses();
+});rim();
 
                 if (!coach || coachName === coach) {
                     // Add course if not already added

@@ -183,47 +183,121 @@
         const coachSelect = document.getElementById('coach');
         const courseSelect = document.getElementById('course');
         const groupSelect = document.getElementById('group');
+        const periodSelect = document.getElementById('period');
         
-        if (!coachSelect || !courseSelect || !groupSelect) return;
-        
-        // Store original options
-        const originalCourses = Array.from(courseSelect.options);
-        const originalGroups = Array.from(groupSelect.options);
-        
-        // Filter options based on coach
-        function filterByCoach(coach) {
-            // Reset courses
-            courseSelect.innerHTML = '<option value="">Tous les cours</option>';
-            originalCourses.forEach(option => {
-                if (!coach || option.dataset.coach === coach) {
-                    courseSelect.appendChild(option.cloneNode(true));
+        if (!coachSelect || !courseSelect || !groupSelect || !periodSelect) return;
+
+        function updateFilters() {
+            const selectedCoach = coachSelect.value;
+            const selectedCourse = courseSelect.value;
+
+            // Make API call to get filtered data
+            fetch(`/api/filter-rankings?coach=${encodeURIComponent(selectedCoach)}&course=${encodeURIComponent(selectedCourse)}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update courses dropdown
+                    updateDropdown(courseSelect, data.courses, selectedCourse);
+                    // Update groups dropdown
+                    updateDropdown(groupSelect, data.groups, groupSelect.value);
+                })
+                .catch(error => console.error('Error fetching filter data:', error));
+        }
+
+        function updateDropdown(select, values, currentValue) {
+            const defaultOption = select.querySelector('option[value=""]');
+            select.innerHTML = '';
+            if (defaultOption) {
+                select.appendChild(defaultOption);
+            }
+
+            values.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                if (value === currentValue) {
+                    option.selected = true;
                 }
+                select.appendChild(option);
             });
-            
-            // Reset groups
-            groupSelect.innerHTML = '<option value="">Tous les groupes</option>';
-            originalGroups.forEach(option => {
-                if (!coach || option.dataset.coach === coach) {
-                    groupSelect.appendChild(option.cloneNode(true));
-                }
-            });
+
+            select.disabled = values.length === 0;
+        }
+
+        // Event listeners
+        coachSelect.addEventListener('change', updateFilters);
+        courseSelect.addEventListener('change', updateFilters);
+
+        // Submit form when group or period changes
+        [groupSelect, periodSelect].forEach(select => {
+            select.addEventListener('change', () => select.form.submit());
+        });
+
+        // Initial filter update
+        updateFilters();
+    });
+
+    function sendRankings(groupId, periodType) {
+        if (!groupId) {
+            alert('Aucun groupe Telegram sélectionné.');
+            return;
         }
         
-        // Event listeners
-        coachSelect.addEventListener('change', function() {
-            filterByCoach(this.value);
-        });
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Envoi en cours...';
         
-        courseSelect.addEventListener('change', function() {
-            if (this.value && !coachSelect.value) {
-                const selectedOption = this.options[this.selectedIndex];
-                if (selectedOption.dataset.coach) {
-                    coachSelect.value = selectedOption.dataset.coach;
-                    filterByCoach(coachSelect.value);
-                }
+        const formData = new FormData();
+        formData.append('group_id', groupId);
+        formData.append('period_type', periodType);
+        
+        fetch('/api/send-rankings', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Classement envoyé avec succès !');
+            } else {
+                alert('Erreur lors de l\'envoi du classement : ' + data.message);
             }
+        })
+        .catch(error => {
+            alert('Erreur lors de l\'envoi du classement : ' + error);
+        })
+        .finally(() => {
+            button.disabled = false;
+            button.innerHTML = originalText;
         });
-    });
+    }
+    
+    function sendDailyRankings() {
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Envoi en cours...';
+        
+        fetch('/api/send-daily-rankings', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Classements quotidiens envoyés avec succès : ' + data.message);
+            } else {
+                alert('Erreur lors de l\'envoi des classements : ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erreur lors de l\'envoi des classements : ' + error);
+        })
+        .finally(() => {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+</script>
 
     function sendRankings(groupId, periodType) {
         if (!groupId) {

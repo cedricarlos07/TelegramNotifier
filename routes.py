@@ -1125,6 +1125,38 @@ def register_routes(app):
             
             # Log the error
             log_entry = Log(
+
+    @app.route('/api/filter-rankings')
+    @login_required
+    def filter_rankings():
+        """API endpoint for rankings filters"""
+        coach = request.args.get('coach', '')
+        course = request.args.get('course', '')
+        
+        # Query courses based on filters
+        query = Course.query
+        
+        if coach:
+            query = query.filter(Course.teacher_name == coach)
+        if course:
+            query = query.filter(Course.course_name == course)
+            
+        # Get unique values
+        courses = db.session.query(Course.course_name).distinct()
+        if coach:
+            courses = courses.filter(Course.teacher_name == coach)
+            
+        groups = db.session.query(Course.telegram_group_id).distinct()
+        if coach:
+            groups = groups.filter(Course.teacher_name == coach)
+        if course:
+            groups = groups.filter(Course.course_name == course)
+            
+        return jsonify({
+            'courses': [c[0] for c in courses if c[0]],
+            'groups': [g[0] for g in groups if g[0]]
+        })
+
                 level="ERROR",
                 scenario="export_excel",
                 message=error_msg
