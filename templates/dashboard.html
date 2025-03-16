@@ -103,9 +103,15 @@
                 <a href="{{ url_for('rankings') }}" class="btn btn-info">
                     <i class="fas fa-trophy me-2"></i>Classements
                 </a>
-                <button id="exportExcelBtn" class="btn btn-secondary">
-                    <i class="fas fa-file-excel me-2"></i>Exporter Excel
-                </button>
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-file-export me-2"></i>Exporter
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="handleExport('excel')"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="handleExport('pdf')"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

@@ -1895,6 +1895,93 @@ Vous pouvez utiliser ce système pour:
 
     @app.route('/api/export-stats', methods=['POST'])
 def export_stats():
+    """Export statistics to Excel and PDF"""
+    try:
+        export_format = request.form.get('format', 'excel')
+        
+        if export_format == 'excel':
+            # Create Excel workbook
+            output = pd.ExcelWriter('statistics_export.xlsx', engine='xlsxwriter')
+            
+            # Export attendance stats
+            attendance_data = pd.DataFrame([(a.user_name, a.join_time, a.leave_time, a.duration) 
+                                         for a in ZoomAttendance.query.all()],
+                                         columns=['User', 'Join Time', 'Leave Time', 'Duration'])
+            if not attendance_data.empty:
+                attendance_data.to_excel(output, sheet_name='Attendance', index=False)
+            
+            # Export rankings
+            rankings_data = pd.DataFrame([(r.user_name, r.total_points, r.telegram_group_id)
+                                        for r in UserRanking.query.all()],
+                                        columns=['User', 'Points', 'Group'])
+            if not rankings_data.empty:
+                rankings_data.to_excel(output, sheet_name='Rankings', index=False)
+            
+            # Export course stats
+            course_data = pd.DataFrame([(c.course_name, c.teacher_name, c.schedule_date)
+                                      for c in Course.query.all()],
+                                      columns=['Course', 'Teacher', 'Date'])
+            if not course_data.empty:
+                course_data.to_excel(output, sheet_name='Courses', index=False)
+            
+            # Save and close
+            output.save()
+            
+            return jsonify({'success': True, 'message': 'Excel export completed successfully'})
+            
+        elif export_format == 'pdf':
+            from fpdf import FPDF
+            
+            # Create PDF
+            pdf = FPDF()
+            pdf.add_page()
+            
+            # Set font
+            pdf.set_font('Arial', 'B', 16)
+            
+            # Title
+            pdf.cell(190, 10, 'Statistics Report', 0, 1, 'C')
+            pdf.ln(10)
+            
+            # Add attendance data
+            pdf.set_font('Arial', 'B', 14)
+            pdf.cell(190, 10, 'Attendance Statistics', 0, 1, 'L')
+            pdf.set_font('Arial', '', 10)
+            
+            attendance_count = ZoomAttendance.query.count()
+            pdf.cell(190, 10, f'Total Attendances: {attendance_count}', 0, 1, 'L')
+            
+            # Add rankings data
+            pdf.ln(10)
+            pdf.set_font('Arial', 'B', 14)
+            pdf.cell(190, 10, 'Top Rankings', 0, 1, 'L')
+            pdf.set_font('Arial', '', 10)
+            
+            top_rankings = UserRanking.query.order_by(UserRanking.total_points.desc()).limit(10).all()
+            for rank in top_rankings:
+                pdf.cell(190, 10, f'{rank.user_name}: {rank.total_points} points', 0, 1, 'L')
+            
+            # Add course stats
+            pdf.ln(10)
+            pdf.set_font('Arial', 'B', 14)
+            pdf.cell(190, 10, 'Course Statistics', 0, 1, 'L')
+            pdf.set_font('Arial', '', 10)
+            
+            course_count = Course.query.count()
+            pdf.cell(190, 10, f'Total Courses: {course_count}', 0, 1, 'L')
+            
+            # Save the PDF
+            pdf.output('statistics_report.pdf')
+            
+            return jsonify({'success': True, 'message': 'PDF export completed successfully'})
+            
+        else:
+            return jsonify({'success': False, 'message': 'Invalid export format'})
+            
+    except Exception as e:
+        error_msg = f"Error exporting statistics: {str(e)}"
+        logger.error(error_msg)
+        return jsonify({'success': False, 'message': error_msg})
     """Export statistics to Excel"""
     try:
         # Create a new Excel writer

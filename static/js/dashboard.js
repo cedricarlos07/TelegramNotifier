@@ -35,7 +35,47 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    button.innerHTML = '<i class="fas fa-check me-2"></i>Exporté !';
+                    // Function to handle exports
+function handleExport(format) {
+    const button = document.getElementById('exportExcelBtn');
+    const originalHtml = button.innerHTML;
+    button.disabled = true;
+    
+    fetch('/api/export-stats', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `format=${format}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.innerHTML = '<i class="fas fa-check me-2"></i>Exporté !';
+            setTimeout(() => {
+                button.innerHTML = originalHtml;
+                button.disabled = false;
+            }, 2000);
+            showToast(`Export ${format.toUpperCase()} réussi !`, 'success');
+        } else {
+            button.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Erreur';
+            setTimeout(() => {
+                button.innerHTML = originalHtml;
+                button.disabled = false;
+            }, 2000);
+            showToast('Erreur: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Erreur';
+        setTimeout(() => {
+            button.innerHTML = originalHtml;
+            button.disabled = false;
+        }, 2000);
+        showToast('Une erreur est survenue lors de l\'exportation.', 'danger');
+    });
+}
                     setTimeout(() => {
                         button.innerHTML = originalHtml;
                         button.disabled = false;
