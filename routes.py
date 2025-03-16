@@ -1133,6 +1133,25 @@ def register_routes(app):
 
             return jsonify({'success': False, 'message': error_msg})
 
+    @app.route('/api/filter-courses')
+    @login_required
+    def filter_courses():
+        """API endpoint for course filters"""
+        teacher = request.args.get('teacher', '')
+
+        # Query courses based on teacher filter
+        query = Course.query
+        if teacher:
+            query = query.filter(Course.teacher_name == teacher)
+
+        # Get unique course names
+        courses = query.with_entities(Course.course_name).distinct()
+        course_list = [c[0] for c in courses if c[0]]
+
+        return jsonify({
+            'courses': sorted(course_list)
+        })
+
     @app.route('/api/filter-rankings')
     @login_required
     def filter_rankings():
@@ -1627,8 +1646,7 @@ def register_routes(app):
                     # La deuxième colonne contient le nom de l'enseignant
                     teacher_name = row.get('Salma Choufani')
                     # Colonne jour
-                    day_str = row.get('DAY')
-                    # Utilisation de l'heure française
+                    day_str = row.get('DAY')                    # Utilisation de l'heure française
                     start_time_str = row.get('TIME (France)')
                     # Colonne ID du groupe Telegram 
                     telegram_group_id = row.get('TELEGRAM GROUP ID')
