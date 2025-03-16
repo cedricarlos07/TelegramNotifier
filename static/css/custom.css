@@ -10,12 +10,15 @@
     
     /* Dark theme variables (default) */
     --body-bg: #111827;
-    --body-color: #f3f4f6;
+    --body-color: #ffffff;
     --card-bg: #1f2937;
     --sidebar-bg: #1f2937;
     --border-color: rgba(255, 255, 255, 0.1);
     --input-bg: #374151;
-    --input-color: #f3f4f6;
+    --input-color: #ffffff;
+    --text-color-emphasis: #ffffff;
+    --card-text-color: #ffffff;
+    --table-text-color: #ffffff;
     --input-border: rgba(255, 255, 255, 0.1);
     --hover-bg: rgba(255, 255, 255, 0.05);
     --table-stripe-bg: rgba(255, 255, 255, 0.02);

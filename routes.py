@@ -1893,7 +1893,47 @@ Vous pouvez utiliser ce système pour:
 
             return jsonify({'success': False, 'message': error_msg})
 
-    @app.route('/api/send-daily-rankings', methods=['POST'])
+    @app.route('/api/export-stats', methods=['POST'])
+def export_stats():
+    """Export statistics to Excel"""
+    try:
+        # Create a new Excel writer
+        output = pd.ExcelWriter('statistics_export.xlsx', engine='xlsxwriter')
+        
+        # Export attendance stats
+        attendance_data = pd.DataFrame(ZoomAttendance.query.all())
+        if not attendance_data.empty:
+            attendance_data.to_excel(output, sheet_name='Attendance', index=False)
+        
+        # Export rankings
+        rankings_data = pd.DataFrame(UserRanking.query.all())
+        if not rankings_data.empty:
+            rankings_data.to_excel(output, sheet_name='Rankings', index=False)
+        
+        # Export course stats
+        course_data = pd.DataFrame(Course.query.all())
+        if not course_data.empty:
+            course_data.to_excel(output, sheet_name='Courses', index=False)
+        
+        # Save and close
+        output.close()
+        
+        # Log the export
+        log_entry = Log(
+            level="INFO",
+            scenario="export_stats",
+            message="Statistics exported to Excel"
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Statistics exported successfully'})
+    except Exception as e:
+        error_msg = f"Error exporting statistics: {str(e)}"
+        logger.error(error_msg)
+        return jsonify({'success': False, 'message': error_msg})
+
+@app.route('/api/send-daily-rankings', methods=['POST'])
     @login_required
     def send_daily_rankings():
         """Send daily rankings to all Telegram groups"""
