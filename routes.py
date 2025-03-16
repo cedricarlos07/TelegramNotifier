@@ -1982,61 +1982,12 @@ Vous pouvez utiliser ce système pour:
             error_msg = f"Error exporting statistics: {str(e)}"
             logger.error(error_msg)
             return jsonify({'success': False, 'message': error_msg})
-            from fpdf import FPDF
-            
-            # Create PDF
-            pdf = FPDF()
-            pdf.add_page()
-            
-            # Set font
-            pdf.set_font('Arial', 'B', 16)
-            
-            # Title
-            pdf.cell(190, 10, 'Statistics Report', 0, 1, 'C')
-            pdf.ln(10)
-            
-            # Add attendance data
-            pdf.set_font('Arial', 'B', 14)
-            pdf.cell(190, 10, 'Attendance Statistics', 0, 1, 'L')
-            pdf.set_font('Arial', '', 10)
-            
-            attendance_count = ZoomAttendance.query.count()
-            pdf.cell(190, 10, f'Total Attendances: {attendance_count}', 0, 1, 'L')
-            
-            # Add rankings data
-            pdf.ln(10)
-            pdf.set_font('Arial', 'B', 14)
-            pdf.cell(190, 10, 'Top Rankings', 0, 1, 'L')
-            pdf.set_font('Arial', '', 10)
-            
-            top_rankings = UserRanking.query.order_by(UserRanking.total_points.desc()).limit(10).all()
-            for rank in top_rankings:
-                pdf.cell(190, 10, f'{rank.user_name}: {rank.total_points} points', 0, 1, 'L')
-            
-            # Add course stats
-            pdf.ln(10)
-            pdf.set_font('Arial', 'B', 14)
-            pdf.cell(190, 10, 'Course Statistics', 0, 1, 'L')
-            pdf.set_font('Arial', '', 10)
-            
-            course_count = Course.query.count()
-            pdf.cell(190, 10, f'Total Courses: {course_count}', 0, 1, 'L')
-            
-            # Save the PDF
-            pdf.output('statistics_report.pdf')
-            
-            return jsonify({'success': True, 'message': 'PDF export completed successfully'})
-            
+        
         else:
             return jsonify({'success': False, 'message': 'Invalid export format'})
-            
-    except Exception as e:
-        error_msg = f"Error exporting statistics: {str(e)}"
-        logger.error(error_msg)
-        return jsonify({'success': False, 'message': error_msg})
     
 
-@app.route('/api/send-daily-rankings', methods=['POST'])
+    @app.route('/api/send-daily-rankings', methods=['POST'])
     @login_required
     def send_daily_rankings():
         """Send daily rankings to all Telegram groups"""
