@@ -25,7 +25,7 @@
             <form id="filterForm" class="row g-3">
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="filter_teacher" class="form-label">
+                        <label for="filter_teacher" class="form-label text-dark">
                             <i class="fas fa-user-tie text-primary me-1"></i> Coach
                         </label>
                         <select class="form-select" id="filter_teacher" name="teacher">
@@ -38,7 +38,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="filter_class" class="form-label">
+                        <label for="filter_class" class="form-label text-dark">
                             <i class="fas fa-book text-primary me-1"></i> Cours
                         </label>
                         <select class="form-select" id="filter_class" name="class">
@@ -51,7 +51,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="filter_day" class="form-label">
+                        <label for="filter_day" class="form-label text-dark">
                             <i class="fas fa-calendar-day text-primary me-1"></i> Jour
                         </label>
                         <select class="form-select" id="filter_day" name="day">
@@ -68,7 +68,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label for="filter_status" class="form-label">
+                        <label for="filter_status" class="form-label text-dark">
                             <i class="fas fa-check-circle text-primary me-1"></i> Statut Zoom
                         </label>
                         <select class="form-select" id="filter_status" name="status">
@@ -91,112 +91,9 @@
     </div>
 </div>
 
-<!-- Courses with Zoom Links -->
-<div class="card mb-4">
-    <div class="card-header bg-success text-white">
-        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Courses with Zoom Links</h5>
-    </div>
-    <div class="card-body">
-        {% if courses_with_zoom %}
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Course</th>
-                            <th>Teacher</th>
-                            <th>Zoom Meeting ID</th>
-                            <th>Zoom Link</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for course in courses_with_zoom %}
-                        <tr>
-                            <td>
-                                {% if course.schedule_date %}
-                                    {{ course.schedule_date.strftime('%d-%m-%Y') }}
-                                {% else %}
-                                    <span class="badge bg-warning text-dark">Not scheduled</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ course.start_time.strftime('%H:%M') }} - {{ course.end_time.strftime('%H:%M') }}</td>
-                            <td>{{ course.course_name }}</td>
-                            <td>{{ course.teacher_name }}</td>
-                            <td>{{ course.zoom_meeting_id }}</td>
-                            <td>
-                                <a href="{{ course.zoom_link }}" target="_blank" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-video me-1"></i> Open Link
-                                </a>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-info edit-zoom-btn" 
-                                        data-course-id="{{ course.id }}"
-                                        data-course-name="{{ course.course_name }}"
-                                        data-zoom-link="{{ course.zoom_link }}"
-                                        data-zoom-meeting-id="{{ course.zoom_meeting_id }}">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="alert alert-info">No courses with Zoom links found.</div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Courses without Zoom Links -->
-<div class="card mb-4">
-    <div class="card-header bg-warning text-dark">
-        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Courses Missing Zoom Links</h5>
-    </div>
-    <div class="card-body">
-        {% if courses_without_zoom %}
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Course</th>
-                            <th>Teacher</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for course in courses_without_zoom %}
-                        <tr>
-                            <td>
-                                {% if course.schedule_date %}
-                                    {{ course.schedule_date.strftime('%d-%m-%Y') }}
-                                {% else %}
-                                    <span class="badge bg-warning text-dark">Not scheduled</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ course.start_time.strftime('%H:%M') }} - {{ course.end_time.strftime('%H:%M') }}</td>
-                            <td>{{ course.course_name }}</td>
-                            <td>{{ course.teacher_name }}</td>
-                            <td>
-                                <button class="btn btn-sm btn-success add-zoom-btn" 
-                                        data-course-id="{{ course.id }}"
-                                        data-course-name="{{ course.course_name }}">
-                                    <i class="fas fa-plus-circle me-1"></i> Add Zoom Link
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="alert alert-success">All courses have Zoom links assigned!</div>
-        {% endif %}
-    </div>
+<!-- Conteneur pour les tableaux de liens Zoom -->
+<div id="zoomLinksTables">
+    {% include 'partials/zoom_links_tables.html' %}
 </div>
 
 <!-- Quick Actions -->
@@ -218,21 +115,21 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editZoomModalLabel">Edit Zoom Link</h5>
+                <h5 class="modal-title text-dark" id="editZoomModalLabel">Edit Zoom Link</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editZoomForm" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Course Name</label>
+                        <label class="form-label text-dark">Course Name</label>
                         <input type="text" class="form-control" id="zoom_course_name" disabled>
                     </div>
                     <div class="mb-3">
-                        <label for="zoom_meeting_id" class="form-label">Zoom Meeting ID</label>
+                        <label for="zoom_meeting_id" class="form-label text-dark">Zoom Meeting ID</label>
                         <input type="text" class="form-control" id="zoom_meeting_id" name="zoom_meeting_id">
                     </div>
                     <div class="mb-3">
-                        <label for="zoom_link" class="form-label">Zoom Link</label>
+                        <label for="zoom_link" class="form-label text-dark">Zoom Link</label>
                         <input type="text" class="form-control" id="zoom_link" name="zoom_link" required>
                     </div>
                 </div>
@@ -250,21 +147,21 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addZoomModalLabel">Add Zoom Link</h5>
+                <h5 class="modal-title text-dark" id="addZoomModalLabel">Add Zoom Link</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="addZoomForm" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Course Name</label>
+                        <label class="form-label text-dark">Course Name</label>
                         <input type="text" class="form-control" id="add_zoom_course_name" disabled>
                     </div>
                     <div class="mb-3">
-                        <label for="add_zoom_meeting_id" class="form-label">Zoom Meeting ID</label>
+                        <label for="add_zoom_meeting_id" class="form-label text-dark">Zoom Meeting ID</label>
                         <input type="text" class="form-control" id="add_zoom_meeting_id" name="zoom_meeting_id">
                     </div>
                     <div class="mb-3">
-                        <label for="add_zoom_link" class="form-label">Zoom Link</label>
+                        <label for="add_zoom_link" class="form-label text-dark">Zoom Link</label>
                         <input type="text" class="form-control" id="add_zoom_link" name="zoom_link" required>
                     </div>
                 </div>
@@ -276,53 +173,95 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/zoom_links.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle Edit Zoom Link buttons
-        document.querySelectorAll('.edit-zoom-btn').forEach(function(button) {
-            button.addEventListener('click', function() {
-                const courseId = this.getAttribute('data-course-id');
-                const courseName = this.getAttribute('data-course-name');
-                const zoomLink = this.getAttribute('data-zoom-link');
-                const zoomMeetingId = this.getAttribute('data-zoom-meeting-id');
-                
-                // Populate form
-                document.getElementById('zoom_course_name').value = courseName;
-                document.getElementById('zoom_link').value = zoomLink;
-                document.getElementById('zoom_meeting_id').value = zoomMeetingId;
-                
-                // Set form action
-                document.getElementById('editZoomForm').action = `/zoom-links/update/${courseId}`;
-                
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('editZoomModal'));
-                modal.show();
-            });
-        });
-        
-        // Handle Add Zoom Link buttons
-        document.querySelectorAll('.add-zoom-btn').forEach(function(button) {
-            button.addEventListener('click', function() {
-                const courseId = this.getAttribute('data-course-id');
-                const courseName = this.getAttribute('data-course-name');
-                
-                // Populate form
-                document.getElementById('add_zoom_course_name').value = courseName;
-                document.getElementById('add_zoom_link').value = '';
-                document.getElementById('add_zoom_meeting_id').value = '';
-                
-                // Set form action
-                document.getElementById('addZoomForm').action = `/zoom-links/update/${courseId}`;
-                
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('addZoomModal'));
-                modal.show();
-            });
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion du toggle des filtres
+    const filterToggle = document.querySelector('[data-bs-target="#filterCollapse"]');
+    const filterToggleText = filterToggle.querySelector('.filter-toggle-text');
+    const filterCollapse = document.getElementById('filterCollapse');
+
+    filterCollapse.addEventListener('show.bs.collapse', function () {
+        filterToggleText.textContent = 'Masquer';
     });
+
+    filterCollapse.addEventListener('hide.bs.collapse', function () {
+        filterToggleText.textContent = 'Afficher';
+    });
+
+    // Fonction pour mettre à jour les tableaux
+    function updateTables() {
+        const form = document.getElementById('filterForm');
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+
+        for (const [key, value] of formData.entries()) {
+            if (value) {
+                params.append(key, value);
+            }
+        }
+
+        fetch(`/api/filter-zoom-links?${params.toString()}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('zoomLinksTables').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue lors du filtrage des liens Zoom.');
+            });
+    }
+
+    // Écouter les changements dans les filtres
+    document.getElementById('filterForm').addEventListener('change', function() {
+        updateTables();
+    });
+
+    // Écouter la soumission du formulaire
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        updateTables();
+    });
+
+    // Écouter le reset du formulaire
+    document.getElementById('filterForm').addEventListener('reset', function() {
+        setTimeout(updateTables, 0);
+    });
+
+    // Gestion des modales d'édition et d'ajout
+    const editModal = new bootstrap.Modal(document.getElementById('editZoomModal'));
+    const addModal = new bootstrap.Modal(document.getElementById('addZoomModal'));
+
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.edit-zoom-btn')) {
+            const btn = e.target.closest('.edit-zoom-btn');
+            const courseId = btn.dataset.courseId;
+            const courseName = btn.dataset.courseName;
+            const zoomLink = btn.dataset.zoomLink;
+            const zoomMeetingId = btn.dataset.zoomMeetingId;
+
+            document.getElementById('zoom_course_name').value = courseName;
+            document.getElementById('zoom_meeting_id').value = zoomMeetingId;
+            document.getElementById('zoom_link').value = zoomLink;
+            document.getElementById('editZoomForm').action = `/zoom-links/update/${courseId}`;
+
+            editModal.show();
+        }
+
+        if (e.target.closest('.add-zoom-btn')) {
+            const btn = e.target.closest('.add-zoom-btn');
+            const courseId = btn.dataset.courseId;
+            const courseName = btn.dataset.courseName;
+
+            document.getElementById('add_zoom_course_name').value = courseName;
+            document.getElementById('addZoomForm').action = `/zoom-links/update/${courseId}`;
+
+            addModal.show();
+        }
+    });
+});
 </script>
 {% endblock %}

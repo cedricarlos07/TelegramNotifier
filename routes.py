@@ -672,6 +672,13 @@ def register_routes(app):
     @login_required
     def zoom_links():
         """Zoom links management page"""
+        # Get unique teachers and class names for filters
+        teachers = db.session.query(Course.teacher_name).distinct().all()
+        teachers = [teacher[0] for teacher in teachers if teacher[0]]
+        
+        class_names = db.session.query(Course.course_name).distinct().all()
+        class_names = [name[0] for name in class_names if name[0]]
+
         # Get all courses with Zoom links
         courses_with_zoom = Course.query.filter(
             (Course.zoom_link.isnot(None)) & 
@@ -687,7 +694,9 @@ def register_routes(app):
         return render_template(
             'zoom_links.html',
             courses_with_zoom=courses_with_zoom,
-            courses_without_zoom=courses_without_zoom
+            courses_without_zoom=courses_without_zoom,
+            teachers=teachers,
+            class_names=class_names
         )
 
     @app.route('/zoom-links/update/<int:course_id>', methods=['POST'])
@@ -2024,6 +2033,62 @@ Vous pouvez utiliser ce système pour:
             db.session.commit()
 
             return jsonify({'success': False, 'message': error_msg})
+
+    @app.route('/api/filter-zoom-links')
+    @login_required
+    def filter_zoom_links():
+        """API endpoint for filtering Zoom links"""
+        try:
+            # Récupérer les paramètres de filtrage
+            teacher = request.args.get('teacher')
+            class_name = request.args.get('class')
+            day = request.args.get('day')
+            status = request.args.get('status')
+
+            # Construire la requête de base
+            query = Course.query
+
+            # Appliquer les filtres
+            if teacher:
+                query = query.filter(Course.teacher_name == teacher)
+            if class_name:
+                query = query.filter(Course.course_name == class_name)
+            if day is not None:
+                query = query.filter(db.extract('dow', Course.schedule_date) == int(day))
+            if status == 'with_zoom':
+                query = query.filter(
+                    (Course.zoom_link.isnot(None)) & 
+                    (Course.zoom_link != '')
+                )
+            elif status == 'without_zoom':
+                query = query.filter(
+                    (Course.zoom_link.is_(None)) | 
+                    (Course.zoom_link == '')
+                )
+
+            # Exécuter la requête
+            courses = query.order_by(Course.schedule_date).all()
+
+            # Préparer les données pour le template
+            courses_with_zoom = []
+            courses_without_zoom = []
+
+            for course in courses:
+                if course.zoom_link and course.zoom_link.strip():
+                    courses_with_zoom.append(course)
+                else:
+                    courses_without_zoom.append(course)
+
+            # Rendre le template partiel avec les résultats filtrés
+            return render_template(
+                'partials/zoom_links_tables.html',
+                courses_with_zoom=courses_with_zoom,
+                courses_without_zoom=courses_without_zoom
+            )
+
+        except Exception as e:
+            logger.error(f"Error filtering Zoom links: {str(e)}")
+            return jsonify({'error': str(e)}), 500
 
     # Error handlers
     @app.errorhandler(404)
