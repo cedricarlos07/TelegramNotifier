@@ -16,7 +16,7 @@
             {% endif %}
         {% endwith %}
         
-        <form method="post" action="{{ url_for('login') }}" class="auth-form">
+        <form method="post" action="{{ url_for('main.login') }}" class="auth-form">
             {{ form.hidden_tag() }}
             <div class="form-group">
                 <label for="username" class="form-label">{{ form.username.label }}</label>

@@ -16,22 +16,22 @@
 
     <!-- Modern Theme -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
-    {% if request.endpoint == 'rankings' %}
+    {% if request.endpoint == 'main.rankings' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/rankings.css') }}">
     {% endif %}
-    {% if request.endpoint == 'scenarios' %}
+    {% if request.endpoint == 'main.scenarios' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/scenarios.css') }}">
     {% endif %}
-    {% if request.endpoint == 'courses' %}
+    {% if request.endpoint == 'main.courses' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/courses.css') }}">
     {% endif %}
-    {% if request.endpoint == 'students' %}
+    {% if request.endpoint == 'main.students' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/students.css') }}">
     {% endif %}
-    {% if request.endpoint == 'telegram-groups' %}
+    {% if request.endpoint == 'main.telegram_groups' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/telegram_groups.css') }}">
     {% endif %}
-    {% if request.endpoint in ['login', 'register'] %}
+    {% if request.endpoint in ['main.login', 'main.register'] %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     {% endif %}
 </head>
@@ -41,7 +41,7 @@
         <header class="sticky-top">
             <nav class="navbar navbar-expand-lg">
                 <div class="container-fluid px-4">
-                    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
+                    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.dashboard') }}">
                         <div class="brand-icon me-2 d-flex align-items-center justify-content-center">
                             <i class="fas fa-graduation-cap"></i>
                         </div>
@@ -139,12 +139,12 @@
                         <h6 class="sidebar-heading text-uppercase ms-2 mb-3">Menu principal</h6>
                         <ul class="nav nav-pills flex-column mb-auto">
                             <li class="nav-item mb-2">
-                                <a class="nav-link {% if request.path == '/' or request.path == '/admin' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                                <a class="nav-link {% if request.path == '/' or request.path == '/admin' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
                                     <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
                                 </a>
                             </li>
                             <li class="nav-item mb-2">
-                                <a class="nav-link {% if request.path == '/courses' %}active{% endif %}" href="{{ url_for('courses') }}">
+                                <a class="nav-link {% if request.path == '/courses' %}active{% endif %}" href="{{ url_for('main.courses') }}">
                                     <i class="fas fa-graduation-cap"></i> <span>Cours</span>
                                 </a>
                             </li>
@@ -165,17 +165,17 @@
                         <h6 class="sidebar-heading text-uppercase ms-2 mb-3">Automation</h6>
                         <ul class="nav nav-pills flex-column mb-auto">
                             <li class="nav-item mb-2">
-                                <a class="nav-link {% if request.path == '/scenarios' %}active{% endif %}" href="{{ url_for('scenarios') }}">
+                                <a class="nav-link {% if request.path == '/scenarios' %}active{% endif %}" href="{{ url_for('main.scenarios') }}">
                                     <i class="fas fa-tasks"></i> <span>Scénarios</span>
                                 </a>
                             </li>
                             <li class="nav-item mb-2">
-                                <a class="nav-link {% if request.path == '/telegram-groups' %}active{% endif %}" href="{{ url_for('telegram_groups') }}">
+                                <a class="nav-link {% if request.path == '/telegram-groups' %}active{% endif %}" href="{{ url_for('main.telegram_groups') }}">
                                     <i class="fas fa-telegram"></i> <span>Groupes Telegram</span>
                                 </a>
                             </li>
                             <li class="nav-item mb-2">
-                                <a class="nav-link {% if request.path == '/rankings' %}active{% endif %}" href="{{ url_for('rankings') }}">
+                                <a class="nav-link {% if request.path == '/rankings' %}active{% endif %}" href="{{ url_for('main.rankings') }}">
                                     <i class="fas fa-trophy"></i> <span>Classements</span>
                                 </a>
                             </li>
@@ -210,31 +210,31 @@
                 <div class="container-fluid px-0">
                     <ul class="nav nav-pills nav-fill w-100">
                         <li class="nav-item">
-                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/' or request.path == '/admin' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/' or request.path == '/admin' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
                                 <i class="fas fa-tachometer-alt d-block mb-1"></i>
                                 <small>Dashboard</small>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/courses' %}active{% endif %}" href="{{ url_for('courses') }}">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/courses' %}active{% endif %}" href="{{ url_for('main.courses') }}">
                                 <i class="fas fa-graduation-cap d-block mb-1"></i>
                                 <small>Cours</small>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/scenarios' %}active{% endif %}" href="{{ url_for('scenarios') }}">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/scenarios' %}active{% endif %}" href="{{ url_for('main.scenarios') }}">
                                 <i class="fas fa-tasks d-block mb-1"></i>
                                 <small>Scénarios</small>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/telegram-groups' %}active{% endif %}" href="{{ url_for('telegram_groups') }}">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/telegram-groups' %}active{% endif %}" href="{{ url_for('main.telegram_groups') }}">
                                 <i class="fas fa-telegram d-block mb-1"></i>
                                 <small>Groupes Telegram</small>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/rankings' %}active{% endif %}" href="{{ url_for('rankings') }}">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/rankings' %}active{% endif %}" href="{{ url_for('main.rankings') }}">
                                 <i class="fas fa-trophy d-block mb-1"></i>
                                 <small>Classements</small>
                             </a>
