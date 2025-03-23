@@ -60,13 +60,20 @@ def load_user(user_id):
 # Création des tables dans la base de données
 def create_tables():
     with app.app_context():
-        db.create_all()
-        # Créer l'utilisateur admin s'il n'existe pas
-        if not User.query.filter_by(username='admin').first():
-            admin = User(username='admin', email='admin@example.com')
-            admin.set_password('admin123')
-            db.session.add(admin)
-            db.session.commit()
+        try:
+            # Supprimer toutes les tables existantes
+            db.drop_all()
+            # Créer toutes les tables
+            db.create_all()
+            # Créer l'utilisateur admin s'il n'existe pas
+            if not User.query.filter_by(username='admin').first():
+                admin = User(username='admin', email='admin@example.com')
+                admin.set_password('admin123')
+                db.session.add(admin)
+                db.session.commit()
+            logger.info("Base de données initialisée avec succès !")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'initialisation de la base de données : {str(e)}")
 
 # Register the blueprint
 app.register_blueprint(main)
@@ -81,3 +88,6 @@ scheduler.start()
 if __name__ == '__main__':
     create_tables()
     app.run(debug=True)
+else:
+    # Initialiser la base de données au démarrage de l'application
+    create_tables()

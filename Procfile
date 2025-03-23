@@ -1,1 +1,1 @@
-web: gunicorn app:app 
+web: python -c "from app import create_tables; create_tables()" && gunicorn app:app 
