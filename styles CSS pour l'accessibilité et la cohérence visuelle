@@ -1,0 +1,455 @@
+warning: in the working copy of 'static/css/custom.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'templates/analytics.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'templates/bot_status.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'templates/dashboard.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'templates/layout.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'templates/scenarios.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'templates/simulation.html', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/static/css/custom.css b/static/css/custom.css[m
+[1mindex 07fbf28..01218fe 100644[m
+[1m--- a/static/css/custom.css[m
+[1m+++ b/static/css/custom.css[m
+[36m@@ -1,19 +1,30 @@[m
+ /* Modern SaaS Dashboard Styles for Both Light and Dark Themes */[m
+ [m
+[31m-/* Base Styles & Layout */[m
+[32m+[m[32m/* Variables globales */[m
+ :root {[m
+[32m+[m[32m    --primary-color: #4361ee;[m
+[32m+[m[32m    --secondary-color: #3f37c9;[m
+[32m+[m[32m    --success-color: #4cc9f0;[m
+[32m+[m[32m    --info-color: #4895ef;[m
+[32m+[m[32m    --warning-color: #f72585;[m
+[32m+[m[32m    --danger-color: #e63946;[m
+[32m+[m[32m    --light-color: #f8f9fa;[m
+[32m+[m[32m    --dark-color: #212529;[m
+[32m+[m[32m    --body-bg: #ffffff;[m
+[32m+[m[32m    --card-bg: #ffffff;[m
+[32m+[m[32m    --sidebar-bg: #f8f9fa;[m
+[32m+[m[32m    --header-bg: #ffffff;[m
+[32m+[m[32m    --text-primary: #212529;[m
+[32m+[m[32m    --text-secondary: #6c757d;[m
+[32m+[m[32m    --border-color: #e9ecef;[m
+[32m+[m[32m    --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);[m
+[32m+[m[32m    --shadow-md: 0 .5rem 1rem rgba(0,0,0,.15);[m
+[32m+[m[32m    --shadow-lg: 0 1rem 3rem rgba(0,0,0,.175);[m
+     --sidebar-width: 280px;[m
+     --navbar-height: 60px;[m
+     --card-border-radius: 10px;[m
+     --btn-border-radius: 8px;[m
+     --animation-duration: 0.2s;[m
+[31m-    [m
+[31m-    /* Dark theme variables (default) */[m
+[31m-    --body-bg: #111827;[m
+[31m-    --body-color: #ffffff;[m
+[31m-    --card-bg: #1f2937;[m
+[31m-    --sidebar-bg: #1f2937;[m
+[31m-    --border-color: rgba(255, 255, 255, 0.1);[m
+     --input-bg: #374151;[m
+     --input-color: #ffffff;[m
+     --text-color-emphasis: #ffffff;[m
+[36m@@ -31,46 +42,42 @@[m
+     --muted-color: #9ca3af;[m
+     --heading-color: #e5e7eb;[m
+     --btn-link-color: #e5e7eb;[m
+[32m+[m[32m    --z-index-navbar: 1030;[m
+[32m+[m[32m    --z-index-sidebar: 1020;[m
+[32m+[m[32m    --z-index-backdrop: 1019;[m
+[32m+[m[32m    --z-index-modal: 1040;[m
+[32m+[m[32m    --z-index-toast: 1050;[m
+[32m+[m[32m    --contrast-ratio: 4.5;[m
+[32m+[m[32m    --link-color: #0056b3;[m
+[32m+[m[32m    --link-hover-color: #003d82;[m
+ }[m
+ [m
+[31m-/* Light theme variables */[m
+[31m-[data-bs-theme="light"] {[m
+[31m-    --body-bg: #f8f9fa;[m
+[31m-    --body-color: #212529;[m
+[31m-    --card-bg: #ffffff;[m
+[31m-    --sidebar-bg: #f8f9fa;[m
+[31m-    --border-color: rgba(0, 0, 0, 0.1);[m
+[31m-    --input-bg: #ffffff;[m
+[31m-    --input-color: #212529;[m
+[31m-    --input-border: rgba(0, 0, 0, 0.1);[m
+[31m-    --hover-bg: rgba(0, 0, 0, 0.03);[m
+[31m-    --table-stripe-bg: rgba(0, 0, 0, 0.02);[m
+[31m-    --table-hover-bg: rgba(0, 0, 0, 0.04);[m
+[31m-    --progress-bg: #e9ecef;[m
+[31m-    --modal-bg: #ffffff;[m
+[31m-    --dropdown-bg: #ffffff;[m
+[31m-    --active-nav-bg: #4f46e5;[m
+[31m-    --nav-link-color: #495057;[m
+[31m-    --muted-color: #6c757d;[m
+[31m-    --heading-color: #212529;[m
+[31m-    --btn-link-color: #212529;[m
+[31m-}[m
+[31m-[m
+[32m+[m[32m/* Style général */[m
+ body {[m
+[31m-    min-height: 100vh;[m
+[32m+[m[32m    background-color: var(--body-bg);[m
+[32m+[m[32m    color: var(--text-primary);[m
+     font-family: 'Inter', sans-serif;[m
+[32m+[m[32m    min-height: 100vh;[m
+     font-weight: 400;[m
+     letter-spacing: -0.015em;[m
+[31m-    background-color: var(--body-bg);[m
+[31m-    color: var(--body-color);[m
+     transition: background-color var(--animation-duration), color var(--animation-duration);[m
+[32m+[m[32m    padding-top: 70px;[m
+[32m+[m[32m    line-height: 1.6;[m
+[32m+[m[32m    font-size: 16px;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* Header */[m
+[32m+[m[32m.navbar {[m
+[32m+[m[32m    background-color: var(--header-bg) !important;[m
+[32m+[m[32m    box-shadow: var(--shadow-sm);[m
+[32m+[m[32m    padding: 1rem;[m
+[32m+[m[32m    z-index: var(--z-index-navbar);[m
+ }[m
+ [m
+[31m-/* Logo and Branding */[m
+ .navbar-brand {[m
+[31m-    font-weight: 700;[m
+[32m+[m[32m    font-weight: 600;[m
+[32m+[m[32m    color: var(--primary-color) !important;[m
+     font-size: 1.3rem;[m
+[31m-    color: #ffffff !important;[m
+     word-break: keep-all;[m
+     white-space: nowrap;[m
+ }[m
+[36m@@ -105,33 +112,35 @@[m [mbody {[m
+     font-weight: 600;[m
+ }[m
+ [m
+[31m-/* Sidebar styling */[m
+[32m+[m[32m/* Sidebar */[m
+ .sidebar {[m
+     position: sticky;[m
+     top: var(--navbar-height);[m
+     height: calc(100vh - var(--navbar-height));[m
+     background-color: var(--sidebar-bg);[m
+[31m-    transition: background-color var(--animation-duration);[m
+[32m+[m[32m    border-right: 1px solid var(--border-color);[m
+[32m+[m[32m    transition: all 0.3s ease;[m
+[32m+[m[32m    padding: 1.5rem;[m
+[32m+[m[32m    z-index: var(--z-index-sidebar);[m
+ }[m
+ [m
+[31m-.sidebar .nav-link {[m
+[31m-    border-radius: 6px;[m
+[31m-    margin-bottom: 4px;[m
+[31m-    padding: 10px 16px;[m
+[31m-    font-weight: 500;[m
+[31m-    color: var(--nav-link-color);[m
+[31m-    transition: all var(--animation-duration) ease-in-out;[m
+[32m+[m[32m.nav-link {[m
+[32m+[m[32m    color: var(--text-secondary);[m
+[32m+[m[32m    border-radius: 0.5rem;[m
+[32m+[m[32m    padding: 0.75rem 1rem;[m
+[32m+[m[32m    margin-bottom: 0.5rem;[m
+[32m+[m[32m    transition: all 0.3s ease;[m
+ }[m
+ [m
+[31m-.sidebar .nav-link:hover {[m
+[31m-    background-color: var(--hover-bg);[m
+[31m-    color: var(--body-color);[m
+[32m+[m[32m.nav-link:hover, .nav-link.active {[m
+[32m+[m[32m    color: var(--primary-color);[m
+[32m+[m[32m    background-color: rgba(67, 97, 238, 0.1);[m
+ }[m
+ [m
+[31m-.sidebar .nav-link.active {[m
+[31m-    background-color: var(--active-nav-bg);[m
+[31m-    color: #fff;[m
+[31m-    font-weight: 600;[m
+[32m+[m[32m.nav-link i {[m
+[32m+[m[32m    width: 1.5rem;[m
+[32m+[m[32m    text-align: center;[m
+[32m+[m[32m    margin-right: 0.75rem;[m
+ }[m
+ [m
+ .content-with-sidebar {[m
+[36m@@ -144,30 +153,55 @@[m [mbody {[m
+     }[m
+ }[m
+ [m
+[31m-/* Card redesign for modern SaaS look */[m
+[32m+[m[32m@media (max-width: 991.98px) {[m
+[32m+[m[32m    .sidebar {[m
+[32m+[m[32m        position: fixed;[m
+[32m+[m[32m        top: 70px;[m
+[32m+[m[32m        left: -100%;[m
+[32m+[m[32m        width: 100%;[m
+[32m+[m[32m        max-width: 300px;[m
+[32m+[m[32m        height: calc(100vh - 70px);[m
+[32m+[m[32m        overflow-y: auto;[m
+[32m+[m[32m        transition: all 0.3s ease;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .sidebar.show {[m
+[32m+[m[32m        left: 0;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .sidebar-backdrop {[m
+[32m+[m[32m        position: fixed;[m
+[32m+[m[32m        top: 0;[m
+[32m+[m[32m        left: 0;[m
+[32m+[m[32m        width: 100%;[m
+[32m+[m[32m        height: 100%;[m
+[32m+[m[32m        background: rgba(0, 0, 0, 0.5);[m
+[32m+[m[32m        z-index: var(--z-index-backdrop);[m
+[32m+[m[32m        display: none;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .sidebar-backdrop.show {[m
+[32m+[m[32m        display: block;[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* Cards */[m
+ .card {[m
+[31m-    border-radius: var(--card-border-radius);[m
+[31m-    border: 1px solid var(--border-color);[m
+[31m-    background-color: var(--card-bg);[m
+[32m+[m[32m    border: none;[m
+[32m+[m[32m    border-radius: 1rem;[m
+[32m+[m[32m    box-shadow: var(--shadow-sm);[m
+[32m+[m[32m    transition: all 0.3s ease;[m
+     margin-bottom: 1.5rem;[m
+[31m-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);[m
+[31m-    transition: transform var(--animation-duration), box-shadow var(--animation-duration), [m
+[31m-                background-color var(--animation-duration), border-color var(--animation-duration);[m
+ }[m
+ [m
+ .card:hover {[m
+[31m-    transform: translateY(-3px);[m
+[31m-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);[m
+[32m+[m[32m    box-shadow: var(--shadow-md);[m
+ }[m
+ [m
+ .card-header {[m
+[31m-    background-color: var(--hover-bg);[m
+[32m+[m[32m    background-color: transparent;[m
+     border-bottom: 1px solid var(--border-color);[m
+[31m-    border-top-left-radius: var(--card-border-radius) !important;[m
+[31m-    border-top-right-radius: var(--card-border-radius) !important;[m
+[31m-    padding: 1.25rem 1.5rem;[m
+[31m-    font-weight: 600;[m
+[31m-    transition: background-color var(--animation-duration), border-color var(--animation-duration);[m
+[32m+[m[32m    padding: 1.5rem;[m
+ }[m
+ [m
+ /* Fix text color in card headers based on theme */[m
+[36m@@ -190,24 +224,41 @@[m [mbody {[m
+     transition: background-color var(--animation-duration), border-color var(--animation-duration);[m
+ }[m
+ [m
+[31m-/* Button styling with more modern look */[m
+[32m+[m[32m/* Stats Cards */[m
+[32m+[m[32m.stats-card {[m
+[32m+[m[32m    border-radius: 1rem;[m
+[32m+[m[32m    padding: 1.5rem;[m
+[32m+[m[32m    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));[m
+[32m+[m[32m    color: white;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.stats-card .icon {[m
+[32m+[m[32m    width: 3rem;[m
+[32m+[m[32m    height: 3rem;[m
+[32m+[m[32m    border-radius: 0.75rem;[m
+[32m+[m[32m    background: rgba(255, 255, 255, 0.2);[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    align-items: center;[m
+[32m+[m[32m    justify-content: center;[m
+[32m+[m[32m    margin-bottom: 1rem;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* Boutons */[m
+ .btn {[m
+[31m-    border-radius: var(--btn-border-radius);[m
+[31m-    padding: 0.6rem 1.25rem;[m
+[32m+[m[32m    border-radius: 0.5rem;[m
+[32m+[m[32m    padding: 0.75rem 1.5rem;[m
+     font-weight: 500;[m
+[31m-    transition: all var(--animation-duration);[m
+[31m-    border: none;[m
+[32m+[m[32m    transition: all 0.3s ease;[m
+ }[m
+ [m
+ .btn-primary {[m
+[31m-    background-color: #4f46e5;[m
+[31m-    border-color: #4f46e5;[m
+[32m+[m[32m    background-color: var(--primary-color);[m
+[32m+[m[32m    border-color: var(--primary-color);[m
+ }[m
+ [m
+ .btn-primary:hover {[m
+[31m-    background-color: #4338ca;[m
+[31m-    border-color: #4338ca;[m
+[31m-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(79, 70, 229, 0.1);[m
+[32m+[m[32m    background-color: var(--secondary-color);[m
+[32m+[m[32m    border-color: var(--secondary-color);[m
+ }[m
+ [m
+ .btn-success {[m
+[36m@@ -248,64 +299,50 @@[m [mbody {[m
+     color: var(--btn-link-color);[m
+ }[m
+ [m
+[31m-/* Table improvements for both themes */[m
+[32m+[m[32m/* Tables */[m
+ .table {[m
+[32m+[m[32m    border-collapse: separate;[m
+[32m+[m[32m    border-spacing: 0 0.5rem;[m
+     border-color: var(--border-color);[m
+     color: var(--body-color);[m
+     transition: border-color var(--animation-duration), color var(--animation-duration);[m
+ }[m
+ [m
+ .table th {[m
+[31m-    background-color: var(--hover-bg);[m
+[32m+[m[32m    border: none;[m
+     font-weight: 600;[m
+[31m-    color: var(--heading-color);[m
+[31m-    border-bottom-width: 1px;[m
+[31m-    padding: 0.75rem 1rem;[m
+[31m-    transition: background-color var(--animation-duration), color var(--animation-duration);[m
+[32m+[m[32m    padding: 1rem;[m
+[32m+[m[32m    color: var(--text-secondary);[m
+ }[m
+ [m
+ .table td {[m
+[31m-    padding: 0.75rem 1rem;[m
+[31m-    border-color: var(--border-color);[m
+[31m-    transition: border-color var(--animation-duration);[m
+[31m-}[m
+[31m-[m
+[31m-.table-striped > tbody > tr:nth-of-type(odd) {[m
+[31m-    background-color: var(--table-stripe-bg);[m
+[31m-    transition: background-color var(--animation-duration);[m
+[32m+[m[32m    border: none;[m
+[32m+[m[32m    padding: 1rem;[m
+[32m+[m[32m    vertical-align: middle;[m
+ }[m
+ [m
+[31m-.table-hover > tbody > tr:hover {[m
+[31m-    background-color: var(--table-hover-bg);[m
+[31m-    transition: background-color var(--animation-duration);[m
+[32m+[m[32m.table tbody tr {[m
+[32m+[m[32m    background-color: var(--card-bg);[m
+[32m+[m[32m    box-shadow: var(--shadow-sm);[m
+[32m+[m[32m    border-radius: 0.5rem;[m
+[32m+[m[32m    transition: all 0.3s ease;[m
+ }[m
+ [m
+[31m-/* Badge styling */[m
+[31m-.badge {[m
+[31m-    font-weight: 500;[m
+[31m-    padding: 0.4em 0.7em;[m
+[31m-    border-radius: 6px;[m
+[31m-    font-size: 0.75rem;[m
+[32m+[m[32m.table tbody tr:hover {[m
+[32m+[m[32m    transform: translateY(-2px);[m
+[32m+[m[32m    box-shadow: var(--shadow-md);[m
+ }[m
+ [m
+[31m-/* Form styling */[m
+[31m-.form-control, .form-select {[m
+[31m-    border-radius: 8px;[m
+[31m-    padding: 0.625rem 1rem;[m
+[31m-    background-color: var(--input-bg);[m
+[31m-    border: 1px solid var(--input-border);[m
+[31m-    color: var(--input-color);[m
+[31m-    transition: border-color var(--animation-duration), [m
+[31m-                box-shadow var(--animation-duration), [m
+[31m-                background-color var(--animation-duration), [m
+[31m-                color var(--animation-duration);[m
+[32m+[m[32m/* Forms */[m
+[32m+[m[32m.form-control {[m
+[32m+[m[32m    border-radius: 0.5rem;[m
+[32m+[m[32m    padding: 0.75rem 1rem;[m
+[32m+[m[32m    border: 1px solid var(--border-color);[m
+ }[m
+ [m
+[31m-.form-control:focus, .form-select:focus {[m
+[31m-    background-color: var(--input-bg);[m
+[31m-    color: var(--input-color);[m
+[31m-    border-color: #4f46e5;[m
+[31m-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);[m
+[32m+[m[32m.form-control:focus {[m
+[32m+[m[32m    border-color: var(--primary-color);[m
+[32m+[m[32m    box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);[m
+ }[m
+ [m
+ .form-label {[m
+[36m@@ -326,6 +363,39 @@[m [mbody {[m
+     border: none;[m
+     padding: 1rem 1.5rem;[m
+     margin-bottom: 1.5rem;[m
+[32m+[m[32m    box-shadow: var(--shadow-sm);[m
+[32m+[m[32m    transition: opacity 0.3s ease, transform 0.3s ease;[m
+[32m+[m[32m    opacity: 1;[m
+[32m+[m[32m    transform: translateY(0);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.alert-success {[m
+[32m+[m[32m    background: linear-gradient(45deg, #10b981, #34d399);[m
+[32m+[m[32m    color: white;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.alert-danger {[m
+[32m+[m[32m    background: linear-gradient(45deg, #ef4444, #f87171);[m
+[32m+[m[32m    color: white;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.alert-warning {[m
+[32m+[m[32m    background: linear-gradient(45deg, #f59e0b, #fbbf24);[m
+[32m+[m[32m    color: white;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.alert-info {[m
+[32m+[m[32m    background: linear-gradient(45deg, #3b82f6, #60a5fa);[m
+[32m+[m[32m    color: white;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.alert .btn-close {[m
+[32m+[m[32m    filter: brightness(0) invert(1);[m
+[32m+[m[32m    opacity: 0.75;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.alert .btn-close:hover {[m
+[32m+[m[32m    opacity: 1;[m
+ }[m
+ [m
+ /* Progress bar styling */[m
+[36m@@ -402,22 +472,18 @@[m [mbody {[m
+ [m
+ /* Modal enhancements */[m
+ .modal-content {[m
+[31m-    background-color: var(--modal-bg);[m
+[31m-    border-radius: var(--card-border-radius);[m
+[31m-    border: 1px solid var(--border-color);[m
+[31m-    transition: background-color var(--animation-duration), border-color var(--animation-duration);[m
+[32m+[m[32m    border: none;[m
+[32m+[m[32m    border-radius: 1rem;[m
+ }[m
+ [m
+ .modal-header {[m
+     border-bottom: 1px solid var(--border-color);[m
+     padding: 1.5rem;[m
+[31m-    transition: border-color var(--animation-duration);[m
+ }[m
+ [m
+ .modal-footer {[m
+     border-top: 1px solid var(--border-color);[m
+     padding: 1.5rem;[m
+[31m-    transition: border-color var(--animation-duration);[m
+ }[m
+ [m
+ .modal-body {[m
+[36m@@ -850,3 +916,247 @@[m [mbody {[m
+     font-weight: 700;[m
+     margin-bottom: 
