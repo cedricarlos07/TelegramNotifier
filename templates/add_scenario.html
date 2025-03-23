@@ -5,7 +5,7 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Add New Scenario</h1>
-            <a href="{{ url_for('scenarios') }}" class="btn btn-secondary">
+            <a href="{{ url_for('main.scenarios') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Back to Scenarios
             </a>
         </div>
@@ -34,7 +34,7 @@
                     </li>
                 </ul>
                 
-                <form method="POST" action="{{ url_for('add_scenario') }}">
+                <form method="POST" action="{{ url_for('main.add_scenario') }}">
                     <div class="tab-content" id="scenarioTabsContent">
                         <!-- Basic Info Tab -->
                         <div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
@@ -125,7 +125,7 @@
                     </div>
                     
                     <div class="d-flex justify-content-between mt-4">
-                        <a href="{{ url_for('scenarios') }}" class="btn btn-secondary">Cancel</a>
+                        <a href="{{ url_for('main.scenarios') }}" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>Save Scenario
                         </button>

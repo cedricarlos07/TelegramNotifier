@@ -49,10 +49,10 @@
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
                                         {% if user.id != current_user.id %}
-                                        <a href="{{ url_for('toggle_admin', user_id=user.id) }}" class="btn btn-outline-primary" title="Changer le statut admin">
+                                        <a href="{{ url_for('main.toggle_admin', user_id=user.id) }}" class="btn btn-outline-primary" title="Changer le statut admin">
                                             <i class="fas fa-exchange-alt"></i>
                                         </a>
-                                        <a href="{{ url_for('delete_user', user_id=user.id) }}" class="btn btn-outline-danger" title="Supprimer"
+                                        <a href="{{ url_for('main.delete_user', user_id=user.id) }}" class="btn btn-outline-danger" title="Supprimer"
                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur?');">
                                             <i class="fas fa-trash"></i>
                                         </a>
@@ -88,7 +88,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="{{ url_for('admin_users') }}">
+            <form method="post" action="{{ url_for('main.admin_users') }}">
                 <div class="modal-body">
                     {{ form.hidden_tag() }}
                     <div class="mb-3">

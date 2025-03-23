@@ -267,7 +267,7 @@
                 <h5 class="modal-title" id="generateRankingModalLabel">Générer un Classement</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="generateRankingForm" method="POST" action="{{ url_for('generate_ranking') }}">
+            <form id="generateRankingForm" method="POST" action="{{ url_for('main.generate_ranking') }}">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="ranking_type" class="form-label">Type de Classement</label>
