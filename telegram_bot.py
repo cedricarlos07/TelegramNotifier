@@ -4,7 +4,7 @@ from telegram import Bot
 from telegram.error import TelegramError
 from datetime import datetime, timedelta
 import asyncio
-from config import TELEGRAM_BOT_TOKEN, MESSAGE_TEMPLATE
+from config import Config
 from app import db, app
 from models import Log, AppSettings, TelegramMessage, UserRanking
 
@@ -16,7 +16,7 @@ class TelegramBot:
     """
     def __init__(self):
         """Initialize the Telegram bot with the token."""
-        self.bot = telegram.Bot(token=TELEGRAM_BOT_TOKEN)
+        self.bot = telegram.Bot(token=Config.TELEGRAM_BOT_TOKEN)
         self._init_app_settings()
         logger.info("Telegram bot initialized")
         
@@ -402,7 +402,7 @@ class TelegramBot:
         time_str = course.start_time.strftime("%H:%M") 
         
         # Format the message using the template
-        formatted_message = MESSAGE_TEMPLATE.format(
+        formatted_message = Config.MESSAGE_TEMPLATE.format(
             date=date_str,
             time=time_str,
             course_name=course.course_name,
