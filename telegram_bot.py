@@ -5,7 +5,8 @@ from telegram.error import TelegramError
 from datetime import datetime, timedelta
 import asyncio
 from config import Config
-from app import db, app
+from extensions import db
+from flask import current_app
 from models import Log, AppSettings, TelegramMessage, UserRanking
 
 logger = logging.getLogger(__name__)
@@ -31,60 +32,59 @@ class TelegramBot:
             The result of the coroutine
         """
         try:
-            # Essayer d'obtenir la boucle d'événements existante
             loop = asyncio.get_event_loop()
         except RuntimeError:
-            # Si aucune boucle d'événements n'est définie, en créer une nouvelle
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             
-        # Utilisons un modèle plus sûr qui ne ferme pas la boucle
         if loop.is_running():
-            # Si la boucle est déjà en cours d'exécution, utiliser run_coroutine_threadsafe
             future = asyncio.run_coroutine_threadsafe(coroutine, loop)
             return future.result()
         else:
-            # Sinon, utiliser run_until_complete
             return loop.run_until_complete(coroutine)
     
     def _init_app_settings(self):
         """Initialize application settings if they don't exist."""
-        settings = AppSettings.query.first()
-        if not settings:
-            settings = AppSettings(simulation_mode=False)
-            db.session.add(settings)
-            db.session.commit()
-            logger.info("Application settings initialized")
+        with current_app.app_context():
+            settings = AppSettings.query.first()
+            if not settings:
+                settings = AppSettings(simulation_mode=False)
+                db.session.add(settings)
+                db.session.commit()
+                logger.info("Application settings initialized")
     
     def is_simulation_mode(self):
         """Check if simulation mode is active."""
-        settings = AppSettings.query.first()
-        return settings.simulation_mode if settings else False
+        with current_app.app_context():
+            settings = AppSettings.query.first()
+            return settings.simulation_mode if settings else False
     
     def get_test_group_id(self):
         """Get the test group ID for simulation mode."""
-        settings = AppSettings.query.first()
-        return settings.test_group_id if settings else None
+        with current_app.app_context():
+            settings = AppSettings.query.first()
+            return settings.test_group_id if settings else None
     
     def toggle_simulation_mode(self, enabled=True, test_group_id=None):
         """Toggle simulation mode on or off."""
-        settings = AppSettings.query.first()
-        if not settings:
-            settings = AppSettings(simulation_mode=enabled, test_group_id=test_group_id)
-            db.session.add(settings)
-        else:
-            settings.simulation_mode = enabled
-            if test_group_id:
-                settings.test_group_id = test_group_id
-        
-        try:
-            db.session.commit()
-            logger.info(f"Simulation mode {'enabled' if enabled else 'disabled'}")
-            return settings.simulation_mode
-        except Exception as e:
-            db.session.rollback()
-            logger.error(f"Error toggling simulation mode: {str(e)}")
-            return False
+        with current_app.app_context():
+            settings = AppSettings.query.first()
+            if not settings:
+                settings = AppSettings(simulation_mode=enabled, test_group_id=test_group_id)
+                db.session.add(settings)
+            else:
+                settings.simulation_mode = enabled
+                if test_group_id:
+                    settings.test_group_id = test_group_id
+            
+            try:
+                db.session.commit()
+                logger.info(f"Simulation mode {'enabled' if enabled else 'disabled'}")
+                return settings.simulation_mode
+            except Exception as e:
+                db.session.rollback()
+                logger.error(f"Error toggling simulation mode: {str(e)}")
+                return False
         
     def check_bot_status(self):
         """
@@ -645,12 +645,11 @@ class TelegramBot:
         logger.info(log_message)
         return results
 
-# Initialize bot later to avoid app context issues
+# Initialize bot instance
 telegram_bot = None
 
 def init_telegram_bot():
     global telegram_bot
     if telegram_bot is None:
-        with app.app_context():
-            telegram_bot = TelegramBot()
+        telegram_bot = TelegramBot()
     return telegram_bot

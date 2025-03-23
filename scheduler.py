@@ -1,12 +1,12 @@
 import logging
 from datetime import datetime, timedelta
-from flask_apscheduler import APScheduler
+from extensions import scheduler, db
+from flask import current_app
 from models import Course, ScheduledMessage, Log
 from telegram_bot import init_telegram_bot
 from excel_processor import excel_processor
 
 logger = logging.getLogger(__name__)
-scheduler = APScheduler()
 
 def log_job_execution(db, scenario, success, message):
     """
@@ -182,28 +182,45 @@ def send_daily_messages_job():
         error_msg = f"Error in send_daily_messages_job: {str(e)}"
         log_job_execution(db, "send_daily_messages", False, error_msg)
 
-def send_daily_rankings_job():
-    """
-    Job to send daily rankings to all Telegram groups.
-    Run daily at 20:00 (8:00 PM).
-    """
-    logger.info("Running scheduled job: send_daily_rankings_job")
-    
-    try:
-        # Utiliser les cours du jour pour envoyer les classements aux groupes actifs aujourd'hui
-        today = datetime.now().date()
-        courses_today = Course.query.filter_by(schedule_date=today).all()
-        
-        bot = init_telegram_bot()
-        results = bot.send_daily_rankings(courses_today)
-        
-        # Log the results
-        message = f"Daily rankings job completed: {results['success']} successful, {results['failure']} failed"
-        log_job_execution(db, "send_daily_rankings", True, message)
-        
-    except Exception as e:
-        error_msg = f"Error in send_daily_rankings_job: {str(e)}"
-        log_job_execution(db, "send_daily_rankings", False, error_msg)
+def send_daily_notifications():
+    """Send notifications for courses scheduled for today."""
+    with current_app.app_context():
+        try:
+            today = datetime.now().date()
+            courses = Course.query.filter(
+                Course.schedule_date == today,
+                Course.telegram_group_id.isnot(None)
+            ).all()
+            
+            if courses:
+                bot = init_telegram_bot()
+                results = bot.send_daily_course_notifications(courses)
+                logger.info(f"Daily notifications sent: {results['success']} successful, {results['failure']} failed")
+            else:
+                logger.info("No courses scheduled for today")
+                
+        except Exception as e:
+            logger.error(f"Error sending daily notifications: {str(e)}")
+
+def send_daily_rankings():
+    """Send daily rankings to all active Telegram groups."""
+    with current_app.app_context():
+        try:
+            today = datetime.now().date()
+            courses = Course.query.filter(
+                Course.schedule_date == today,
+                Course.telegram_group_id.isnot(None)
+            ).all()
+            
+            if courses:
+                bot = init_telegram_bot()
+                results = bot.send_daily_rankings(courses)
+                logger.info(f"Daily rankings sent: {results['success']} successful, {results['failure']} failed")
+            else:
+                logger.info("No courses scheduled for today")
+                
+        except Exception as e:
+            logger.error(f"Error sending daily rankings: {str(e)}")
 
 def run_custom_python_code(scenario_name, python_code):
     """
@@ -220,7 +237,7 @@ def run_custom_python_code(scenario_name, python_code):
         # Create a local namespace to execute the code
         local_namespace = {
             'db': db,
-            'app': app,
+            'app': current_app,
             'Course': Course,
             'ScheduledMessage': ScheduledMessage,
             'Log': Log,
@@ -287,8 +304,10 @@ def run_job(job_name):
             generate_messages_job()
         elif job_name == "send_daily_messages":
             send_daily_messages_job()
+        elif job_name == "send_daily_notifications":
+            send_daily_notifications()
         elif job_name == "send_daily_rankings":
-            send_daily_rankings_job()
+            send_daily_rankings()
         else:
             return False
         return True
@@ -296,60 +315,29 @@ def run_job(job_name):
         logger.error(f"Error running job {job_name}: {str(e)}")
         return False
 
-def initialize_scheduler(app, db):
-    """
-    Initialize the scheduler with the Flask app.
-    
-    Args:
-        app: Flask application instance
-        db: Database instance
-    """
+def initialize_scheduler(app):
+    """Initialize the scheduler with the Flask app."""
     scheduler.init_app(app)
-    
-    # Schedule weekly jobs
+    scheduler.start()
+
+def schedule_jobs():
+    """Schedule all jobs."""
+    # Schedule daily notifications at 8:00 AM
     scheduler.add_job(
-        id='update_courses',
-        func=update_courses_job,
-        trigger='cron',
-        day_of_week='sun',
-        hour=0,
-        minute=0
-    )
-    
-    scheduler.add_job(
-        id='create_zoom_links',
-        func=create_zoom_links_job,
-        trigger='cron',
-        day_of_week='sun',
-        hour=0,
-        minute=5
-    )
-    
-    scheduler.add_job(
-        id='generate_messages',
-        func=generate_messages_job,
-        trigger='cron',
-        day_of_week='sun',
-        hour=0,
-        minute=10
-    )
-    
-    # Schedule daily jobs
-    scheduler.add_job(
-        id='send_daily_messages',
-        func=send_daily_messages_job,
+        id='daily_notifications',
+        func=send_daily_notifications,
         trigger='cron',
         hour=8,
         minute=0
     )
     
+    # Schedule daily rankings at 8:30 AM
     scheduler.add_job(
-        id='send_daily_rankings',
-        func=send_daily_rankings_job,
+        id='daily_rankings',
+        func=send_daily_rankings,
         trigger='cron',
-        hour=20,
-        minute=0
+        hour=8,
+        minute=30
     )
     
-    # Start the scheduler
-    scheduler.start()
+    logger.info("Scheduled jobs initialized")

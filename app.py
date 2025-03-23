@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 from models import db, User, TelegramGroup, Course, Student, RankingHistory
 from routes import main
 from config import Config
+from extensions import login_manager, csrf, scheduler
+from flask_migrate import Migrate
+from logging.handlers import RotatingFileHandler
 
 # Configure logging
 logging.basicConfig(
@@ -15,10 +18,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-# Initialize extensions
-login_manager = LoginManager()
-csrf = CSRFProtect()
 
 def create_app(config_class=Config):
     # Create the Flask application
@@ -34,10 +33,14 @@ def create_app(config_class=Config):
             database_url = database_url.replace("postgres://", "postgresql://", 1)
         app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     
-    # Initialize extensions with the app
+    # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
+    scheduler.init_app(app)
+    
+    # Initialize migrations
+    migrate = Migrate(app, db)
     
     # Configure login manager
     login_manager.login_view = 'main.login'
@@ -49,11 +52,12 @@ def create_app(config_class=Config):
         return User.query.get(int(user_id))
     
     # Register blueprints
-    app.register_blueprint(main)
+    app.register_blueprint(main.bp)
     
     # Initialize scheduler
-    from scheduler import initialize_scheduler
-    initialize_scheduler(app, db)
+    from scheduler import initialize_scheduler, schedule_jobs
+    initialize_scheduler(app)
+    schedule_jobs()
     
     # Initialize database
     with app.app_context():
@@ -69,6 +73,19 @@ def create_app(config_class=Config):
             db.session.add(admin)
             db.session.commit()
             logger.info("Admin user created successfully")
+    
+    # Configure logging
+    if not app.debug and not app.testing:
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+        file_handler = RotatingFileHandler('logs/app.log', maxBytes=10240, backupCount=10)
+        file_handler.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+        ))
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+        app.logger.setLevel(logging.INFO)
+        app.logger.info('Application startup')
     
     return app
 
