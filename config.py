@@ -1,13 +1,16 @@
 import os
 from datetime import time
 from dotenv import load_dotenv
+import logging
 
 # Charger les variables d'environnement
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 class Config:
     # Configuration de base
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
     FLASK_ENV = os.environ.get('FLASK_ENV', 'production')
     FLASK_APP = os.environ.get('FLASK_APP', 'app.py')
     
@@ -21,6 +24,8 @@ class Config:
     
     # Configuration Telegram
     TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+    if not TELEGRAM_BOT_TOKEN:
+        logger.warning("TELEGRAM_BOT_TOKEN n'est pas défini")
     
     # Configuration Zoom
     ZOOM_ACCOUNT_ID = os.environ.get('ZOOM_ACCOUNT_ID')
@@ -48,7 +53,7 @@ class Config:
     
     # Configuration Excel
     EXCEL_FILE_PATH = os.environ.get('EXCEL_FILE_PATH', 'attached_assets/Kodjo English - Classes Schedules (1).xlsx')
-    SHEET_NAME = "Fix Schedule"
+    SHEET_NAME = os.environ.get('SHEET_NAME', "Fix Schedule")
     
     # Configuration du planificateur
     SCHEDULE_UPDATE_COURSES = {"day_of_week": "6", "hour": 0, "minute": 0}  # Dimanche à minuit

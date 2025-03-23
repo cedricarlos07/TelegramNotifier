@@ -54,11 +54,6 @@ def create_app(config_class=Config):
     from routes import init_app as init_routes
     init_routes(app)
     
-    # Initialize scheduler
-    from scheduler import initialize_scheduler, schedule_jobs
-    initialize_scheduler(app)
-    schedule_jobs()
-    
     # Initialize database
     with app.app_context():
         db.create_all()
@@ -73,6 +68,12 @@ def create_app(config_class=Config):
             db.session.add(admin)
             db.session.commit()
             logger.info("Admin user created successfully")
+    
+    # Initialize scheduler only in production
+    if os.environ.get('FLASK_ENV') == 'production':
+        from scheduler import initialize_scheduler, schedule_jobs
+        initialize_scheduler(app)
+        schedule_jobs()
     
     # Configure logging
     if not app.debug and not app.testing:
