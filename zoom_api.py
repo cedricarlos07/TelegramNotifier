@@ -4,7 +4,7 @@ import json
 import time
 import base64
 from datetime import datetime, timedelta
-from config import ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET, ZOOM_ACCOUNT_ID, ZOOM_USER_ID
+from config import Config
 from app import db
 from models import Log
 
@@ -15,10 +15,10 @@ class ZoomAPI:
     
     def __init__(self):
         """Initialize the Zoom API with OAuth credentials"""
-        self.client_id = ZOOM_CLIENT_ID
-        self.client_secret = ZOOM_CLIENT_SECRET
-        self.account_id = ZOOM_ACCOUNT_ID
-        self.user_id = ZOOM_USER_ID
+        self.client_id = Config.ZOOM_CLIENT_ID
+        self.client_secret = Config.ZOOM_CLIENT_SECRET
+        self.account_id = Config.ZOOM_ACCOUNT_ID
+        self.user_id = Config.ZOOM_USER_ID
         self.access_token = None
         self.token_expires_at = None
         
