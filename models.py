@@ -49,7 +49,7 @@ class TelegramMessage(db.Model):
 
 class ZoomAttendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     user_id = db.Column(db.String(100), nullable=False)
     user_name = db.Column(db.String(100), nullable=True)
     join_time = db.Column(db.DateTime, nullable=False)
@@ -182,8 +182,8 @@ class RankingHistory(db.Model):
     __tablename__ = 'ranking_history'
     
     id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
     rank = db.Column(db.Integer, nullable=False)
     score = db.Column(db.Float, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -197,7 +197,7 @@ Student.points = db.relationship('Point', backref='student', lazy=True)
 
 class ScheduledMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     message_text = db.Column(db.Text, nullable=False)
     scheduled_date = db.Column(db.Date, nullable=False)
     scheduled_time = db.Column(db.Time, nullable=False)
