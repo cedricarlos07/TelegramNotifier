@@ -31,6 +31,9 @@
     {% if request.endpoint == 'telegram-groups' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/telegram_groups.css') }}">
     {% endif %}
+    {% if request.endpoint in ['login', 'register'] %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    {% endif %}
 </head>
 <body>
     <div class="d-flex flex-column min-vh-100">
