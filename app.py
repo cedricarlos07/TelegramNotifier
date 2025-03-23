@@ -50,48 +50,47 @@ def load_user(user_id):
 
 # Création des tables dans la base de données
 def create_tables():
-    with app.app_context():
-        try:
-            logger.info("Début de l'initialisation de la base de données...")
+    try:
+        logger.info("Début de l'initialisation de la base de données...")
+        
+        # Supprimer toutes les tables existantes
+        logger.info("Suppression des tables existantes...")
+        db.drop_all()
+        
+        # Créer toutes les tables
+        logger.info("Création des nouvelles tables...")
+        db.create_all()
+        
+        # Créer l'utilisateur admin s'il n'existe pas
+        logger.info("Vérification de l'existence de l'utilisateur admin...")
+        admin = User.query.filter_by(username='admin').first()
+        
+        if not admin:
+            logger.info("Création de l'utilisateur admin...")
+            admin = User(
+                username='admin',
+                email='admin@example.com',
+                is_admin=True
+            )
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+            logger.info("Utilisateur admin créé avec succès!")
+        else:
+            logger.info("L'utilisateur admin existe déjà.")
             
-            # Supprimer toutes les tables existantes
-            logger.info("Suppression des tables existantes...")
-            db.drop_all()
+        # Vérifier que l'utilisateur admin a bien été créé
+        admin = User.query.filter_by(username='admin').first()
+        if admin:
+            logger.info(f"Utilisateur admin trouvé dans la base de données: {admin.username}")
+        else:
+            logger.error("L'utilisateur admin n'a pas été créé correctement!")
             
-            # Créer toutes les tables
-            logger.info("Création des nouvelles tables...")
-            db.create_all()
-            
-            # Créer l'utilisateur admin s'il n'existe pas
-            logger.info("Vérification de l'existence de l'utilisateur admin...")
-            admin = User.query.filter_by(username='admin').first()
-            
-            if not admin:
-                logger.info("Création de l'utilisateur admin...")
-                admin = User(
-                    username='admin',
-                    email='admin@example.com',
-                    is_admin=True
-                )
-                admin.set_password('admin123')
-                db.session.add(admin)
-                db.session.commit()
-                logger.info("Utilisateur admin créé avec succès!")
-            else:
-                logger.info("L'utilisateur admin existe déjà.")
-                
-            # Vérifier que l'utilisateur admin a bien été créé
-            admin = User.query.filter_by(username='admin').first()
-            if admin:
-                logger.info(f"Utilisateur admin trouvé dans la base de données: {admin.username}")
-            else:
-                logger.error("L'utilisateur admin n'a pas été créé correctement!")
-                
-            logger.info("Base de données initialisée avec succès!")
-            
-        except Exception as e:
-            logger.error(f"Erreur lors de l'initialisation de la base de données : {str(e)}")
-            raise e
+        logger.info("Base de données initialisée avec succès!")
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de l'initialisation de la base de données : {str(e)}")
+        raise e
 
 # Register the blueprint
 app.register_blueprint(main)
@@ -103,9 +102,9 @@ initialize_scheduler(app)
 # Start the scheduler
 scheduler.start()
 
+# Initialiser la base de données au démarrage de l'application
+with app.app_context():
+    create_tables()
+
 if __name__ == '__main__':
-    create_tables()
     app.run(debug=True)
-else:
-    # Initialiser la base de données au démarrage de l'application
-    create_tables()
