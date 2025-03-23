@@ -11,6 +11,9 @@ from extensions import login_manager, csrf, scheduler
 from flask_migrate import Migrate
 from logging.handlers import RotatingFileHandler
 from werkzeug.exceptions import HTTPException
+from sqlalchemy.exc import SQLAlchemyError
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # Configure logging
 logging.basicConfig(
@@ -39,6 +42,13 @@ def create_app(config_class=Config):
     csrf.init_app(app)
     scheduler.init_app(app)
     
+    # Initialize rate limiter
+    limiter = Limiter(
+        app=app,
+        key_func=get_remote_address,
+        default_limits=["200 per day", "50 per hour"]
+    )
+    
     # Initialize migrations
     migrate = Migrate(app, db)
     
@@ -49,7 +59,11 @@ def create_app(config_class=Config):
     
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        try:
+            return User.query.get(int(user_id))
+        except SQLAlchemyError as e:
+            logger.error(f"Database error while loading user: {str(e)}")
+            return None
     
     # Register blueprints
     from routes import init_app as init_routes
@@ -66,7 +80,7 @@ def create_app(config_class=Config):
                 'database': 'connected',
                 'timestamp': datetime.utcnow().isoformat()
             }), 200
-        except Exception as e:
+        except SQLAlchemyError as e:
             logger.error(f"Health check failed: {str(e)}")
             return jsonify({
                 'status': 'unhealthy',
@@ -83,6 +97,15 @@ def create_app(config_class=Config):
             "description": e.description,
         }
         return jsonify(response), e.code
+    
+    @app.errorhandler(SQLAlchemyError)
+    def handle_database_error(e):
+        logger.error(f"Database error: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "name": "Database Error",
+            "description": "Une erreur de base de données s'est produite."
+        }), 500
     
     @app.errorhandler(Exception)
     def handle_generic_exception(e):
@@ -108,7 +131,7 @@ def create_app(config_class=Config):
                 db.session.add(admin)
                 db.session.commit()
                 logger.info("Admin user created successfully")
-        except Exception as e:
+        except SQLAlchemyError as e:
             logger.error(f"Database initialization error: {str(e)}")
             raise
     

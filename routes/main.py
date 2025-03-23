@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user, logout_user, login_user
 from models import Course, Student, RankingHistory, User, ZoomAttendance, TelegramMessage
-from extensions import db
+from extensions import db, csrf
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 
@@ -12,6 +12,7 @@ def index():
     return render_template('index.html')
 
 @bp.route('/login', methods=['GET', 'POST'])
+@csrf.exempt
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.courses'))
