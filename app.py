@@ -6,7 +6,6 @@ from flask_wtf.csrf import CSRFProtect
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from models import db, User, TelegramGroup, Course, Student, RankingHistory
-from routes import main
 from config import Config
 from extensions import login_manager, csrf, scheduler
 from flask_migrate import Migrate
@@ -52,7 +51,8 @@ def create_app(config_class=Config):
         return User.query.get(int(user_id))
     
     # Register blueprints
-    app.register_blueprint(main.bp)
+    from routes import init_app as init_routes
+    init_routes(app)
     
     # Initialize scheduler
     from scheduler import initialize_scheduler, schedule_jobs
