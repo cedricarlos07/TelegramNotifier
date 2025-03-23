@@ -345,50 +345,39 @@ def delete_user(user_id):
     db.session.commit()
     return jsonify({'success': True})
 
-# Routes pour les liens Zoom
-@main.route('/zoom-links')
-@login_required
-def zoom_links():
-    zoom_links = ZoomLink.query.all()
-    return render_template('zoom_links.html', zoom_links=zoom_links)
-
-@main.route('/zoom-links/add', methods=['POST'])
-@login_required
-def add_zoom_link():
-    name = request.form.get('name')
-    url = request.form.get('url')
-    
-    zoom_link = ZoomLink(name=name, url=url)
-    db.session.add(zoom_link)
-    db.session.commit()
-    flash('Lien Zoom ajouté avec succès', 'success')
-    return redirect(url_for('main.zoom_links'))
-
-@main.route('/zoom-links/<int:link_id>/edit', methods=['POST'])
-@login_required
-def edit_zoom_link(link_id):
-    zoom_link = ZoomLink.query.get_or_404(link_id)
-    zoom_link.name = request.form.get('name')
-    zoom_link.url = request.form.get('url')
-
-    db.session.commit()
-    flash('Lien Zoom modifié avec succès', 'success')
-    return redirect(url_for('main.zoom_links'))
-
-@main.route('/zoom-links/<int:link_id>/delete', methods=['POST'])
-@login_required
-def delete_zoom_link(link_id):
-    zoom_link = ZoomLink.query.get_or_404(link_id)
-    db.session.delete(zoom_link)
-    db.session.commit()
-    flash('Lien Zoom supprimé avec succès', 'success')
-    return redirect(url_for('main.zoom_links'))
-
 # Routes pour les scénarios
 @main.route('/scenarios')
 @login_required
 def scenarios():
     return render_template('scenarios.html')
+
+@main.route('/scenarios/add', methods=['POST'])
+@login_required
+def add_scenario():
+    name = request.form.get('name')
+    description = request.form.get('description')
+    trigger_type = request.form.get('trigger_type')
+    trigger_value = request.form.get('trigger_value')
+    action_type = request.form.get('action_type')
+    action_value = request.form.get('action_value')
+    
+    # Logique pour ajouter le scénario
+    flash('Scénario ajouté avec succès', 'success')
+    return redirect(url_for('main.scenarios'))
+
+@main.route('/scenarios/<int:scenario_id>/edit', methods=['POST'])
+@login_required
+def edit_scenario(scenario_id):
+    # Logique pour modifier le scénario
+    flash('Scénario modifié avec succès', 'success')
+    return redirect(url_for('main.scenarios'))
+
+@main.route('/scenarios/<int:scenario_id>/delete', methods=['POST'])
+@login_required
+def delete_scenario(scenario_id):
+    # Logique pour supprimer le scénario
+    flash('Scénario supprimé avec succès', 'success')
+    return redirect(url_for('main.scenarios'))
 
 # Routes pour la simulation
 @main.route('/simulation')
@@ -396,11 +385,85 @@ def scenarios():
 def simulation():
     return render_template('simulation.html')
 
-# Routes pour l'état du bot
+@main.route('/simulation/run', methods=['POST'])
+@login_required
+def run_simulation():
+    scenario_id = request.form.get('scenario_id')
+    test_data = request.form.get('test_data')
+    
+    # Logique pour exécuter la simulation
+    results = {
+        'success': True,
+        'message': 'Simulation exécutée avec succès',
+        'details': []
+    }
+    return jsonify(results)
+
+# Routes pour le statut du bot
 @main.route('/bot-status')
 @login_required
 def bot_status():
     return render_template('bot_status.html')
+
+@main.route('/bot-status/refresh', methods=['POST'])
+@login_required
+def refresh_bot_status():
+    # Logique pour rafraîchir le statut du bot
+    status = {
+        'is_running': True,
+        'last_check': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'active_scenarios': 5,
+        'messages_sent_today': 150
+    }
+    return jsonify(status)
+
+# Routes pour les liens Zoom
+@main.route('/zoom-links')
+@login_required
+def zoom_links():
+    links = ZoomLink.query.all()
+    return render_template('zoom_links.html', links=links)
+
+@main.route('/zoom-links/add', methods=['POST'])
+@login_required
+def add_zoom_link():
+    course_id = request.form.get('course_id')
+    url = request.form.get('url')
+    meeting_id = request.form.get('meeting_id')
+    password = request.form.get('password')
+    
+    link = ZoomLink(
+        course_id=course_id,
+        url=url,
+        meeting_id=meeting_id,
+        password=password
+    )
+    
+    db.session.add(link)
+    db.session.commit()
+    flash('Lien Zoom ajouté avec succès', 'success')
+    return redirect(url_for('main.zoom_links'))
+
+@main.route('/zoom-links/<int:link_id>/edit', methods=['POST'])
+@login_required
+def edit_zoom_link(link_id):
+    link = ZoomLink.query.get_or_404(link_id)
+    link.url = request.form.get('url')
+    link.meeting_id = request.form.get('meeting_id')
+    link.password = request.form.get('password')
+    
+    db.session.commit()
+    flash('Lien Zoom modifié avec succès', 'success')
+    return redirect(url_for('main.zoom_links'))
+
+@main.route('/zoom-links/<int:link_id>/delete', methods=['POST'])
+@login_required
+def delete_zoom_link(link_id):
+    link = ZoomLink.query.get_or_404(link_id)
+    db.session.delete(link)
+    db.session.commit()
+    flash('Lien Zoom supprimé avec succès', 'success')
+    return redirect(url_for('main.zoom_links'))
 
 # Routes pour les logs
 @main.route('/logs')
