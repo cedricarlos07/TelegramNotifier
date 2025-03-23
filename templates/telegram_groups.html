@@ -1,233 +1,94 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">Gestion des Groupes Telegram</h1>
-            <p class="text-muted mb-0">Gérez les groupes Telegram et leurs associations avec les cours</p>
-        </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGroupModal">
-            <i class="fas fa-plus me-2"></i> Nouveau Groupe
-        </button>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-uppercase text-muted mb-1">Total Groupes</h6>
-                            <h3 class="mb-0">{{ total_groups }}</h3>
-                        </div>
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                    <h6>Groupes Telegram</h6>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGroupModal">
+                        Ajouter un Groupe
+                    </button>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nom du Groupe</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">ID du Groupe</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Nombre de Membres</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Statut</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for group in telegram_groups %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ group.name }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ group.group_id }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ group.member_count }}</p>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-sm bg-{{ 'success' if group.is_active else 'danger' }}">
+                                            {{ 'Actif' if group.is_active else 'Inactif' }}
+                                        </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <button class="btn btn-link text-secondary mb-0" onclick="editGroup('{{ group.id }}')">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-link text-danger mb-0" onclick="deleteGroup('{{ group.id }}')">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                        <button class="btn btn-link text-info mb-0" onclick="refreshMembers('{{ group.id }}')">
+                                            <i class="fa fa-sync"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle bg-success bg-opacity-10 text-success me-3">
-                            <i class="fas fa-link"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-uppercase text-muted mb-1">Associations</h6>
-                            <h3 class="mb-0">{{ total_associations }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle bg-info bg-opacity-10 text-info me-3">
-                            <i class="fas fa-bell"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-uppercase text-muted mb-1">Notifications</h6>
-                            <h3 class="mb-0">{{ total_notifications }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle bg-warning bg-opacity-10 text-warning me-3">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-uppercase text-muted mb-1">Dernière Mise à jour</h6>
-                            <h3 class="mb-0">{{ last_update }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Groups Table -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Liste des Groupes</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>ID Groupe</th>
-                            <th>Nom</th>
-                            <th>Description</th>
-                            <th>Cours Associés</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for group in groups %}
-                        <tr>
-                            <td>{{ group.group_id }}</td>
-                            <td>{{ group.group_name }}</td>
-                            <td>{{ group.description }}</td>
-                            <td>
-                                <div class="d-flex flex-wrap gap-1">
-                                    {% for course in group.courses %}
-                                    <span class="badge bg-light">
-                                        <i class="fas fa-graduation-cap me-1"></i>{{ course.course_name }}
-                                    </span>
-                                    {% endfor %}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-primary" 
-                                            onclick="editGroup({{ group.id }})"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="Modifier">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" 
-                                            onclick="deleteGroup({{ group.id }})"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="Supprimer">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" class="text-center">
-                                <div class="empty-state py-4">
-                                    <div class="icon-circle bg-primary bg-opacity-10 text-primary mb-3">
-                                        <i class="fas fa-users"></i>
-                                    </div>
-                                    <h5>Aucun groupe trouvé</h5>
-                                    <p class="text-muted">Commencez par ajouter votre premier groupe Telegram</p>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Add Group Modal -->
+<!-- Modal Ajout Groupe -->
 <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addGroupModalLabel">Nouveau Groupe Telegram</h5>
+                <h5 class="modal-title" id="addGroupModalLabel">Ajouter un Groupe Telegram</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="addGroupForm" method="POST" action="{{ url_for('main.add_telegram_group') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="group_id" class="form-label">ID du Groupe</label>
-                        <input type="text" class="form-control" id="group_id" name="group_id" required>
-                        <div class="form-text">L'ID du groupe Telegram (ex: -1001234567890)</div>
+                        <label for="groupName" class="form-label">Nom du Groupe</label>
+                        <input type="text" class="form-control" id="groupName" name="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="group_name" class="form-label">Nom du Groupe</label>
-                        <input type="text" class="form-control" id="group_name" name="group_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="courses" class="form-label">Cours Associés</label>
-                        <select class="form-select" id="courses" name="courses" multiple required>
-                            {% for course in courses %}
-                            <option value="{{ course.id }}">{{ course.course_name }}</option>
-                            {% endfor %}
-                        </select>
+                        <label for="groupId" class="form-label">ID du Groupe</label>
+                        <input type="text" class="form-control" id="groupId" name="group_id" required>
+                        <small class="form-text text-muted">L'ID du groupe peut être obtenu via le bot Telegram</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Ajouter
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Group Modal -->
-<div class="modal fade" id="editGroupModal" tabindex="-1" aria-labelledby="editGroupModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editGroupModalLabel">Modifier le Groupe</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editGroupForm" method="POST">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="edit_group_id" class="form-label">ID du Groupe</label>
-                        <input type="text" class="form-control" id="edit_group_id" name="group_id" required>
-                        <div class="form-text">L'ID du groupe Telegram (ex: -1001234567890)</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_group_name" class="form-label">Nom du Groupe</label>
-                        <input type="text" class="form-control" id="edit_group_name" name="group_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_description" class="form-label">Description</label>
-                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_courses" class="form-label">Cours Associés</label>
-                        <select class="form-select" id="edit_courses" name="courses" multiple required>
-                            {% for course in courses %}
-                            <option value="{{ course.id }}">{{ course.course_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Enregistrer
-                    </button>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
                 </div>
             </form>
         </div>
@@ -237,84 +98,53 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialisation des modales
-    const addModal = new bootstrap.Modal(document.getElementById('addGroupModal'));
-    const editModal = new bootstrap.Modal(document.getElementById('editGroupModal'));
+function editGroup(groupId) {
+    // Implémenter la logique d'édition
+    console.log('Édition du groupe:', groupId);
+}
 
-    // Gestion du formulaire d'ajout
-    const addForm = document.getElementById('addGroupForm');
-    addForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(addForm);
-        
-        fetch(addForm.action, {
-            method: 'POST',
-            body: formData
+function deleteGroup(groupId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) {
+        fetch(`/telegram-groups/${groupId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showNotification('Groupe ajouté avec succès !');
                 location.reload();
             } else {
-                showNotification(data.message, 'danger');
+                alert('Erreur lors de la suppression du groupe');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            showNotification('Une erreur est survenue lors de l\'ajout du groupe.', 'danger');
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue');
         });
-    });
+    }
+}
 
-    // Fonction pour éditer un groupe
-    window.editGroup = function(groupId) {
-        fetch(`/telegram-groups/${groupId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('edit_group_id').value = data.group_id;
-                document.getElementById('edit_group_name').value = data.group_name;
-                document.getElementById('edit_description').value = data.description;
-                
-                // Sélectionner les cours
-                const courseSelect = document.getElementById('edit_courses');
-                Array.from(courseSelect.options).forEach(option => {
-                    option.selected = data.courses.includes(parseInt(option.value));
-                });
-                
-                document.getElementById('editGroupForm').action = `/telegram-groups/${groupId}/edit`;
-                editModal.show();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Une erreur est survenue lors du chargement des données du groupe.', 'danger');
-            });
-    };
-
-    // Fonction pour supprimer un groupe
-    window.deleteGroup = function(groupId) {
-        if (confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) {
-            fetch(`/telegram-groups/${groupId}/delete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Groupe supprimé avec succès !');
-                    location.reload();
-                } else {
-                    showNotification(data.message, 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Une erreur est survenue lors de la suppression du groupe.', 'danger');
-            });
+function refreshMembers(groupId) {
+    fetch(`/telegram-groups/${groupId}/refresh`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
         }
-    };
-});
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erreur lors de la mise à jour des membres');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue');
+    });
+}
 </script>
 {% endblock %} 

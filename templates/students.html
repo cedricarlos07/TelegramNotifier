@@ -1,90 +1,49 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Gestion des Étudiants</h3>
+            <div class="card mb-4">
+                <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                    <h6>Liste des Étudiants</h6>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                        Ajouter un Étudiant
+                    </button>
                 </div>
-                <div class="card-body">
-                    <!-- Statistiques -->
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <div class="info-box">
-                                <span class="info-box-icon bg-info"><i class="fas fa-users"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Total Étudiants</span>
-                                    <span class="info-box-number">{{ total_students }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-box">
-                                <span class="info-box-icon bg-success"><i class="fas fa-layer-group"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Groupes Telegram</span>
-                                    <span class="info-box-number">{{ total_groups }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="info-box">
-                                <span class="info-box-icon bg-warning"><i class="fas fa-book"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Cours</span>
-                                    <span class="info-box-number">{{ total_courses }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Boutons d'action -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <select class="form-control" id="telegram-group-select">
-                                    <option value="">Sélectionner un groupe Telegram</option>
-                                    {% for group in telegram_groups %}
-                                    <option value="{{ group.group_id }}">{{ group.group_name }}</option>
-                                    {% endfor %}
-                                </select>
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" onclick="extractStudents()">
-                                        <i class="fas fa-download"></i> Extraire les étudiants
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Liste des étudiants -->
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th>Nom</th>
-                                    <th>Prénom</th>
-                                    <th>Username Telegram</th>
-                                    <th>Cours assignés</th>
-                                    <th>Actions</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nom</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cours</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for student in students %}
                                 <tr>
-                                    <td>{{ student.last_name }}</td>
-                                    <td>{{ student.first_name }}</td>
-                                    <td>@{{ student.username }}</td>
                                     <td>
-                                        {% for course in student.courses %}
-                                        <span class="badge badge-info">{{ course.course_name }}</span>
-                                        {% endfor %}
+                                        <div class="d-flex px-2 py-1">
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ student.name }}</h6>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-primary" onclick="showAssignCourseModal({{ student.id }})">
-                                            <i class="fas fa-plus"></i> Assigner un cours
+                                        <p class="text-xs font-weight-bold mb-0">{{ student.email }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ student.course.name if student.course else 'Non assigné' }}</p>
+                                    </td>
+                                    <td class="align-middle">
+                                        <button class="btn btn-link text-secondary mb-0" onclick="editStudent({{ student.id }})">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-link text-danger mb-0" onclick="deleteStudent({{ student.id }})">
+                                            <i class="fa fa-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -98,105 +57,72 @@
     </div>
 </div>
 
-<!-- Modal d'assignation de cours -->
-<div class="modal fade" id="assignCourseModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+<!-- Modal Ajout Étudiant -->
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Assigner un cours</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <h5 class="modal-title" id="addStudentModalLabel">Ajouter un Étudiant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form id="assignCourseForm">
-                    <input type="hidden" id="studentId">
-                    <div class="form-group">
-                        <label for="courseSelect">Sélectionner un cours</label>
-                        <select class="form-control" id="courseSelect" required>
-                            <option value="">Choisir un cours</option>
+            <form id="addStudentForm" method="POST" action="{{ url_for('main.add_student') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="studentName" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="studentName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="studentEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="studentEmail" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="studentCourse" class="form-label">Cours</label>
+                        <select class="form-select" id="studentCourse" name="course_id">
+                            <option value="">Sélectionner un cours</option>
                             {% for course in courses %}
-                            <option value="{{ course.id }}">{{ course.course_name }}</option>
+                            <option value="{{ course.id }}">{{ course.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" onclick="assignCourse()">Assigner</button>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 <script>
-function extractStudents() {
-    const groupId = document.getElementById('telegram-group-select').value;
-    if (!groupId) {
-        alert('Veuillez sélectionner un groupe Telegram');
-        return;
-    }
+function editStudent(studentId) {
+    // Implémenter la logique d'édition
+    console.log('Édition de l\'étudiant:', studentId);
+}
 
-    if (confirm('Voulez-vous extraire les étudiants de ce groupe Telegram ?')) {
-        fetch('/students/extract-from-telegram', {
-            method: 'POST',
+function deleteStudent(studentId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?')) {
+        fetch(`/students/${studentId}`, {
+            method: 'DELETE',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `group_id=${groupId}`
+                'Content-Type': 'application/json'
+            }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
                 location.reload();
             } else {
-                alert('Erreur : ' + data.message);
+                alert('Erreur lors de la suppression de l\'étudiant');
             }
         })
         .catch(error => {
-            alert('Erreur lors de l\'extraction : ' + error);
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue');
         });
     }
-}
-
-function showAssignCourseModal(studentId) {
-    document.getElementById('studentId').value = studentId;
-    $('#assignCourseModal').modal('show');
-}
-
-function assignCourse() {
-    const studentId = document.getElementById('studentId').value;
-    const courseId = document.getElementById('courseSelect').value;
-
-    if (!courseId) {
-        alert('Veuillez sélectionner un cours');
-        return;
-    }
-
-    fetch('/students/assign-course', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `student_id=${studentId}&course_id=${courseId}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            location.reload();
-        } else {
-            alert('Erreur : ' + data.message);
-        }
-    })
-    .catch(error => {
-        alert('Erreur lors de l\'assignation : ' + error);
-    });
 }
 </script>
 {% endblock %} 
