@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta, time
-from config import EXCEL_FILE_PATH, SHEET_NAME
+from config import Config
 from app import db
 from models import Course, Log
 from zoom_api import zoom_api
@@ -15,8 +15,8 @@ class ExcelProcessor:
     
     def __init__(self):
         """Initialize the Excel processor"""
-        self.excel_path = EXCEL_FILE_PATH
-        self.sheet_name = SHEET_NAME
+        self.excel_path = Config.EXCEL_FILE_PATH
+        self.sheet_name = Config.SHEET_NAME
         
     def _get_day_of_week_index(self, day_str):
         """
