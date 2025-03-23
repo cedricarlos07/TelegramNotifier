@@ -1,17 +1,19 @@
 import logging
 from datetime import datetime, timedelta
-from app import scheduler, db, app
+from flask_apscheduler import APScheduler
 from models import Course, ScheduledMessage, Log
 from telegram_bot import init_telegram_bot
 from excel_processor import excel_processor
 
 logger = logging.getLogger(__name__)
+scheduler = APScheduler()
 
-def log_job_execution(scenario, success, message):
+def log_job_execution(db, scenario, success, message):
     """
     Log job execution to database.
     
     Args:
+        db: Database instance
         scenario (str): The scenario name
         success (bool): Whether the job was successful
         message (str): The log message
@@ -40,11 +42,11 @@ def update_courses_job():
         # Log the results
         message = (f"Course update job completed: {results['success']} successes, "
                   f"{results['errors']} errors out of {results['processed']} processed")
-        log_job_execution("update_courses", True, message)
+        log_job_execution(db, "update_courses", True, message)
         
     except Exception as e:
         error_msg = f"Error in update_courses_job: {str(e)}"
-        log_job_execution("update_courses", False, error_msg)
+        log_job_execution(db, "update_courses", False, error_msg)
 
 def create_zoom_links_job():
     """
@@ -60,11 +62,11 @@ def create_zoom_links_job():
         # Log the results
         message = (f"Zoom link creation job completed: {results['created']} created, "
                   f"{results['errors']} errors out of {results['processed']} processed")
-        log_job_execution("create_zoom", True, message)
+        log_job_execution(db, "create_zoom", True, message)
         
     except Exception as e:
         error_msg = f"Error in create_zoom_links_job: {str(e)}"
-        log_job_execution("create_zoom", False, error_msg)
+        log_job_execution(db, "create_zoom", False, error_msg)
 
 def generate_messages_job():
     """
@@ -127,11 +129,11 @@ def generate_messages_job():
         
         # Log the results
         message = f"Message generation job completed: {message_count} messages created, {error_count} errors"
-        log_job_execution("generate_messages", True, message)
+        log_job_execution(db, "generate_messages", True, message)
         
     except Exception as e:
         error_msg = f"Error in generate_messages_job: {str(e)}"
-        log_job_execution("generate_messages", False, error_msg)
+        log_job_execution(db, "generate_messages", False, error_msg)
 
 def send_daily_messages_job():
     """
@@ -174,11 +176,11 @@ def send_daily_messages_job():
         
         # Log the results
         message = f"Daily message sending job completed: {success_count} sent, {error_count} errors out of {message_count}"
-        log_job_execution("send_daily_messages", True, message)
+        log_job_execution(db, "send_daily_messages", True, message)
         
     except Exception as e:
         error_msg = f"Error in send_daily_messages_job: {str(e)}"
-        log_job_execution("send_daily_messages", False, error_msg)
+        log_job_execution(db, "send_daily_messages", False, error_msg)
 
 def send_daily_rankings_job():
     """
@@ -197,11 +199,11 @@ def send_daily_rankings_job():
         
         # Log the results
         message = f"Daily rankings job completed: {results['success']} successful, {results['failure']} failed"
-        log_job_execution("send_daily_rankings", True, message)
+        log_job_execution(db, "send_daily_rankings", True, message)
         
     except Exception as e:
         error_msg = f"Error in send_daily_rankings_job: {str(e)}"
-        log_job_execution("send_daily_rankings", False, error_msg)
+        log_job_execution(db, "send_daily_rankings", False, error_msg)
 
 def run_custom_python_code(scenario_name, python_code):
     """
@@ -294,14 +296,17 @@ def run_job(job_name):
         logger.error(f"Error running job {job_name}: {str(e)}")
         return False
 
-def initialize_scheduler(app):
+def initialize_scheduler(app, db):
     """
-    Initialize the scheduler with all jobs.
+    Initialize the scheduler with the Flask app.
     
     Args:
-        app (Flask): Flask application
+        app: Flask application instance
+        db: Database instance
     """
-    # Update courses every Sunday at midnight
+    scheduler.init_app(app)
+    
+    # Schedule weekly jobs
     scheduler.add_job(
         id='update_courses',
         func=update_courses_job,
@@ -311,7 +316,6 @@ def initialize_scheduler(app):
         minute=0
     )
     
-    # Create Zoom links every Sunday at 00:05
     scheduler.add_job(
         id='create_zoom_links',
         func=create_zoom_links_job,
@@ -321,7 +325,6 @@ def initialize_scheduler(app):
         minute=5
     )
     
-    # Generate messages every Sunday at 00:10
     scheduler.add_job(
         id='generate_messages',
         func=generate_messages_job,
@@ -331,7 +334,7 @@ def initialize_scheduler(app):
         minute=10
     )
     
-    # Send daily messages every day at 8:00 AM
+    # Schedule daily jobs
     scheduler.add_job(
         id='send_daily_messages',
         func=send_daily_messages_job,
@@ -340,7 +343,13 @@ def initialize_scheduler(app):
         minute=0
     )
     
-    # La tâche d'envoi automatique des classements a été désactivée comme demandé par le client
-    # L'envoi des classements se fait uniquement manuellement via l'interface
+    scheduler.add_job(
+        id='send_daily_rankings',
+        func=send_daily_rankings_job,
+        trigger='cron',
+        hour=20,
+        minute=0
+    )
     
-    logger.info("Scheduler initialized with all jobs")
+    # Start the scheduler
+    scheduler.start()

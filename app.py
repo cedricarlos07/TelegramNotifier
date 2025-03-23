@@ -1,7 +1,6 @@
 import os
 import logging
 from flask import Flask
-from flask_apscheduler import APScheduler
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from datetime import datetime, timedelta
@@ -18,7 +17,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Initialize extensions
-scheduler = APScheduler()
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
@@ -38,7 +36,6 @@ def create_app(config_class=Config):
     
     # Initialize extensions with the app
     db.init_app(app)
-    scheduler.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
     
@@ -56,7 +53,7 @@ def create_app(config_class=Config):
     
     # Initialize scheduler
     from scheduler import initialize_scheduler
-    initialize_scheduler(app)
+    initialize_scheduler(app, db)
     
     # Initialize database
     with app.app_context():
@@ -72,10 +69,6 @@ def create_app(config_class=Config):
             db.session.add(admin)
             db.session.commit()
             logger.info("Admin user created successfully")
-    
-    # Start scheduler only in production
-    if os.environ.get('FLASK_ENV') == 'production':
-        scheduler.start()
     
     return app
 
