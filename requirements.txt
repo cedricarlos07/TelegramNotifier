@@ -1,22 +1,35 @@
-email-validator>=2.2.0
-flask-apscheduler>=1.13.1
-flask>=3.1.0
-flask-sqlalchemy>=3.1.1
-gunicorn>=23.0.0
-psycopg2-binary>=2.9.10
-telegram>=0.0.1
-pandas>=2.2.3
-python-telegram-bot>=21.11.1
-pyjwt>=2.10.1
-openpyxl>=3.1.5
-numpy>=2.2.3
-requests>=2.32.3
-sqlalchemy>=2.0.38
-twilio>=9.5.0
-flask-wtf>=1.2.2
-flask-login>=0.6.3
-werkzeug>=3.1.3
-wtforms>=3.2.1
-fpdf>=1.7.2
-xlsxwriter>=3.2.2
-python-dotenv>=1.0.1 
+# Web Framework
+flask==3.1.0
+flask-sqlalchemy==3.1.1
+flask-apscheduler==1.13.1
+flask-login==0.6.3
+flask-wtf==1.2.2
+
+# Database
+sqlalchemy==2.0.38
+psycopg2-binary==2.9.10
+
+# Authentication & Security
+werkzeug==3.1.3
+wtforms==3.2.1
+python-dotenv==1.0.1
+email-validator==2.2.0
+
+# Telegram Integration
+python-telegram-bot==21.11.1
+
+# Data Processing
+pandas==2.2.3
+numpy==2.2.3
+openpyxl==3.1.5
+xlsxwriter==3.2.2
+
+# HTTP & API
+requests==2.32.3
+pyjwt==2.10.1
+
+# PDF Generation
+fpdf==1.7.2
+
+# Production Server
+gunicorn==23.0.0 

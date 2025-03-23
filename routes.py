@@ -279,6 +279,13 @@ def remove_student_from_course():
 def rankings():
     return render_template('rankings.html')
 
+@main.route('/rankings/generate', methods=['POST'])
+@login_required
+def generate_ranking():
+    # TODO: Implémenter la génération de classements
+    flash('Fonctionnalité en cours de développement', 'info')
+    return redirect(url_for('main.rankings'))
+
 @main.route('/api/send-rankings', methods=['POST'])
 @login_required
 def send_rankings():
@@ -388,15 +395,8 @@ def scenarios():
 @main.route('/scenarios/add', methods=['POST'])
 @login_required
 def add_scenario():
-    name = request.form.get('name')
-    description = request.form.get('description')
-    trigger_type = request.form.get('trigger_type')
-    trigger_value = request.form.get('trigger_value')
-    action_type = request.form.get('action_type')
-    action_value = request.form.get('action_value')
-    
-    # Logique pour ajouter le scénario
-    flash('Scénario ajouté avec succès', 'success')
+    # TODO: Implémenter l'ajout de scénarios
+    flash('Fonctionnalité en cours de développement', 'info')
     return redirect(url_for('main.scenarios'))
 
 @main.route('/scenarios/<int:scenario_id>/edit', methods=['POST'])
@@ -455,25 +455,18 @@ def refresh_bot_status():
 @main.route('/zoom-links')
 @login_required
 def zoom_links():
-    links = ZoomLink.query.all()
-    return render_template('zoom_links.html', links=links)
+    zoom_links = ZoomLink.query.all()
+    return render_template('zoom_links.html', zoom_links=zoom_links)
 
 @main.route('/zoom-links/add', methods=['POST'])
 @login_required
 def add_zoom_link():
-    course_id = request.form.get('course_id')
+    name = request.form.get('name')
     url = request.form.get('url')
-    meeting_id = request.form.get('meeting_id')
-    password = request.form.get('password')
+    course_id = request.form.get('course_id')
     
-    link = ZoomLink(
-        course_id=course_id,
-        url=url,
-        meeting_id=meeting_id,
-        password=password
-    )
-    
-    db.session.add(link)
+    zoom_link = ZoomLink(name=name, url=url, course_id=course_id)
+    db.session.add(zoom_link)
     db.session.commit()
     flash('Lien Zoom ajouté avec succès', 'success')
     return redirect(url_for('main.zoom_links'))
@@ -481,11 +474,11 @@ def add_zoom_link():
 @main.route('/zoom-links/<int:link_id>/edit', methods=['POST'])
 @login_required
 def edit_zoom_link(link_id):
-    link = ZoomLink.query.get_or_404(link_id)
-    link.url = request.form.get('url')
-    link.meeting_id = request.form.get('meeting_id')
-    link.password = request.form.get('password')
-    
+    zoom_link = ZoomLink.query.get_or_404(link_id)
+    zoom_link.name = request.form.get('name')
+    zoom_link.url = request.form.get('url')
+    zoom_link.course_id = request.form.get('course_id')
+
     db.session.commit()
     flash('Lien Zoom modifié avec succès', 'success')
     return redirect(url_for('main.zoom_links'))
@@ -493,8 +486,8 @@ def edit_zoom_link(link_id):
 @main.route('/zoom-links/<int:link_id>/delete', methods=['POST'])
 @login_required
 def delete_zoom_link(link_id):
-    link = ZoomLink.query.get_or_404(link_id)
-    db.session.delete(link)
+    zoom_link = ZoomLink.query.get_or_404(link_id)
+    db.session.delete(zoom_link)
     db.session.commit()
     flash('Lien Zoom supprimé avec succès', 'success')
     return redirect(url_for('main.zoom_links'))
@@ -510,24 +503,30 @@ def logs():
 def register():
     if request.method == 'POST':
         username = request.form.get('username')
-        email = request.form.get('email')
         password = request.form.get('password')
+        email = request.form.get('email')
         
         if User.query.filter_by(username=username).first():
             flash('Ce nom d\'utilisateur existe déjà', 'error')
             return redirect(url_for('main.register'))
             
         if User.query.filter_by(email=email).first():
-            flash('Cet email existe déjà', 'error')
+            flash('Cette adresse email est déjà utilisée', 'error')
             return redirect(url_for('main.register'))
         
-        user = User(username=username, email=email)
-        user.set_password(password)
+        user = User(
+            username=username,
+            password=generate_password_hash(password),
+            email=email,
+            is_admin=False
+        )
+        
         db.session.add(user)
         db.session.commit()
         
-        flash('Inscription réussie ! Vous pouvez maintenant vous connecter', 'success')
+        flash('Inscription réussie ! Vous pouvez maintenant vous connecter.', 'success')
         return redirect(url_for('main.login'))
+        
     return render_template('register.html')
 
 # Routes pour les erreurs

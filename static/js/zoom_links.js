@@ -41,4 +41,77 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         window.location.href = '/zoom-links?' + new URLSearchParams(new FormData(filterForm)).toString();
     });
+
+    // Gestion du formulaire d'ajout de lien Zoom
+    const addZoomLinkForm = document.getElementById('addZoomLinkForm');
+    if (addZoomLinkForm) {
+        addZoomLinkForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Recharger la page pour afficher le nouveau lien
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de l\'ajout du lien Zoom.');
+            });
+        });
+    }
+
+    // Gestion de la suppression des liens Zoom
+    const deleteButtons = document.querySelectorAll('.delete-zoom-link');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce lien Zoom ?')) {
+                const linkId = this.dataset.linkId;
+                const deleteUrl = `/zoom-links/${linkId}/delete`;
+                
+                fetch(deleteUrl, {
+                    method: 'POST'
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Recharger la page pour mettre à jour la liste
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la suppression du lien Zoom.');
+                });
+            }
+        });
+    });
+
+    // Gestion de la copie des liens Zoom
+    const copyButtons = document.querySelectorAll('.copy-zoom-link');
+    copyButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const linkUrl = this.dataset.linkUrl;
+            navigator.clipboard.writeText(linkUrl)
+                .then(() => {
+                    // Afficher une notification de succès
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                    }, 2000);
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la copie du lien.');
+                });
+        });
+    });
 });
