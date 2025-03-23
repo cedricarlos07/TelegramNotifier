@@ -266,3 +266,15 @@ class CourseTelegramGroup(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('telegram_groups.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class RankingHistory(db.Model):
+    __tablename__ = 'ranking_history'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.String(255), db.ForeignKey('telegram_groups.group_id'), nullable=False)
+    period_type = db.Column(db.String(50), nullable=False)  # daily, weekly, monthly
+    status = db.Column(db.String(50), nullable=False)  # success, error
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations
+    group = db.relationship('TelegramGroup', backref=db.backref('ranking_history', lazy=True))

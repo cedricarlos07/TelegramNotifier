@@ -5,13 +5,14 @@ from datetime import datetime, timedelta, time
 from flask import render_template, request, redirect, url_for, jsonify, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app, db
-from models import Course, ScheduledMessage, Log, UserRanking, AppSettings, TelegramMessage, ZoomAttendance, User, Scenario, TelegramGroup, CourseTelegramGroup, Notification
+from models import Course, ScheduledMessage, Log, UserRanking, AppSettings, TelegramMessage, ZoomAttendance, User, Scenario, TelegramGroup, CourseTelegramGroup, Notification, RankingHistory, Student, Point
 from forms import LoginForm, ChangePasswordForm, AddAdminForm
 from scheduler import run_job
 from excel_processor import excel_processor
 from telegram_bot import init_telegram_bot
 from werkzeug.utils import secure_filename
 import os
+from sqlalchemy import func, desc
 
 logger = logging.getLogger(__name__)
 
@@ -1864,45 +1865,147 @@ Vous pouvez utiliser ce système pour:
 
     @app.route('/api/send-rankings', methods=['POST'])
     def send_rankings():
-        """Send rankings to a Telegram group"""
         try:
-            # Get form data
             group_id = request.form.get('group_id')
-            period_type = request.form.get('period_type', 'weekly')
-
-            if not group_id:
-                return jsonify({'success': False, 'message': 'Group ID is required'})
-
-            # Send the rankings
-            bot = init_telegram_bot()
-            if bot.send_ranking_message(group_id, period_type):
-                # Log the successful send
-                log_entry = Log(
-                    level="INFO",
-                    scenario="send_rankings",
-                    message=f"{period_type.capitalize()} rankings sent to group {group_id}"
+            period_type = request.form.get('period_type')
+            
+            if not group_id or not period_type:
+                return jsonify({
+                    'success': False,
+                    'message': 'Paramètres manquants'
+                })
+            
+            # Récupérer le groupe Telegram
+            group = TelegramGroup.query.get(group_id)
+            if not group:
+                return jsonify({
+                    'success': False,
+                    'message': 'Groupe Telegram non trouvé'
+                })
+            
+            # Générer le classement
+            rankings = generate_rankings(period_type)
+            
+            # Formater le message
+            message = format_rankings_message(rankings, period_type)
+            
+            # Envoyer le message au groupe
+            success = send_telegram_message(group_id, message)
+            
+            if success:
+                # Enregistrer l'historique d'envoi
+                history = RankingHistory(
+                    group_id=group_id,
+                    period_type=period_type,
+                    status='success'
                 )
-                db.session.add(log_entry)
+                db.session.add(history)
                 db.session.commit()
-
-                return jsonify({'success': True, 'message': 'Rankings sent successfully'})
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Classement envoyé avec succès'
+                })
             else:
-                return jsonify({'success': False, 'message': 'Failed to send rankings'})
-
+                return jsonify({
+                    'success': False,
+                    'message': 'Erreur lors de l\'envoi du message'
+                })
+                
         except Exception as e:
-            error_msg = f"Error sending rankings: {str(e)}"
-            logger.error(error_msg)
+            return jsonify({
+                'success': False,
+                'message': str(e)
+            })
 
-            # Log the error
-            log_entry = Log(
-                level="ERROR",
-                scenario="send_rankings",
-                message=error_msg
-            )
-            db.session.add(log_entry)
+    @app.route('/api/send-daily-rankings', methods=['POST'])
+    def send_daily_rankings():
+        try:
+            # Récupérer tous les groupes Telegram
+            groups = TelegramGroup.query.all()
+            
+            if not groups:
+                return jsonify({
+                    'success': False,
+                    'message': 'Aucun groupe Telegram trouvé'
+                })
+            
+            success_count = 0
+            error_count = 0
+            
+            # Générer le classement quotidien
+            rankings = generate_rankings('daily')
+            message = format_rankings_message(rankings, 'daily')
+            
+            # Envoyer à tous les groupes
+            for group in groups:
+                success = send_telegram_message(group.group_id, message)
+                
+                if success:
+                    # Enregistrer l'historique d'envoi
+                    history = RankingHistory(
+                        group_id=group.group_id,
+                        period_type='daily',
+                        status='success'
+                    )
+                    db.session.add(history)
+                    success_count += 1
+                else:
+                    error_count += 1
+            
             db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': f'Classements envoyés : {success_count} succès, {error_count} échecs'
+            })
+                
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'message': str(e)
+            })
 
-            return jsonify({'success': False, 'message': error_msg})
+    def generate_rankings(period_type):
+        """Génère le classement des étudiants selon la période spécifiée"""
+        # Définir la date de début selon la période
+        if period_type == 'daily':
+            start_date = datetime.now().date()
+        elif period_type == 'weekly':
+            start_date = datetime.now().date() - timedelta(days=7)
+        else:  # monthly
+            start_date = datetime.now().date() - timedelta(days=30)
+        
+        # Récupérer les points des étudiants pour la période
+        rankings = db.session.query(
+            Student,
+            func.sum(Point.points).label('total_points')
+        ).join(
+            Point, Student.id == Point.student_id
+        ).filter(
+            Point.date >= start_date
+        ).group_by(
+            Student.id
+        ).order_by(
+            desc('total_points')
+        ).all()
+        
+        return rankings
+
+    def format_rankings_message(rankings, period_type):
+        """Formate le message de classement pour Telegram"""
+        period_names = {
+            'daily': 'aujourd\'hui',
+            'weekly': 'cette semaine',
+            'monthly': 'ce mois'
+        }
+        
+        message = f"🏆 Classement des étudiants {period_names.get(period_type, '')} :\n\n"
+        
+        for i, (student, points) in enumerate(rankings, 1):
+            message += f"{i}. {student.first_name} {student.last_name} : {points} points\n"
+        
+        return message
 
     @app.route('/api/export-stats', methods=['POST'])
     def export_stats():
@@ -1997,44 +2100,6 @@ Vous pouvez utiliser ce système pour:
         else:
             return jsonify({'success': False, 'message': 'Invalid export format'})
     
-
-    @app.route('/api/send-daily-rankings', methods=['POST'])
-    @login_required
-    def send_daily_rankings():
-        """Send daily rankings to all Telegram groups"""
-        try:
-            # Send the daily rankings
-            bot = init_telegram_bot()
-            results = bot.send_daily_rankings()
-
-            # Log the results
-            log_entry = Log(
-                level="INFO",
-                scenario="send_daily_rankings",
-                message=f"Daily rankings sent: {results['success']} successful, {results['failure']} failed"
-            )
-            db.session.add(log_entry)
-            db.session.commit()
-
-            return jsonify({
-                'success': True, 
-                'message': f"Classements quotidiens envoyés à {results['success']} groupes ({results['failure']} échecs)"
-            })
-
-        except Exception as e:
-            error_msg = f"Error sending daily rankings: {str(e)}"
-            logger.error(error_msg)
-
-            # Log the error
-            log_entry = Log(
-                level="ERROR",
-                scenario="send_daily_rankings",
-                message=error_msg
-            )
-            db.session.add(log_entry)
-            db.session.commit()
-
-            return jsonify({'success': False, 'message': error_msg})
 
     @app.route('/api/filter-zoom-links')
     @login_required

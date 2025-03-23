@@ -12,6 +12,9 @@
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateRankingModal">
                 <i class="fas fa-chart-line me-2"></i> Générer un classement
             </button>
+            <button class="btn btn-primary" onclick="sendDailyRankings()">
+                <i class="fas fa-paper-plane"></i> Envoyer les classements quotidiens
+            </button>
         </div>
     </div>
 
@@ -384,5 +387,86 @@ function viewDetails(studentId) {
 function exportStudent(studentId) {
     window.location.href = `/student/${studentId}/export`;
 }
+
+function sendRankings(groupId, periodType) {
+    if (!groupId) {
+        alert('Aucun groupe Telegram sélectionné.');
+        return;
+    }
+
+    // Désactiver les éléments UI et afficher l'état de chargement
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = 'Envoi en cours...';
+
+    // Envoyer le classement au groupe
+    const formData = new FormData();
+    formData.append('group_id', groupId);
+    formData.append('period_type', periodType);
+
+    fetch('/api/send-rankings', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Notification de succès
+            alert('Classement envoyé avec succès !');
+        } else {
+            // Notification d'erreur
+            alert('Erreur lors de l\'envoi du classement : ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de l\'envoi du classement : ' + error);
+    })
+    .finally(() => {
+        // Restaurer les éléments UI
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+
+function sendDailyRankings() {
+    // Désactiver les éléments UI et afficher l'état de chargement
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = 'Envoi en cours...';
+
+    // Envoyer les classements quotidiens à tous les groupes
+    fetch('/api/send-daily-rankings', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Notification de succès
+            alert('Classements quotidiens envoyés avec succès : ' + data.message);
+        } else {
+            // Notification d'erreur
+            alert('Erreur lors de l\'envoi des classements : ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de l\'envoi des classements : ' + error);
+    })
+    .finally(() => {
+        // Restaurer les éléments UI
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+
+// Auto-soumission du formulaire lors du changement des valeurs des selects
+document.getElementById('filter_class').addEventListener('change', function() {
+    this.form.submit();
+});
+
+document.getElementById('filter_period').addEventListener('change', function() {
+    this.form.submit();
+});
 </script>
 {% endblock %}
