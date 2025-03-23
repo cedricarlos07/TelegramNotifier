@@ -384,6 +384,55 @@ def delete_zoom_link(link_id):
     flash('Lien Zoom supprimé avec succès', 'success')
     return redirect(url_for('main.zoom_links'))
 
+# Routes pour les scénarios
+@main.route('/scenarios')
+@login_required
+def scenarios():
+    return render_template('scenarios.html')
+
+# Routes pour la simulation
+@main.route('/simulation')
+@login_required
+def simulation():
+    return render_template('simulation.html')
+
+# Routes pour l'état du bot
+@main.route('/bot-status')
+@login_required
+def bot_status():
+    return render_template('bot_status.html')
+
+# Routes pour les logs
+@main.route('/logs')
+@login_required
+def logs():
+    return render_template('logs.html')
+
+# Route pour l'inscription (register)
+@main.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        if User.query.filter_by(username=username).first():
+            flash('Ce nom d\'utilisateur existe déjà', 'error')
+            return redirect(url_for('main.register'))
+            
+        if User.query.filter_by(email=email).first():
+            flash('Cet email existe déjà', 'error')
+            return redirect(url_for('main.register'))
+        
+        user = User(username=username, email=email)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('Inscription réussie ! Vous pouvez maintenant vous connecter', 'success')
+        return redirect(url_for('main.login'))
+    return render_template('register.html')
+
 # Routes pour les erreurs
 @main.errorhandler(404)
 def page_not_found(e):
