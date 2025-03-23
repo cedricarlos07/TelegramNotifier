@@ -278,3 +278,10 @@ class Scenario(db.Model):
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             'updated_at': self.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         }
+
+class ZoomLink(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

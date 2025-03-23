@@ -1,165 +1,73 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">Gestion des Liens Zoom</h1>
-            <p class="text-muted mb-0">Gérez les liens Zoom pour tous vos cours</p>
-        </div>
-        <div>
-            <form method="POST" action="{{ url_for('main.run_scenario', scenario_name='create_zoom_links') }}" class="d-inline">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-sync me-2"></i> Générer les liens manquants
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Filters Card -->
-    <div class="card mb-4">
-        <div class="card-header bg-transparent">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-filter me-2 text-primary"></i>Filtres rapides
-                </h5>
-                <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
-                    <i class="fas fa-chevron-up me-1"></i> <span class="filter-toggle-text">Masquer</span>
-                </button>
-            </div>
-        </div>
-        
-        <div class="collapse show" id="filterCollapse">
-            <div class="card-body">
-                <form id="filterForm" class="row g-3">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="filter_teacher" class="form-label">
-                                <i class="fas fa-user-tie text-primary me-1"></i> Coach
-                            </label>
-                            <select class="form-select" id="filter_teacher" name="teacher">
-                                <option value="">Tous les coachs</option>
-                                {% for teacher in teachers %}
-                                    <option value="{{ teacher }}">{{ teacher }}</option>
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Gestion des liens Zoom</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addZoomLinkModal">
+                        <i class="fas fa-plus me-2"></i>Ajouter un lien Zoom
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom</th>
+                                    <th>URL</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for link in zoom_links %}
+                                <tr>
+                                    <td>{{ link.id }}</td>
+                                    <td>{{ link.name }}</td>
+                                    <td>
+                                        <a href="{{ link.url }}" target="_blank" class="text-primary">
+                                            {{ link.url }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" onclick="editZoomLink({{ link.id }}, '{{ link.name }}', '{{ link.url }}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteZoomLink({{ link.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
                                 {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="filter_class" class="form-label">
-                                <i class="fas fa-book text-primary me-1"></i> Cours
-                            </label>
-                            <select class="form-select" id="filter_class" name="class">
-                                <option value="">Tous les cours</option>
-                                {% for class_name in class_names %}
-                                    <option value="{{ class_name }}">{{ class_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="filter_day" class="form-label">
-                                <i class="fas fa-calendar-day text-primary me-1"></i> Jour
-                            </label>
-                            <select class="form-select" id="filter_day" name="day">
-                                <option value="">Tous les jours</option>
-                                <option value="0">Lundi</option>
-                                <option value="1">Mardi</option>
-                                <option value="2">Mercredi</option>
-                                <option value="3">Jeudi</option>
-                                <option value="4">Vendredi</option>
-                                <option value="5">Samedi</option>
-                                <option value="6">Dimanche</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="filter_status" class="form-label">
-                                <i class="fas fa-check-circle text-primary me-1"></i> Statut Zoom
-                            </label>
-                            <select class="form-select" id="filter_status" name="status">
-                                <option value="">Tous les statuts</option>
-                                <option value="with_zoom">Avec lien Zoom</option>
-                                <option value="without_zoom">Sans lien Zoom</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-12 mt-3 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="fas fa-search me-2"></i>Rechercher
-                        </button>
-                        <button type="reset" class="btn btn-outline-secondary">
-                            <i class="fas fa-undo me-2"></i>Réinitialiser
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Zoom Links Tables -->
-    <div id="zoomLinksTables">
-        {% include 'partials/zoom_links_tables.html' %}
-    </div>
-</div>
-
-<!-- Edit Zoom Link Modal -->
-<div class="modal fade" id="editZoomModal" tabindex="-1" aria-labelledby="editZoomModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editZoomModalLabel">Modifier le lien Zoom</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editZoomForm" method="POST">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nom du cours</label>
-                        <input type="text" class="form-control" id="zoom_course_name" disabled>
-                    </div>
-                    <div class="mb-3">
-                        <label for="zoom_meeting_id" class="form-label">ID de la réunion Zoom</label>
-                        <input type="text" class="form-control" id="zoom_meeting_id" name="zoom_meeting_id">
-                    </div>
-                    <div class="mb-3">
-                        <label for="zoom_link" class="form-label">Lien Zoom</label>
-                        <input type="text" class="form-control" id="zoom_link" name="zoom_link" required>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Add Zoom Link Modal -->
-<div class="modal fade" id="addZoomModal" tabindex="-1" aria-labelledby="addZoomModalLabel" aria-hidden="true">
+<!-- Modal Ajout Lien Zoom -->
+<div class="modal fade" id="addZoomLinkModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addZoomModalLabel">Ajouter un lien Zoom</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Ajouter un lien Zoom</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="addZoomForm" method="POST">
+            <form action="{{ url_for('main.add_zoom_link') }}" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Nom du cours</label>
-                        <input type="text" class="form-control" id="add_zoom_course_name" disabled>
+                        <label class="form-label">Nom</label>
+                        <input type="text" class="form-control" name="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="add_zoom_meeting_id" class="form-label">ID de la réunion Zoom</label>
-                        <input type="text" class="form-control" id="add_zoom_meeting_id" name="zoom_meeting_id">
-                    </div>
-                    <div class="mb-3">
-                        <label for="add_zoom_link" class="form-label">Lien Zoom</label>
-                        <input type="text" class="form-control" id="add_zoom_link" name="zoom_link" required>
+                        <label class="form-label">URL Zoom</label>
+                        <input type="url" class="form-control" name="url" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -170,94 +78,53 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Édition Lien Zoom -->
+<div class="modal fade" id="editZoomLinkModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier le lien Zoom</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editZoomLinkForm" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nom</label>
+                        <input type="text" class="form-control" name="name" id="editName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">URL Zoom</label>
+                        <input type="url" class="form-control" name="url" id="editUrl" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Gestion du toggle des filtres
-    const filterToggle = document.querySelector('[data-bs-target="#filterCollapse"]');
-    const filterToggleText = filterToggle.querySelector('.filter-toggle-text');
-    const filterCollapse = document.getElementById('filterCollapse');
+function editZoomLink(id, name, url) {
+    document.getElementById('editName').value = name;
+    document.getElementById('editUrl').value = url;
+    document.getElementById('editZoomLinkForm').action = `/zoom-links/${id}/edit`;
+    new bootstrap.Modal(document.getElementById('editZoomLinkModal')).show();
+}
 
-    filterCollapse.addEventListener('show.bs.collapse', function () {
-        filterToggleText.textContent = 'Masquer';
-    });
-
-    filterCollapse.addEventListener('hide.bs.collapse', function () {
-        filterToggleText.textContent = 'Afficher';
-    });
-
-    // Fonction pour mettre à jour les tableaux
-    function updateTables() {
-        const form = document.getElementById('filterForm');
-        const formData = new FormData(form);
-        const params = new URLSearchParams();
-
-        for (const [key, value] of formData.entries()) {
-            if (value) {
-                params.append(key, value);
-            }
-        }
-
-        fetch(`/api/filter-zoom-links?${params.toString()}`)
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('zoomLinksTables').innerHTML = html;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Une erreur est survenue lors du filtrage des liens Zoom.');
-            });
+function deleteZoomLink(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce lien Zoom ?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/zoom-links/${id}/delete`;
+        document.body.appendChild(form);
+        form.submit();
     }
-
-    // Écouter les changements dans les filtres
-    document.getElementById('filterForm').addEventListener('change', function() {
-        updateTables();
-    });
-
-    // Écouter la soumission du formulaire
-    document.getElementById('filterForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        updateTables();
-    });
-
-    // Écouter le reset du formulaire
-    document.getElementById('filterForm').addEventListener('reset', function() {
-        setTimeout(updateTables, 0);
-    });
-
-    // Gestion des modales d'édition et d'ajout
-    const editModal = new bootstrap.Modal(document.getElementById('editZoomModal'));
-    const addModal = new bootstrap.Modal(document.getElementById('addZoomModal'));
-
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.edit-zoom-btn')) {
-            const btn = e.target.closest('.edit-zoom-btn');
-            const courseId = btn.dataset.courseId;
-            const courseName = btn.dataset.courseName;
-            const zoomLink = btn.dataset.zoomLink;
-            const zoomMeetingId = btn.dataset.zoomMeetingId;
-
-            document.getElementById('zoom_course_name').value = courseName;
-            document.getElementById('zoom_meeting_id').value = zoomMeetingId;
-            document.getElementById('zoom_link').value = zoomLink;
-            document.getElementById('editZoomForm').action = `/zoom-links/update/${courseId}`;
-
-            editModal.show();
-        }
-
-        if (e.target.closest('.add-zoom-btn')) {
-            const btn = e.target.closest('.add-zoom-btn');
-            const courseId = btn.dataset.courseId;
-            const courseName = btn.dataset.courseName;
-
-            document.getElementById('add_zoom_course_name').value = courseName;
-            document.getElementById('addZoomForm').action = `/zoom-links/update/${courseId}`;
-
-            addModal.show();
-        }
-    });
-});
+}
 </script>
 {% endblock %}

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Course, TelegramGroup, Student, Point, RankingHistory
+from models import db, User, Course, TelegramGroup, Student, Point, RankingHistory, ZoomLink
 from datetime import datetime, timedelta
 import pandas as pd
 import logging
@@ -344,6 +344,45 @@ def delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     return jsonify({'success': True})
+
+# Routes pour les liens Zoom
+@main.route('/zoom-links')
+@login_required
+def zoom_links():
+    zoom_links = ZoomLink.query.all()
+    return render_template('zoom_links.html', zoom_links=zoom_links)
+
+@main.route('/zoom-links/add', methods=['POST'])
+@login_required
+def add_zoom_link():
+    name = request.form.get('name')
+    url = request.form.get('url')
+    
+    zoom_link = ZoomLink(name=name, url=url)
+    db.session.add(zoom_link)
+    db.session.commit()
+    flash('Lien Zoom ajouté avec succès', 'success')
+    return redirect(url_for('main.zoom_links'))
+
+@main.route('/zoom-links/<int:link_id>/edit', methods=['POST'])
+@login_required
+def edit_zoom_link(link_id):
+    zoom_link = ZoomLink.query.get_or_404(link_id)
+    zoom_link.name = request.form.get('name')
+    zoom_link.url = request.form.get('url')
+
+    db.session.commit()
+    flash('Lien Zoom modifié avec succès', 'success')
+    return redirect(url_for('main.zoom_links'))
+
+@main.route('/zoom-links/<int:link_id>/delete', methods=['POST'])
+@login_required
+def delete_zoom_link(link_id):
+    zoom_link = ZoomLink.query.get_or_404(link_id)
+    db.session.delete(zoom_link)
+    db.session.commit()
+    flash('Lien Zoom supprimé avec succès', 'success')
+    return redirect(url_for('main.zoom_links'))
 
 # Routes pour les erreurs
 @main.errorhandler(404)
