@@ -9,7 +9,7 @@
             <h1 class="display-4 mb-4">Bienvenue sur TelegramNotifier</h1>
             <p class="lead mb-4">Votre plateforme de gestion des notifications Telegram pour les cours en ligne.</p>
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">Accéder au tableau de bord</a>
+                <a href="{{ url_for('main.courses') }}" class="btn btn-primary btn-lg">Accéder aux cours</a>
             {% else %}
                 <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-lg">Se connecter</a>
             {% endif %}
