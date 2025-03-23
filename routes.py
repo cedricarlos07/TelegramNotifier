@@ -252,6 +252,89 @@ def send_rankings():
     
     return jsonify({'success': True})
 
+@main.route('/admin-users')
+@login_required
+@admin_required
+def admin_users():
+    users = User.query.all()
+    return render_template('admin_users.html', users=users)
+
+@main.route('/api/users', methods=['POST'])
+@login_required
+@admin_required
+def create_user():
+    data = request.form
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    is_admin = data.get('is_admin') == 'on'
+    
+    if User.query.filter_by(username=username).first():
+        return jsonify({'success': False, 'message': 'Ce nom d\'utilisateur existe déjà'}), 400
+        
+    if User.query.filter_by(email=email).first():
+        return jsonify({'success': False, 'message': 'Cet email existe déjà'}), 400
+    
+    user = User(username=username, email=email, is_admin=is_admin)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@main.route('/api/users/<int:user_id>', methods=['GET'])
+@login_required
+@admin_required
+def get_user(user_id):
+    user = User.query.get_or_404(user_id)
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'is_admin': user.is_admin
+    })
+
+@main.route('/api/users/<int:user_id>', methods=['PUT'])
+@login_required
+@admin_required
+def update_user(user_id):
+    user = User.query.get_or_404(user_id)
+    data = request.form
+    
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    is_admin = data.get('is_admin') == 'on'
+    
+    if username != user.username and User.query.filter_by(username=username).first():
+        return jsonify({'success': False, 'message': 'Ce nom d\'utilisateur existe déjà'}), 400
+        
+    if email != user.email and User.query.filter_by(email=email).first():
+        return jsonify({'success': False, 'message': 'Cet email existe déjà'}), 400
+    
+    user.username = username
+    user.email = email
+    user.is_admin = is_admin
+    
+    if password:
+        user.set_password(password)
+    
+    db.session.commit()
+    return jsonify({'success': True})
+
+@main.route('/api/users/<int:user_id>', methods=['DELETE'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    
+    if user.id == current_user.id:
+        return jsonify({'success': False, 'message': 'Vous ne pouvez pas supprimer votre propre compte'}), 400
+    
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'success': True})
+
 # Routes pour les erreurs
 @main.errorhandler(404)
 def page_not_found(e):
