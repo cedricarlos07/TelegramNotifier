@@ -2,418 +2,201 @@
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">Gestion des Étudiants</h1>
-            <p class="text-muted mb-0">Gérez vos étudiants et suivez leur progression</p>
-        </div>
-        <div>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-                <i class="fas fa-user-plus me-2"></i> Nouvel Étudiant
-            </button>
-        </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-uppercase text-muted mb-1">Total Étudiants</h6>
-                            <h3 class="mb-0">{{ total_students }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle bg-success bg-opacity-10 text-success me-3">
-                            <i class="fas fa-user-check"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-uppercase text-muted mb-1">Étudiants Actifs</h6>
-                            <h3 class="mb-0">{{ active_students }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle bg-info bg-opacity-10 text-info me-3">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-uppercase text-muted mb-1">Moyenne Générale</h6>
-                            <h3 class="mb-0">{{ average_score }}%</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-circle bg-warning bg-opacity-10 text-warning me-3">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-uppercase text-muted mb-1">Progression</h6>
-                            <h3 class="mb-0">{{ progress_rate }}%</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="card filter-card mb-4">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Filtres</h5>
-        </div>
-        <div class="card-body">
-            <form id="filterForm" class="row g-3">
-                <div class="col-md-3">
-                    <label for="filter_level" class="form-label">Niveau</label>
-                    <select class="form-select" id="filter_level" name="level">
-                        <option value="">Tous les niveaux</option>
-                        {% for level in levels %}
-                        <option value="{{ level }}">{{ level }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="filter_course" class="form-label">Cours</label>
-                    <select class="form-select" id="filter_course" name="course">
-                        <option value="">Tous les cours</option>
-                        {% for course in courses %}
-                        <option value="{{ course.id }}">{{ course.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="filter_status" class="form-label">Statut</label>
-                    <select class="form-select" id="filter_status" name="status">
-                        <option value="">Tous les statuts</option>
-                        <option value="active">Actif</option>
-                        <option value="inactive">Inactif</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="filter_progress" class="form-label">Progression</label>
-                    <select class="form-select" id="filter_progress" name="progress">
-                        <option value="">Tous les niveaux</option>
-                        <option value="high">Élevée (>80%)</option>
-                        <option value="medium">Moyenne (40-80%)</option>
-                        <option value="low">Faible (<40%)</option>
-                    </select>
-                </div>
-                <div class="col-12">
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="reset" class="btn btn-outline-secondary">
-                            <i class="fas fa-undo me-2"></i>Réinitialiser
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-filter me-2"></i>Filtrer
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Students Grid -->
-    <div class="row g-4">
-        {% for student in students %}
-        <div class="col-md-6 col-lg-4">
-            <div class="card student-card">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
                 <div class="card-header">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-circle large bg-primary bg-opacity-10 text-primary me-3">
-                            <span>{{ student.name[0]|upper }}</span>
-                        </div>
-                        <div>
-                            <h5 class="card-title mb-0">{{ student.name }}</h5>
-                            <p class="text-muted mb-0">{{ student.level }}</p>
-                        </div>
-                    </div>
+                    <h3 class="card-title">Gestion des Étudiants</h3>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <h6 class="text-uppercase text-muted mb-2">Progression</h6>
-                        <div class="progress">
-                            <div class="progress-bar" role="progressbar" style="width: {{ student.progress }}%"
-                                 aria-valuenow="{{ student.progress }}" aria-valuemin="0" aria-valuemax="100">
+                    <!-- Statistiques -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info"><i class="fas fa-users"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Étudiants</span>
+                                    <span class="info-box-number">{{ total_students }}</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted">Progression globale</small>
-                            <small class="text-muted">{{ student.progress }}%</small>
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success"><i class="fas fa-layer-group"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Groupes Telegram</span>
+                                    <span class="info-box-number">{{ total_groups }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning"><i class="fas fa-book"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Cours</span>
+                                    <span class="info-box-number">{{ total_courses }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <h6 class="text-uppercase text-muted mb-2">Cours suivis</h6>
-                        <div class="d-flex flex-wrap gap-2">
-                            {% for course in student.courses %}
-                            <span class="badge bg-light">
-                                <i class="fas fa-graduation-cap me-1"></i>{{ course.name }}
-                            </span>
-                            {% endfor %}
+
+                    <!-- Boutons d'action -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <select class="form-control" id="telegram-group-select">
+                                    <option value="">Sélectionner un groupe Telegram</option>
+                                    {% for group in telegram_groups %}
+                                    <option value="{{ group.group_id }}">{{ group.group_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" onclick="extractStudents()">
+                                        <i class="fas fa-download"></i> Extraire les étudiants
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <h6 class="text-uppercase text-muted mb-2">Statistiques</h6>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="badge bg-light">
-                                <i class="fas fa-star me-1"></i>Score: {{ student.score }}%
-                            </span>
-                            <span class="badge bg-light">
-                                <i class="fas fa-calendar-check me-1"></i>{{ student.attendance }}% présence
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <button class="btn btn-sm btn-outline-primary" 
-                                onclick="viewStudent({{ student.id }})"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Voir les détails">
-                            <i class="fas fa-eye me-1"></i> Détails
-                        </button>
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-secondary" 
-                                    onclick="editStudent({{ student.id }})"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Modifier l'étudiant">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" 
-                                    onclick="deleteStudent({{ student.id }})"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Supprimer l'étudiant">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+
+                    <!-- Liste des étudiants -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Username Telegram</th>
+                                    <th>Cours assignés</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td>{{ student.last_name }}</td>
+                                    <td>{{ student.first_name }}</td>
+                                    <td>@{{ student.username }}</td>
+                                    <td>
+                                        {% for course in student.courses %}
+                                        <span class="badge badge-info">{{ course.course_name }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" onclick="showAssignCourseModal({{ student.id }})">
+                                            <i class="fas fa-plus"></i> Assigner un cours
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-        {% else %}
-        <div class="col-12">
-            <div class="empty-state">
-                <div class="icon-circle bg-primary bg-opacity-10 text-primary">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h3>Aucun étudiant trouvé</h3>
-                <p class="text-muted">Commencez par ajouter votre premier étudiant</p>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-                    <i class="fas fa-user-plus me-2"></i> Ajouter un étudiant
+    </div>
+</div>
+
+<!-- Modal d'assignation de cours -->
+<div class="modal fade" id="assignCourseModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assigner un cours</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
                 </button>
             </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-<!-- Add Student Modal -->
-<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addStudentModalLabel">Nouvel Étudiant</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="addStudentForm" method="POST" action="{{ url_for('add_student') }}" data-ajax="true">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="student_name" class="form-label">Nom complet</label>
-                        <input type="text" class="form-control" id="student_name" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="student_email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="student_email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="student_phone" class="form-label">Téléphone</label>
-                        <input type="tel" class="form-control" id="student_phone" name="phone" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="student_level" class="form-label">Niveau</label>
-                        <select class="form-select" id="student_level" name="level" required>
-                            <option value="">Sélectionnez un niveau</option>
-                            {% for level in levels %}
-                            <option value="{{ level }}">{{ level }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="student_courses" class="form-label">Cours</label>
-                        <select class="form-select" id="student_courses" name="courses" multiple required>
+            <div class="modal-body">
+                <form id="assignCourseForm">
+                    <input type="hidden" id="studentId">
+                    <div class="form-group">
+                        <label for="courseSelect">Sélectionner un cours</label>
+                        <select class="form-control" id="courseSelect" required>
+                            <option value="">Choisir un cours</option>
                             {% for course in courses %}
-                            <option value="{{ course.id }}">{{ course.name }}</option>
+                            <option value="{{ course.id }}">{{ course.course_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-user-plus me-2"></i>Ajouter
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="assignCourse()">Assigner</button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Edit Student Modal -->
-<div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editStudentModalLabel">Modifier l'Étudiant</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editStudentForm" method="POST" data-ajax="true">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="edit_student_name" class="form-label">Nom complet</label>
-                        <input type="text" class="form-control" id="edit_student_name" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_student_email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="edit_student_email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_student_phone" class="form-label">Téléphone</label>
-                        <input type="tel" class="form-control" id="edit_student_phone" name="phone" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_student_level" class="form-label">Niveau</label>
-                        <select class="form-select" id="edit_student_level" name="level" required>
-                            <option value="">Sélectionnez un niveau</option>
-                            {% for level in levels %}
-                            <option value="{{ level }}">{{ level }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_student_courses" class="form-label">Cours</label>
-                        <select class="form-select" id="edit_student_courses" name="courses" multiple required>
-                            {% for course in courses %}
-                            <option value="{{ course.id }}">{{ course.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Enregistrer
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialisation des modales
-    const addModal = new bootstrap.Modal(document.getElementById('addStudentModal'));
-    const editModal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+function extractStudents() {
+    const groupId = document.getElementById('telegram-group-select').value;
+    if (!groupId) {
+        alert('Veuillez sélectionner un groupe Telegram');
+        return;
+    }
 
-    // Gestion des filtres
-    const filterForm = document.getElementById('filterForm');
-    filterForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(filterForm);
-        const params = new URLSearchParams(formData);
-        
-        fetch(`/students/filter?${params.toString()}`)
-            .then(response => response.text())
-            .then(html => {
-                document.querySelector('.row.g-4').innerHTML = html;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Une erreur est survenue lors du filtrage des étudiants.', 'danger');
-            });
-    });
+    if (confirm('Voulez-vous extraire les étudiants de ce groupe Telegram ?')) {
+        fetch('/students/extract-from-telegram', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `group_id=${groupId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erreur lors de l\'extraction : ' + error);
+        });
+    }
+}
 
-    // Fonction pour voir les détails d'un étudiant
-    window.viewStudent = function(studentId) {
-        window.location.href = `/students/${studentId}`;
-    };
+function showAssignCourseModal(studentId) {
+    document.getElementById('studentId').value = studentId;
+    $('#assignCourseModal').modal('show');
+}
 
-    // Fonction pour éditer un étudiant
-    window.editStudent = function(studentId) {
-        fetch(`/students/${studentId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('edit_student_name').value = data.name;
-                document.getElementById('edit_student_email').value = data.email;
-                document.getElementById('edit_student_phone').value = data.phone;
-                document.getElementById('edit_student_level').value = data.level;
-                
-                // Sélectionner les cours
-                const courseSelect = document.getElementById('edit_student_courses');
-                Array.from(courseSelect.options).forEach(option => {
-                    option.selected = data.courses.includes(parseInt(option.value));
-                });
-                
-                document.getElementById('editStudentForm').action = `/students/${studentId}/edit`;
-                editModal.show();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Une erreur est survenue lors du chargement des données de l\'étudiant.', 'danger');
-            });
-    };
+function assignCourse() {
+    const studentId = document.getElementById('studentId').value;
+    const courseId = document.getElementById('courseSelect').value;
 
-    // Fonction pour supprimer un étudiant
-    window.deleteStudent = function(studentId) {
-        if (confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?')) {
-            fetch(`/students/${studentId}/delete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Étudiant supprimé avec succès !');
-                    location.reload();
-                } else {
-                    showNotification('Erreur lors de la suppression de l\'étudiant : ' + data.message, 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Une erreur est survenue lors de la suppression de l\'étudiant.', 'danger');
-            });
+    if (!courseId) {
+        alert('Veuillez sélectionner un cours');
+        return;
+    }
+
+    fetch('/students/assign-course', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `student_id=${studentId}&course_id=${courseId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erreur : ' + data.message);
         }
-    };
-});
+    })
+    .catch(error => {
+        alert('Erreur lors de l\'assignation : ' + error);
+    });
+}
 </script>
 {% endblock %} 

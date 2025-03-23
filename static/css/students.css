@@ -1,1 +1,191 @@
- 
+/* Styles pour la page des étudiants */
+
+/* Cartes de statistiques */
+.info-box {
+    background: var(--bs-body-bg);
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.info-box:hover {
+    transform: translateY(-5px);
+}
+
+.info-box-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.info-box-content {
+    text-align: center;
+}
+
+.info-box-text {
+    color: var(--bs-secondary-color);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.info-box-number {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--bs-primary);
+}
+
+/* Sélecteur de groupe Telegram */
+.input-group {
+    margin-bottom: 2rem;
+}
+
+.input-group .form-control {
+    border-radius: 8px 0 0 8px;
+    border: 1px solid var(--bs-border-color);
+    padding: 0.75rem 1rem;
+}
+
+.input-group .btn {
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1.5rem;
+}
+
+/* Tableau des étudiants */
+.table {
+    background: var(--bs-body-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table thead th {
+    background: var(--bs-primary);
+    color: white;
+    font-weight: 500;
+    padding: 1rem;
+    border: none;
+}
+
+.table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* Badges pour les cours */
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+    margin: 0.2rem;
+    border-radius: 6px;
+}
+
+/* Boutons d'action */
+.btn-sm {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* Modal d'assignation de cours */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    background: var(--bs-primary);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    padding: 1rem 1.5rem;
+}
+
+.modal-title {
+    font-weight: 600;
+    margin: 0;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--bs-border-color);
+    padding: 1rem 1.5rem;
+}
+
+/* Formulaires */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid var(--bs-border-color);
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* État vide */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: var(--bs-secondary);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: var(--bs-secondary-color);
+    margin-bottom: 1.5rem;
+}
+
+/* Ajustements responsifs */
+@media (max-width: 768px) {
+    .info-box {
+        margin-bottom: 1rem;
+    }
+    
+    .table-responsive {
+        margin: 0 -1rem;
+    }
+    
+    .table td, .table th {
+        white-space: nowrap;
+    }
+}
+
+/* Ajustements pour le mode sombre */
+[data-bs-theme="dark"] .info-box {
+    background: var(--bs-dark);
+}
+
+[data-bs-theme="dark"] .table {
+    background: var(--bs-dark);
+}
+
+[data-bs-theme="dark"] .modal-content {
+    background: var(--bs-dark);
+    color: var(--bs-light);
+}
+
+[data-bs-theme="dark"] .form-control {
+    background: var(--bs-dark);
+    border-color: var(--bs-border-color);
+    color: var(--bs-light);
+}
+
+[data-bs-theme="dark"] .form-control:focus {
+    background: var(--bs-dark);
+    color: var(--bs-light);
+} 
