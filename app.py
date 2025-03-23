@@ -12,8 +12,6 @@ from flask_migrate import Migrate
 from logging.handlers import RotatingFileHandler
 from werkzeug.exceptions import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 
 # Configure logging
 logging.basicConfig(
@@ -42,12 +40,17 @@ def create_app(config_class=Config):
     csrf.init_app(app)
     scheduler.init_app(app)
     
-    # Initialize rate limiter
-    limiter = Limiter(
-        app=app,
-        key_func=get_remote_address,
-        default_limits=["200 per day", "50 per hour"]
-    )
+    # Initialize rate limiter if available
+    try:
+        from flask_limiter import Limiter
+        from flask_limiter.util import get_remote_address
+        limiter = Limiter(
+            app=app,
+            key_func=get_remote_address,
+            default_limits=["200 per day", "50 per hour"]
+        )
+    except ImportError:
+        logger.warning("Flask-Limiter not installed. Rate limiting is disabled.")
     
     # Initialize migrations
     migrate = Migrate(app, db)
