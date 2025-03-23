@@ -51,28 +51,18 @@ def load_user(user_id):
     from models import User
     return User.query.get(int(user_id))
 
-# Create database tables within the application context
+# Création des tables dans la base de données
 with app.app_context():
-    # Import models to ensure they're registered with SQLAlchemy
-    from models import Course, ScheduledMessage, Log, User
-    
-    # Create all database tables
+    # Suppression de toutes les tables existantes
+    db.drop_all()
+    # Création des tables dans le bon ordre
     db.create_all()
-    
-    # Create admin user if doesn't exist
-    admin = User.query.filter_by(username='admin').first()
-    if not admin:
-        admin = User(
-            username='admin',
-            email='admin@example.com',
-            is_admin=True
-        )
-        admin.set_password('adminpassword')
+    # Création d'un utilisateur admin par défaut si aucun n'existe
+    if not User.query.filter_by(username='admin').first():
+        admin = User(username='admin', is_admin=True)
+        admin.set_password('admin')
         db.session.add(admin)
         db.session.commit()
-        logger.info("Admin user created successfully")
-    
-    logger.info("Database tables created successfully")
 
 # Register all routes for the application
 from routes import register_routes

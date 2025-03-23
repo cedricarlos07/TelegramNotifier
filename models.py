@@ -107,36 +107,73 @@ class UserRanking(db.Model):
             'period_type': self.period_type
         }
 
-class Course(db.Model):
+class User(UserMixin, db.Model):
+    __tablename__ = 'users'
+    
     id = db.Column(db.Integer, primary_key=True)
-    course_name = db.Column(db.String(100), nullable=False)
-    teacher_name = db.Column(db.String(100), nullable=False)
-    telegram_group_id = db.Column(db.String(100), nullable=False)
-    day_of_week = db.Column(db.Integer, nullable=False)  # 0-6, Monday is 0
-    start_time = db.Column(db.Time, nullable=False)
-    end_time = db.Column(db.Time, nullable=False)
-    schedule_date = db.Column(db.Date, nullable=True)  # The next occurrence date
-    zoom_link = db.Column(db.String(255), nullable=True)
-    zoom_meeting_id = db.Column(db.String(100), nullable=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Course(db.Model):
+    __tablename__ = 'courses'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class TelegramGroup(db.Model):
+    __tablename__ = 'telegram_groups'
     
-    def __repr__(self):
-        return f"<Course {self.course_name} on {self.day_of_week} at {self.start_time}>"
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.String(255), unique=True, nullable=False)
+    group_name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+# Table d'association entre les cours et les groupes Telegram
+course_telegram_groups = db.Table('course_telegram_groups',
+    db.Column('course_id', db.Integer, db.ForeignKey('courses.id'), primary_key=True),
+    db.Column('group_id', db.Integer, db.ForeignKey('telegram_groups.id'), primary_key=True)
+)
+
+class Student(db.Model):
+    __tablename__ = 'students'
     
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'course_name': self.course_name,
-            'teacher_name': self.teacher_name,
-            'telegram_group_id': self.telegram_group_id,
-            'day_of_week': self.day_of_week,
-            'start_time': self.start_time.strftime("%H:%M") if self.start_time else None,
-            'end_time': self.end_time.strftime("%H:%M") if self.end_time else None,
-            'schedule_date': self.schedule_date.strftime("%Y-%m-%d") if self.schedule_date else None,
-            'zoom_link': self.zoom_link,
-            'zoom_meeting_id': self.zoom_meeting_id
-        }
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Point(db.Model):
+    __tablename__ = 'points'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class RankingHistory(db.Model):
+    __tablename__ = 'ranking_history'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.String(255), db.ForeignKey('telegram_groups.group_id'), nullable=False)
+    period_type = db.Column(db.String(50), nullable=False)  # daily, weekly, monthly
+    status = db.Column(db.String(50), nullable=False)  # success, error
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations
+    group = db.relationship('TelegramGroup', backref=db.backref('ranking_history', lazy=True))
+
+# Ajout des relations après la définition des tables
+Course.telegram_groups = db.relationship('TelegramGroup', secondary=course_telegram_groups, backref=db.backref('courses', lazy=True))
+Student.points = db.relationship('Point', backref='student', lazy=True)
 
 class ScheduledMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -164,34 +201,6 @@ class ScheduledMessage(db.Model):
             'telegram_group_id': self.telegram_group_id,
             'is_sent': self.is_sent,
             'sent_at': self.sent_at.strftime("%Y-%m-%d %H:%M:%S") if self.sent_at else None
-        }
-
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_login = db.Column(db.DateTime, nullable=True)
-    
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-        
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-    
-    def __repr__(self):
-        return f"<User {self.username}>"
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'username': self.username,
-            'email': self.email,
-            'is_admin': self.is_admin,
-            'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            'last_login': self.last_login.strftime("%Y-%m-%d %H:%M:%S") if self.last_login else None
         }
 
 class Log(db.Model):
@@ -245,36 +254,3 @@ class Scenario(db.Model):
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             'updated_at': self.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         }
-
-class TelegramGroup(db.Model):
-    __tablename__ = 'telegram_groups'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    group_id = db.Column(db.String(50), unique=True, nullable=False)
-    group_name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relation avec les cours
-    courses = db.relationship('Course', secondary='course_telegram_groups', backref=db.backref('telegram_groups', lazy='dynamic'))
-
-class CourseTelegramGroup(db.Model):
-    __tablename__ = 'course_telegram_groups'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
-    group_id = db.Column(db.Integer, db.ForeignKey('telegram_groups.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-class RankingHistory(db.Model):
-    __tablename__ = 'ranking_history'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    group_id = db.Column(db.String(255), db.ForeignKey('telegram_groups.group_id'), nullable=False)
-    period_type = db.Column(db.String(50), nullable=False)  # daily, weekly, monthly
-    status = db.Column(db.String(50), nullable=False)  # success, error
-    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relations
-    group = db.relationship('TelegramGroup', backref=db.backref('ranking_history', lazy=True))
