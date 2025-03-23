@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user, logout_user
-from models import Course, Student, RankingHistory, User
+from models import Course, Student, RankingHistory, User, ZoomAttendance, TelegramMessage
 from extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
 
 bp = Blueprint('main', __name__)
 
@@ -51,4 +52,56 @@ def change_password():
 def logout():
     logout_user()
     flash('Vous avez été déconnecté', 'success')
-    return redirect(url_for('main.index')) 
+    return redirect(url_for('main.index'))
+
+@bp.route('/zoom-links')
+@login_required
+def zoom_links():
+    # Récupérer les liens Zoom pour aujourd'hui
+    today = datetime.now().date()
+    attendances = ZoomAttendance.query.filter(
+        ZoomAttendance.date == today
+    ).all()
+    return render_template('zoom_links.html', attendances=attendances)
+
+@bp.route('/analytics')
+@login_required
+def analytics():
+    # Statistiques pour les 30 derniers jours
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=30)
+    
+    # Nombre de messages envoyés
+    messages_count = TelegramMessage.query.filter(
+        TelegramMessage.created_at.between(start_date, end_date)
+    ).count()
+    
+    # Nombre de présences Zoom
+    attendances_count = ZoomAttendance.query.filter(
+        ZoomAttendance.date.between(start_date, end_date)
+    ).count()
+    
+    return render_template('analytics.html',
+                         messages_count=messages_count,
+                         attendances_count=attendances_count)
+
+@bp.route('/scenarios')
+@login_required
+def scenarios():
+    return render_template('scenarios.html')
+
+@bp.route('/bot-status')
+@login_required
+def bot_status():
+    # Vérifier l'état du bot Telegram
+    from telegram_bot import bot
+    bot_info = bot.get_me()
+    return render_template('bot_status.html', bot_info=bot_info)
+
+@bp.route('/logs')
+@login_required
+def logs():
+    # Récupérer les derniers logs
+    with open('app.log', 'r') as f:
+        logs = f.readlines()[-100:]  # Dernières 100 lignes
+    return render_template('logs.html', logs=logs) 

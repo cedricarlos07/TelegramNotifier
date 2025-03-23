@@ -1,24 +1,90 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
+
+{% block title %}Logs{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container mt-5">
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Logs du système</h5>
-                    <button class="btn btn-primary" onclick="refreshLogs()">
-                        <i class="fas fa-sync me-2"></i>Rafraîchir
-                    </button>
+                    <h4 class="mb-0">Logs de l'application</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" onclick="refreshLogs()">
+                            <i class="fas fa-sync me-2"></i>Rafraîchir
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="clearLogs()">
+                            <i class="fas fa-trash me-2"></i>Effacer
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Cette fonctionnalité sera bientôt disponible.
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date/Heure</th>
+                                    <th>Niveau</th>
+                                    <th>Module</th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td>{{ log.split(' - ')[0] }}</td>
+                                    <td>
+                                        {% if 'ERROR' in log %}
+                                            <span class="badge bg-danger">ERROR</span>
+                                        {% elif 'WARNING' in log %}
+                                            <span class="badge bg-warning">WARNING</span>
+                                        {% elif 'INFO' in log %}
+                                            <span class="badge bg-info">INFO</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">DEBUG</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ log.split(' - ')[1] }}</td>
+                                    <td>{{ log.split(' - ')[2:]|join(' - ') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+{% block scripts %}
+<script>
+function refreshLogs() {
+    location.reload();
+}
+
+function clearLogs() {
+    if (confirm('Êtes-vous sûr de vouloir effacer les logs ?')) {
+        fetch('/logs/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de l\'effacement des logs : ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Une erreur est survenue lors de l\'effacement des logs.');
+        });
+    }
+}
+</script>
+{% endblock %}
 {% endblock %}

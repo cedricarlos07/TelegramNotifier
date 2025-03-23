@@ -1,122 +1,88 @@
 {% extends "layout.html" %}
 
-{% block title %}Analyse de Participation{% endblock %}
+{% block title %}Analytiques{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container mt-5">
     <div class="row">
-        <div class="col-12">
+        <!-- Messages envoyés -->
+        <div class="col-md-6 mb-4">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Analyses</h5>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="refreshAnalytics()">
-                            <i class="fas fa-sync me-2"></i>Rafraîchir
-                        </button>
-                        <button class="btn btn-outline-primary" onclick="exportAnalytics()">
-                            <i class="fas fa-download me-2"></i>Exporter
-                        </button>
-                    </div>
+                <div class="card-header">
+                    <h4 class="mb-0">Messages envoyés (30 derniers jours)</h4>
                 </div>
                 <div class="card-body">
-                    <div class="row g-4">
-                        <!-- Distribution des cours par jour -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0">Distribution des cours par jour</h6>
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="courseDistributionChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Distribution des étudiants par cours -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0">Distribution des étudiants par cours</h6>
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="studentDistributionChart"></canvas>
-                                </div>
-                            </div>
+                    <div class="d-flex align-items-center">
+                        <div class="display-4 me-3">{{ messages_count }}</div>
+                        <div>
+                            <i class="fas fa-paper-plane fa-2x text-primary"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Présences Zoom -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Présences Zoom (30 derniers jours)</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="display-4 me-3">{{ attendances_count }}</div>
+                        <div>
+                            <i class="fas fa-video fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Activité mensuelle</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-{% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Données pour le graphique de distribution des cours
-    const courseCtx = document.getElementById('courseDistributionChart').getContext('2d');
-    new Chart(courseCtx, {
-        type: 'bar',
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
         data: {
-            labels: {{ days_of_week|tojson }},
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
             datasets: [{
-                label: 'Nombre de cours',
-                data: {{ course_days_values|tojson }},
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
+                label: 'Messages envoyés',
+                data: [12, 19, 3, 5, 2, 3],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }, {
+                label: 'Présences Zoom',
+                data: [15, 12, 6, 8, 4, 5],
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1
             }]
         },
         options: {
             responsive: true,
             scales: {
                 y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        }
-    });
-
-    // Données pour le graphique de distribution des étudiants
-    const studentCtx = document.getElementById('studentDistributionChart').getContext('2d');
-    new Chart(studentCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ course_student_counts|map(attribute='name')|list|tojson }},
-            datasets: [{
-                label: 'Nombre d\'étudiants',
-                data: {{ course_student_counts|map(attribute='count')|list|tojson }},
-                backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
+                    beginAtZero: true
                 }
             }
         }
     });
 });
-
-function refreshAnalytics() {
-    location.reload();
-}
-
-function exportAnalytics() {
-    // TODO: Implémenter l'exportation des données
-    alert('Fonctionnalité d\'exportation à venir');
-}
 </script>
+{% endblock %}
 {% endblock %}

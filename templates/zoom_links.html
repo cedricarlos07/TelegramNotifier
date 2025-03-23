@@ -1,130 +1,72 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
+
+{% block title %}Liens Zoom{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container mt-5">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Gestion des liens Zoom</h5>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addZoomLinkModal">
-                        <i class="fas fa-plus me-2"></i>Ajouter un lien Zoom
-                    </button>
+                <div class="card-header">
+                    <h4 class="mb-0">Liens Zoom pour aujourd'hui</h4>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nom</th>
-                                    <th>URL</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for link in zoom_links %}
-                                <tr>
-                                    <td>{{ link.id }}</td>
-                                    <td>{{ link.name }}</td>
-                                    <td>
-                                        <a href="{{ link.url }}" target="_blank" class="text-primary">
-                                            {{ link.url }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-warning" onclick="editZoomLink({{ link.id }}, '{{ link.name }}', '{{ link.url }}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-danger" onclick="deleteZoomLink({{ link.id }})">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                    {% if attendances %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Cours</th>
+                                        <th>Heure</th>
+                                        <th>Lien Zoom</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for attendance in attendances %}
+                                    <tr>
+                                        <td>{{ attendance.course.name }}</td>
+                                        <td>{{ attendance.course.start_time.strftime('%H:%M') }}</td>
+                                        <td>
+                                            {% if attendance.zoom_link %}
+                                                <a href="{{ attendance.zoom_link }}" target="_blank" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-video me-1"></i>Rejoindre
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Non disponible</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="copyToClipboard('{{ attendance.zoom_link }}')">
+                                                <i class="fas fa-copy me-1"></i>Copier
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            Aucun cours Zoom prévu pour aujourd'hui.
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Modal Ajout Lien Zoom -->
-<div class="modal fade" id="addZoomLinkModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Ajouter un lien Zoom</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ url_for('main.add_zoom_link') }}" method="POST">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nom</label>
-                        <input type="text" class="form-control" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">URL Zoom</label>
-                        <input type="url" class="form-control" name="url" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Édition Lien Zoom -->
-<div class="modal fade" id="editZoomLinkModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Modifier le lien Zoom</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="editZoomLinkForm" method="POST">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nom</label>
-                        <input type="text" class="form-control" name="name" id="editName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">URL Zoom</label>
-                        <input type="url" class="form-control" name="url" id="editUrl" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endblock %}
 
 {% block scripts %}
 <script>
-function editZoomLink(id, name, url) {
-    document.getElementById('editName').value = name;
-    document.getElementById('editUrl').value = url;
-    document.getElementById('editZoomLinkForm').action = `/zoom-links/${id}/edit`;
-    new bootstrap.Modal(document.getElementById('editZoomLinkModal')).show();
-}
-
-function deleteZoomLink(id) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce lien Zoom ?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/zoom-links/${id}/delete`;
-        document.body.appendChild(form);
-        form.submit();
-    }
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Lien copié dans le presse-papiers !');
+    }).catch(function(err) {
+        console.error('Erreur lors de la copie : ', err);
+        alert('Erreur lors de la copie du lien');
+    });
 }
 </script>
+{% endblock %}
 {% endblock %}

@@ -1,4 +1,6 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
+
+{% block title %}Scénarios{% endblock %}
 
 {% block page_header %}
 <h2 class="dashboard-title">Gestion des Scénarios</h2>
@@ -6,124 +8,90 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container mt-5">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Scénarios d'automatisation</h5>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addScenarioModal">
-                        <i class="fas fa-plus me-2"></i>Ajouter un scénario
-                    </button>
+                <div class="card-header">
+                    <h4 class="mb-0">Scénarios d'automatisation</h4>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Cette fonctionnalité sera bientôt disponible.
+                    <!-- Scénario 1 : Notifications quotidiennes -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Notifications quotidiennes</h5>
+                                <p class="text-muted mb-0">Envoie les liens Zoom et les rappels de cours chaque jour</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="dailyNotifications" checked>
+                                <label class="form-check-label" for="dailyNotifications">Actif</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scénario 2 : Classements hebdomadaires -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Classements hebdomadaires</h5>
+                                <p class="text-muted mb-0">Envoie le classement des étudiants chaque semaine</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="weeklyRankings" checked>
+                                <label class="form-check-label" for="weeklyRankings">Actif</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scénario 3 : Rappels de cours -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Rappels de cours</h5>
+                                <p class="text-muted mb-0">Envoie des rappels 30 minutes avant chaque cours</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="courseReminders" checked>
+                                <label class="form-check-label" for="courseReminders">Actif</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scénario 4 : Suivi des présences -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Suivi des présences</h5>
+                                <p class="text-muted mb-0">Enregistre automatiquement les présences aux cours Zoom</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="attendanceTracking" checked>
+                                <label class="form-check-label" for="attendanceTracking">Actif</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialisation des modales
-    const addModal = new bootstrap.Modal(document.getElementById('addScenarioModal'));
-    const editModal = new bootstrap.Modal(document.getElementById('editScenarioModal'));
-
-    // Fonction pour exécuter un scénario
-    window.runScenario = function(scenarioId) {
-        if (confirm('Voulez-vous exécuter ce scénario maintenant ?')) {
-            fetch(`/scenarios/${scenarioId}/run`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Scénario exécuté avec succès !');
-                } else {
-                    showNotification('Erreur lors de l\'exécution du scénario : ' + data.message, 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Une erreur est survenue lors de l\'exécution du scénario.', 'danger');
-            });
-        }
-    };
-
-    // Fonction pour activer/désactiver un scénario
-    window.toggleScenario = function(scenarioId, enabled) {
-        fetch(`/scenarios/${scenarioId}/toggle`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ enabled: enabled })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(`Scénario ${enabled ? 'activé' : 'désactivé'} avec succès !`);
-            } else {
-                showNotification('Erreur lors de la modification du statut du scénario : ' + data.message, 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Une erreur est survenue lors de la modification du statut du scénario.', 'danger');
+    // Gérer les changements d'état des scénarios
+    const switches = document.querySelectorAll('.form-check-input');
+    switches.forEach(switch_ => {
+        switch_.addEventListener('change', function() {
+            const scenarioId = this.id;
+            const isActive = this.checked;
+            
+            // TODO: Envoyer une requête AJAX pour mettre à jour l'état du scénario
+            console.log(`Scénario ${scenarioId} ${isActive ? 'activé' : 'désactivé'}`);
         });
-    };
-
-    // Fonction pour éditer un scénario
-    window.editScenario = function(scenarioId) {
-        fetch(`/scenarios/${scenarioId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('edit_scenario_name').value = data.name;
-                document.getElementById('edit_scenario_description').value = data.description;
-                document.getElementById('edit_scenario_type').value = data.type;
-                document.getElementById('edit_scenario_schedule').value = data.schedule;
-                document.getElementById('editScenarioForm').action = `/scenarios/${scenarioId}/edit`;
-                editModal.show();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Une erreur est survenue lors du chargement des données du scénario.', 'danger');
-            });
-    };
-
-    // Fonction pour supprimer un scénario
-    window.deleteScenario = function(scenarioId) {
-        if (confirm('Êtes-vous sûr de vouloir supprimer ce scénario ?')) {
-            fetch(`/scenarios/${scenarioId}/delete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Scénario supprimé avec succès !');
-                    location.reload();
-                } else {
-                    showNotification('Erreur lors de la suppression du scénario : ' + data.message, 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Une erreur est survenue lors de la suppression du scénario.', 'danger');
-            });
-        }
-    };
+    });
 });
 </script>
+{% endblock %}
 {% endblock %}
