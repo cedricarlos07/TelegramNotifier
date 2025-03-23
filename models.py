@@ -165,8 +165,8 @@ class Student(db.Model):
 
 # Table d'association pour la relation many-to-many entre Student et Course
 student_courses = db.Table('student_courses',
-    db.Column('student_id', db.Integer, db.ForeignKey('student.id'), primary_key=True),
-    db.Column('course_id', db.Integer, db.ForeignKey('course.id'), primary_key=True)
+    db.Column('student_id', db.Integer, db.ForeignKey('students.id'), primary_key=True),
+    db.Column('course_id', db.Integer, db.ForeignKey('courses.id'), primary_key=True)
 )
 
 class Point(db.Model):
