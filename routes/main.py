@@ -93,12 +93,12 @@ def analytics():
     
     # Nombre de messages envoyés
     messages_count = TelegramMessage.query.filter(
-        TelegramMessage.created_at.between(start_date, end_date)
+        TelegramMessage.timestamp.between(start_date, end_date)
     ).count()
     
     # Nombre de présences Zoom
     attendances_count = ZoomAttendance.query.filter(
-        ZoomAttendance.date.between(start_date, end_date)
+        ZoomAttendance.join_time.between(start_date, end_date)
     ).count()
     
     return render_template('analytics.html',
@@ -114,8 +114,9 @@ def scenarios():
 @login_required
 def bot_status():
     # Vérifier l'état du bot Telegram
-    from telegram_bot import bot
-    bot_info = bot.get_me()
+    from telegram_bot import TelegramBot
+    bot = TelegramBot()
+    bot_info = bot.check_bot_status()
     return render_template('bot_status.html', bot_info=bot_info)
 
 @bp.route('/logs')
@@ -124,4 +125,74 @@ def logs():
     # Récupérer les derniers logs
     with open('app.log', 'r') as f:
         logs = f.readlines()[-100:]  # Dernières 100 lignes
-    return render_template('logs.html', logs=logs) 
+    return render_template('logs.html', logs=logs)
+
+@bp.route('/courses/add', methods=['POST'])
+@login_required
+@csrf.exempt
+def add_course():
+    try:
+        name = request.form.get('name')
+        code = request.form.get('code')
+        professor = request.form.get('professor')
+        schedule = request.form.get('schedule')
+        
+        if not all([name, code, professor, schedule]):
+            return {'success': False, 'message': 'Tous les champs sont requis'}, 400
+            
+        course = Course(
+            name=name,
+            code=code,
+            professor=professor,
+            schedule=schedule
+        )
+        
+        db.session.add(course)
+        db.session.commit()
+        
+        return {'success': True, 'message': 'Cours ajouté avec succès'}
+    except Exception as e:
+        db.session.rollback()
+        return {'success': False, 'message': str(e)}, 500
+
+@bp.route('/courses/<int:course_id>', methods=['DELETE'])
+@login_required
+@csrf.exempt
+def delete_course(course_id):
+    try:
+        course = Course.query.get_or_404(course_id)
+        db.session.delete(course)
+        db.session.commit()
+        return {'success': True, 'message': 'Cours supprimé avec succès'}
+    except Exception as e:
+        db.session.rollback()
+        return {'success': False, 'message': str(e)}, 500
+
+@bp.route('/courses/<int:course_id>/students')
+@login_required
+@csrf.exempt
+def get_course_students(course_id):
+    try:
+        course = Course.query.get_or_404(course_id)
+        students = [{'id': s.id, 'name': s.name, 'email': s.email} for s in course.students]
+        return {'success': True, 'students': students}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}, 500
+
+@bp.route('/courses/<int:course_id>/students/<int:student_id>', methods=['DELETE'])
+@login_required
+@csrf.exempt
+def remove_student_from_course(course_id, student_id):
+    try:
+        course = Course.query.get_or_404(course_id)
+        student = Student.query.get_or_404(student_id)
+        
+        if student in course.students:
+            course.students.remove(student)
+            db.session.commit()
+            return {'success': True, 'message': 'Étudiant retiré du cours avec succès'}
+        else:
+            return {'success': False, 'message': 'L\'étudiant n\'est pas inscrit à ce cours'}, 400
+    except Exception as e:
+        db.session.rollback()
+        return {'success': False, 'message': str(e)}, 500 
