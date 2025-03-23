@@ -1,8 +1,6 @@
 import os
 import logging
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
 from flask_apscheduler import APScheduler
 from flask_login import LoginManager
 from datetime import datetime, timedelta
@@ -14,13 +12,6 @@ from routes import main
 logging.basicConfig(level=logging.DEBUG, 
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-# Create base class for SQLAlchemy models
-class Base(DeclarativeBase):
-    pass
-
-# Initialize SQLAlchemy with the base class
-db = SQLAlchemy(model_class=Base)
 
 # Initialize the scheduler
 scheduler = APScheduler()

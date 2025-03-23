@@ -133,7 +133,7 @@ class Course(db.Model):
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    students = db.relationship('Student', secondary='student_courses')
+    students = db.relationship('Student', secondary='student_courses', back_populates='courses', overlaps="courses")
 
 class TelegramGroup(db.Model):
     __tablename__ = 'telegram_groups'
@@ -161,7 +161,7 @@ class Student(db.Model):
     last_name = db.Column(db.String(100))
     email = db.Column(db.String(120), unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    courses = db.relationship('Course', secondary='student_courses')
+    courses = db.relationship('Course', secondary='student_courses', back_populates='students', overlaps="students")
 
 # Table d'association pour la relation many-to-many entre Student et Course
 student_courses = db.Table('student_courses',
