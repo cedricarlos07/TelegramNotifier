@@ -32,4 +32,4 @@ pyjwt==2.10.1
 fpdf==1.7.2
 
 # Production Server
-gunicorn==23.0.0 
+gunicorn==21.2.0 

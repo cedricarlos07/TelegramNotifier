@@ -13,11 +13,7 @@ from config import Config
 # Configure logging
 logging.basicConfig(
     level=logging.INFO if os.environ.get('FLASK_ENV') == 'production' else logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('app.log'),
-        logging.StreamHandler()
-    ]
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
@@ -77,13 +73,14 @@ def create_app(config_class=Config):
             db.session.commit()
             logger.info("Admin user created successfully")
     
+    # Start scheduler only in production
+    if os.environ.get('FLASK_ENV') == 'production':
+        scheduler.start()
+    
     return app
 
 # Create the application instance
 app = create_app()
-
-# Start the scheduler
-scheduler.start()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
