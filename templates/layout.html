@@ -24,7 +24,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+            <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
                 <i class="fas fa-robot me-2"></i>TelegramNotifier
             </a>
             
@@ -39,10 +39,10 @@
                             <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-user me-2"></i>Profil</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('change_password') }}"><i class="fas fa-key me-2"></i>Changer mot de passe</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="fas fa-user me-2"></i>Profil</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.change_password') }}"><i class="fas fa-key me-2"></i>Changer mot de passe</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -58,22 +58,22 @@
                 <h6 class="sidebar-heading">Menu principal</h6>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                        <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
                             <i class="fas fa-home me-2"></i>Tableau de bord
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'courses' %}active{% endif %}" href="{{ url_for('courses') }}">
+                        <a class="nav-link {% if request.endpoint == 'main.courses' %}active{% endif %}" href="{{ url_for('main.courses') }}">
                             <i class="fas fa-graduation-cap me-2"></i>Cours
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'zoom_links' %}active{% endif %}" href="{{ url_for('zoom_links') }}">
+                        <a class="nav-link {% if request.endpoint == 'main.zoom_links' %}active{% endif %}" href="{{ url_for('main.zoom_links') }}">
                             <i class="fas fa-video me-2"></i>Liens Zoom
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
+                        <a class="nav-link {% if request.endpoint == 'main.analytics' %}active{% endif %}" href="{{ url_for('main.analytics') }}">
                             <i class="fas fa-chart-bar me-2"></i>Analytiques
                         </a>
                     </li>
@@ -85,12 +85,12 @@
                 <h6 class="sidebar-heading">Automatisation</h6>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'scenarios' %}active{% endif %}" href="{{ url_for('scenarios') }}">
+                        <a class="nav-link {% if request.endpoint == 'main.scenarios' %}active{% endif %}" href="{{ url_for('main.scenarios') }}">
                             <i class="fas fa-robot me-2"></i>Scénarios
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'rankings' %}active{% endif %}" href="{{ url_for('rankings') }}">
+                        <a class="nav-link {% if request.endpoint == 'main.rankings' %}active{% endif %}" href="{{ url_for('main.rankings') }}">
                             <i class="fas fa-trophy me-2"></i>Classements
                         </a>
                     </li>
@@ -102,12 +102,12 @@
                 <h6 class="sidebar-heading">Système</h6>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'bot_status' %}active{% endif %}" href="{{ url_for('bot_status') }}">
+                        <a class="nav-link {% if request.endpoint == 'main.bot_status' %}active{% endif %}" href="{{ url_for('main.bot_status') }}">
                             <i class="fas fa-server me-2"></i>État du bot
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
+                        <a class="nav-link {% if request.endpoint == 'main.logs' %}active{% endif %}" href="{{ url_for('main.logs') }}">
                             <i class="fas fa-clipboard-list me-2"></i>Logs
                         </a>
                     </li>
@@ -125,15 +125,15 @@
     
     <!-- Mobile navigation -->
     <div class="mobile-nav">
-        <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+        <a href="{{ url_for('main.dashboard') }}" class="nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
             <i class="fas fa-home"></i>
             <span>Accueil</span>
         </a>
-        <a href="{{ url_for('courses') }}" class="nav-item {% if request.endpoint == 'courses' %}active{% endif %}">
+        <a href="{{ url_for('main.courses') }}" class="nav-item {% if request.endpoint == 'main.courses' %}active{% endif %}">
             <i class="fas fa-graduation-cap"></i>
             <span>Cours</span>
         </a>
-        <a href="{{ url_for('scenarios') }}" class="nav-item {% if request.endpoint == 'scenarios' %}active{% endif %}">
+        <a href="{{ url_for('main.scenarios') }}" class="nav-item {% if request.endpoint == 'main.scenarios' %}active{% endif %}">
             <i class="fas fa-robot"></i>
             <span>Scénarios</span>
         </a>
@@ -151,19 +151,19 @@
         </div>
         <div class="offcanvas-body">
             <div class="list-group list-group-flush">
-                <a href="{{ url_for('zoom_links') }}" class="list-group-item list-group-item-action">
+                <a href="{{ url_for('main.zoom_links') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-video me-2"></i>Liens Zoom
                 </a>
-                <a href="{{ url_for('analytics') }}" class="list-group-item list-group-item-action">
+                <a href="{{ url_for('main.analytics') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-chart-bar me-2"></i>Analytiques
                 </a>
-                <a href="{{ url_for('rankings') }}" class="list-group-item list-group-item-action">
+                <a href="{{ url_for('main.rankings') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-trophy me-2"></i>Classements
                 </a>
-                <a href="{{ url_for('bot_status') }}" class="list-group-item list-group-item-action">
+                <a href="{{ url_for('main.bot_status') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-server me-2"></i>État du bot
                 </a>
-                <a href="{{ url_for('logs') }}" class="list-group-item list-group-item-action">
+                <a href="{{ url_for('main.logs') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-clipboard-list me-2"></i>Logs
                 </a>
             </div>
