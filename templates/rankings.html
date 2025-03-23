@@ -37,7 +37,7 @@
         </div>
         <div class="col-md-3">
             <div class="card h-100">
-                <div class="card-body">
+            <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="icon-circle bg-success bg-opacity-10 text-success me-3">
                             <i class="fas fa-trophy"></i>
@@ -67,11 +67,11 @@
         </div>
         <div class="col-md-3">
             <div class="card h-100">
-                <div class="card-body">
+                    <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="icon-circle bg-warning bg-opacity-10 text-warning me-3">
                             <i class="fas fa-calendar-check"></i>
-                        </div>
+                            </div>
                         <div>
                             <h6 class="text-uppercase text-muted mb-1">Dernière Mise à Jour</h6>
                             <h3 class="mb-0">{{ last_update }}</h3>
@@ -92,13 +92,13 @@
                 <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
                     <i class="fas fa-chevron-up me-1"></i> <span class="filter-toggle-text">Masquer</span>
                 </button>
-            </div>
-        </div>
-        
+                    </div>
+                </div>
+                
         <div class="collapse show" id="filterCollapse">
             <div class="card-body">
                 <form id="filterForm" class="row g-3">
-                    <div class="col-md-3">
+                        <div class="col-md-3">
                         <div class="form-group">
                             <label for="filter_class" class="form-label">
                                 <i class="fas fa-book text-primary me-1"></i> Cours
@@ -111,7 +111,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                        <div class="col-md-3">
                         <div class="form-group">
                             <label for="filter_period" class="form-label">
                                 <i class="fas fa-calendar text-primary me-1"></i> Période
@@ -125,7 +125,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                        <div class="col-md-3">
                         <div class="form-group">
                             <label for="filter_type" class="form-label">
                                 <i class="fas fa-chart-pie text-primary me-1"></i> Type de Score
@@ -156,13 +156,13 @@
                         </button>
                         <button type="reset" class="btn btn-outline-secondary">
                             <i class="fas fa-undo me-2"></i>Réinitialiser
-                        </button>
-                    </div>
-                </form>
+                            </button>
+                        </div>
+                    </form>
             </div>
         </div>
-    </div>
-
+                </div>
+                
     <!-- Rankings Table -->
     <div class="card">
         <div class="card-header bg-transparent">
@@ -175,21 +175,21 @@
                     <p class="text-muted mb-0">Liste des étudiants classés par performance</p>
                 </div>
             </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
+                        </div>
+                        <div class="card-body">
+                                <div class="table-responsive">
                 <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
+                                        <thead>
+                                            <tr>
                             <th style="width: 50px">#</th>
                             <th>Étudiant</th>
                             <th>Cours</th>
                             <th>Score</th>
                             <th>Progression</th>
                             <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
                         {% for student in students %}
                         <tr>
                             <td>
@@ -234,10 +234,10 @@
                                     {% elif student.progression < 0 %}
                                         <i class="fas fa-arrow-down text-danger me-1"></i>
                                         <span class="text-danger">{{ student.progression }}%</span>
-                                    {% else %}
+                                                        {% else %}
                                         <i class="fas fa-minus text-muted me-1"></i>
                                         <span class="text-muted">0%</span>
-                                    {% endif %}
+                                                        {% endif %}
                                 </div>
                             </td>
                             <td>
@@ -250,11 +250,11 @@
                                     </button>
                                 </div>
                             </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
         </div>
     </div>
 </div>
@@ -301,7 +301,7 @@
                             <label class="form-check-label" for="criteria_participation">
                                 Participation
                             </label>
-                        </div>
+                                </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="criteria" value="homework" id="criteria_homework" checked>
                             <label class="form-check-label" for="criteria_homework">
@@ -309,13 +309,13 @@
                             </label>
                         </div>
                     </div>
-                </div>
+                    </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-chart-line me-2"></i>Générer
                     </button>
-                </div>
+            </div>
             </form>
         </div>
     </div>
@@ -324,7 +324,7 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     // Gestion du toggle des filtres
     const filterToggle = document.querySelector('[data-bs-target="#filterCollapse"]');
     const filterToggleText = filterToggle.querySelector('.filter-toggle-text');
@@ -388,85 +388,85 @@ function exportStudent(studentId) {
     window.location.href = `/student/${studentId}/export`;
 }
 
-function sendRankings(groupId, periodType) {
-    if (!groupId) {
-        alert('Aucun groupe Telegram sélectionné.');
-        return;
-    }
-
+    function sendRankings(groupId, periodType) {
+        if (!groupId) {
+            alert('Aucun groupe Telegram sélectionné.');
+            return;
+        }
+        
     // Désactiver les éléments UI et afficher l'état de chargement
-    const button = event.target.closest('button');
-    const originalText = button.innerHTML;
-    button.disabled = true;
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.disabled = true;
     button.innerHTML = 'Envoi en cours...';
-
+        
     // Envoyer le classement au groupe
-    const formData = new FormData();
-    formData.append('group_id', groupId);
-    formData.append('period_type', periodType);
-
-    fetch('/api/send-rankings', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+        const formData = new FormData();
+        formData.append('group_id', groupId);
+        formData.append('period_type', periodType);
+        
+        fetch('/api/send-rankings', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
             // Notification de succès
-            alert('Classement envoyé avec succès !');
-        } else {
+                alert('Classement envoyé avec succès !');
+            } else {
             // Notification d'erreur
-            alert('Erreur lors de l\'envoi du classement : ' + data.message);
-        }
-    })
-    .catch(error => {
-        alert('Erreur lors de l\'envoi du classement : ' + error);
-    })
-    .finally(() => {
+                alert('Erreur lors de l\'envoi du classement : ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erreur lors de l\'envoi du classement : ' + error);
+        })
+        .finally(() => {
         // Restaurer les éléments UI
-        button.disabled = false;
-        button.innerHTML = originalText;
-    });
-}
-
-function sendDailyRankings() {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+    
+    function sendDailyRankings() {
     // Désactiver les éléments UI et afficher l'état de chargement
-    const button = event.target.closest('button');
-    const originalText = button.innerHTML;
-    button.disabled = true;
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.disabled = true;
     button.innerHTML = 'Envoi en cours...';
-
+        
     // Envoyer les classements quotidiens à tous les groupes
-    fetch('/api/send-daily-rankings', {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+        fetch('/api/send-daily-rankings', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
             // Notification de succès
-            alert('Classements quotidiens envoyés avec succès : ' + data.message);
-        } else {
+                alert('Classements quotidiens envoyés avec succès : ' + data.message);
+            } else {
             // Notification d'erreur
-            alert('Erreur lors de l\'envoi des classements : ' + data.message);
-        }
-    })
-    .catch(error => {
-        alert('Erreur lors de l\'envoi des classements : ' + error);
-    })
-    .finally(() => {
+                alert('Erreur lors de l\'envoi des classements : ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erreur lors de l\'envoi des classements : ' + error);
+        })
+        .finally(() => {
         // Restaurer les éléments UI
-        button.disabled = false;
-        button.innerHTML = originalText;
-    });
-}
-
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+    
 // Auto-soumission du formulaire lors du changement des valeurs des selects
 document.getElementById('filter_class').addEventListener('change', function() {
-    this.form.submit();
-});
-
+        this.form.submit();
+    });
+    
 document.getElementById('filter_period').addEventListener('change', function() {
-    this.form.submit();
-});
+        this.form.submit();
+    });
 </script>
 {% endblock %}

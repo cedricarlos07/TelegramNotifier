@@ -20,19 +20,19 @@
         <div>
             <h1 class="h3 mb-0">Gestion des Cours</h1>
             <p class="text-muted mb-0">Organisez et gérez vos cours et emplois du temps</p>
-        </div>
+                    </div>
         <div>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
                 <i class="fas fa-plus-circle me-2"></i> Nouveau Cours
             </button>
-        </div>
-    </div>
-
+                </div>
+            </div>
+            
     <!-- Stats Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
             <div class="card stats-card h-100">
-                <div class="card-body">
+                    <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
                             <i class="fas fa-graduation-cap"></i>
@@ -47,7 +47,7 @@
         </div>
         <div class="col-md-3">
             <div class="card stats-card h-100">
-                <div class="card-body">
+                    <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="icon-circle bg-success bg-opacity-10 text-success me-3">
                             <i class="fas fa-users"></i>
@@ -62,35 +62,35 @@
         </div>
         <div class="col-md-3">
             <div class="card stats-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
+            <div class="card-body">
+                        <div class="d-flex align-items-center">
                         <div class="icon-circle bg-info bg-opacity-10 text-info me-3">
                             <i class="fas fa-chalkboard-teacher"></i>
-                        </div>
-                        <div>
+                            </div>
+                            <div>
                             <h6 class="text-uppercase text-muted mb-1">Total Professeurs</h6>
                             <h3 class="mb-0">{{ total_teachers }}</h3>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                            </div>
+                        </div>
+                    </div>
         <div class="col-md-3">
             <div class="card stats-card h-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center">
                         <div class="icon-circle bg-warning bg-opacity-10 text-warning me-3">
                             <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div>
+                            </div>
+                            <div>
                             <h6 class="text-uppercase text-muted mb-1">Cours Aujourd'hui</h6>
                             <h3 class="mb-0">{{ courses_today }}</h3>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Filters -->
     <div class="card filter-card mb-4">
@@ -101,12 +101,12 @@
             <form id="filterForm" class="row g-3">
                 <div class="col-md-3">
                     <label for="filter_teacher" class="form-label">Professeur</label>
-                    <select class="form-select" id="filter_teacher" name="teacher">
+                        <select class="form-select" id="filter_teacher" name="teacher">
                         <option value="">Tous les professeurs</option>
-                        {% for teacher in teachers %}
+                            {% for teacher in teachers %}
                         <option value="{{ teacher.id }}">{{ teacher.name }}</option>
-                        {% endfor %}
-                    </select>
+                            {% endfor %}
+                        </select>
                 </div>
                 <div class="col-md-3">
                     <label for="filter_level" class="form-label">Niveau</label>
@@ -114,8 +114,8 @@
                         <option value="">Tous les niveaux</option>
                         {% for level in levels %}
                         <option value="{{ level }}">{{ level }}</option>
-                        {% endfor %}
-                    </select>
+                            {% endfor %}
+                        </select>
                 </div>
                 <div class="col-md-3">
                     <label for="filter_day" class="form-label">Jour</label>
@@ -123,8 +123,8 @@
                         <option value="">Tous les jours</option>
                         {% for day in days %}
                         <option value="{{ day }}">{{ day }}</option>
-                        {% endfor %}
-                    </select>
+                            {% endfor %}
+                        </select>
                 </div>
                 <div class="col-md-3">
                     <label for="filter_status" class="form-label">Statut</label>
@@ -132,13 +132,13 @@
                         <option value="">Tous les statuts</option>
                         <option value="active">Actif</option>
                         <option value="inactive">Inactif</option>
-                    </select>
+                        </select>
                 </div>
                 <div class="col-12">
                     <div class="d-flex justify-content-end gap-2">
-                        <button type="reset" class="btn btn-outline-secondary">
-                            <i class="fas fa-undo me-2"></i>Réinitialiser
-                        </button>
+                    <button type="reset" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo me-2"></i>Réinitialiser
+                    </button>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-filter me-2"></i>Filtrer
                         </button>
@@ -161,13 +161,13 @@
                         <div>
                             <h5 class="card-title mb-0">{{ course.name }}</h5>
                             <p class="text-muted mb-0">{{ course.level }}</p>
-                        </div>
-                    </div>
-                </div>
+    </div>
+</div>
+    </div>
                 <div class="card-body">
                     <div class="mb-3">
                         <h6 class="text-uppercase text-muted mb-2">Professeur</h6>
-                        <div class="d-flex align-items-center">
+                                    <div class="d-flex align-items-center">
                             <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
                                 <span>{{ course.teacher.name[0]|upper }}</span>
                             </div>
@@ -185,7 +185,7 @@
                             </div>
                         </div>
                         {% endfor %}
-                    </div>
+                                        </div>
                     <div class="mb-3">
                         <h6 class="text-uppercase text-muted mb-2">Statistiques</h6>
                         <div class="d-flex flex-wrap gap-2">
@@ -195,9 +195,9 @@
                             <span class="badge bg-light">
                                 <i class="fas fa-clock me-1"></i>{{ course.duration }} minutes
                             </span>
-                        </div>
-                    </div>
-                </div>
+                                    </div>
+                                            </div>
+                                        </div>
                 <div class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
                         <button class="btn btn-sm btn-outline-primary" 
@@ -207,27 +207,27 @@
                                 title="Voir les détails">
                             <i class="fas fa-eye me-1"></i> Détails
                         </button>
-                        <div class="btn-group">
+                                    <div class="btn-group">
                             <button class="btn btn-sm btn-outline-secondary" 
                                     onclick="editCourse({{ course.id }})"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Modifier le cours">
-                                <i class="fas fa-edit"></i>
-                            </button>
+                                            <i class="fas fa-edit"></i>
+                                        </button>
                             <button class="btn btn-sm btn-outline-danger" 
                                     onclick="deleteCourse({{ course.id }})"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="top"
                                     title="Supprimer le cours">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                     </div>
                 </div>
             </div>
-        </div>
-        {% else %}
+                </div>
+                {% else %}
         <div class="col-12">
             <div class="empty-state">
                 <div class="icon-circle bg-primary bg-opacity-10 text-primary">
@@ -255,9 +255,9 @@
             <form id="addCourseForm" method="POST" action="{{ url_for('main.add_course') }}" data-ajax="true">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="course_name" class="form-label">Nom du cours</label>
+                                <label for="course_name" class="form-label">Nom du cours</label>
                         <input type="text" class="form-control" id="course_name" name="name" required>
-                    </div>
+                                </div>
                     <div class="mb-3">
                         <label for="course_level" class="form-label">Niveau</label>
                         <select class="form-select" id="course_level" name="level" required>
@@ -266,7 +266,7 @@
                             <option value="{{ level }}">{{ level }}</option>
                             {% endfor %}
                         </select>
-                    </div>
+                            </div>
                     <div class="mb-3">
                         <label for="course_teacher" class="form-label">Professeur</label>
                         <select class="form-select" id="course_teacher" name="teacher_id" required>
@@ -275,11 +275,11 @@
                             <option value="{{ teacher.id }}">{{ teacher.name }}</option>
                             {% endfor %}
                         </select>
-                    </div>
+                                </div>
                     <div class="mb-3">
                         <label for="course_duration" class="form-label">Durée (minutes)</label>
                         <input type="number" class="form-control" id="course_duration" name="duration" required>
-                    </div>
+                            </div>
                     <div class="schedule-form">
                         <h6 class="mb-3">Emploi du temps</h6>
                         <div class="form-group">
@@ -288,12 +288,12 @@
                                 {% for day in days %}
                                 <option value="{{ day }}">{{ day }}</option>
                                 {% endfor %}
-                            </select>
-                        </div>
+                                </select>
+                            </div>
                         <div class="form-group">
                             <label for="schedule_start_time" class="form-label">Heure de début</label>
                             <input type="time" class="form-control" id="schedule_start_time" name="schedule_start_time" required>
-                        </div>
+                                </div>
                         <div class="form-group">
                             <label for="schedule_end_time" class="form-label">Heure de fin</label>
                             <input type="time" class="form-control" id="schedule_end_time" name="schedule_end_time" required>
@@ -322,9 +322,9 @@
             <form id="editCourseForm" method="POST" data-ajax="true">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="edit_course_name" class="form-label">Nom du cours</label>
+                            <label for="edit_course_name" class="form-label">Nom du cours</label>
                         <input type="text" class="form-control" id="edit_course_name" name="name" required>
-                    </div>
+                            </div>
                     <div class="mb-3">
                         <label for="edit_course_level" class="form-label">Niveau</label>
                         <select class="form-select" id="edit_course_level" name="level" required>
@@ -333,7 +333,7 @@
                             <option value="{{ level }}">{{ level }}</option>
                             {% endfor %}
                         </select>
-                    </div>
+                        </div>
                     <div class="mb-3">
                         <label for="edit_course_teacher" class="form-label">Professeur</label>
                         <select class="form-select" id="edit_course_teacher" name="teacher_id" required>
@@ -342,11 +342,11 @@
                             <option value="{{ teacher.id }}">{{ teacher.name }}</option>
                             {% endfor %}
                         </select>
-                    </div>
+                            </div>
                     <div class="mb-3">
                         <label for="edit_course_duration" class="form-label">Durée (minutes)</label>
                         <input type="number" class="form-control" id="edit_course_duration" name="duration" required>
-                    </div>
+                        </div>
                     <div class="schedule-form">
                         <h6 class="mb-3">Emploi du temps</h6>
                         <div class="form-group">
@@ -381,7 +381,7 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     // Initialisation des modales
     const addModal = new bootstrap.Modal(document.getElementById('addCourseModal'));
     const editModal = new bootstrap.Modal(document.getElementById('editCourseModal'));
@@ -402,8 +402,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 showNotification('Une erreur est survenue lors du filtrage des cours.', 'danger');
             });
-    });
-
+        });
+        
     // Fonction pour voir les détails d'un cours
     window.viewCourse = function(courseId) {
         window.location.href = `/courses/${courseId}`;
