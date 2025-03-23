@@ -23,11 +23,22 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        
+        logger.info(f"Tentative de connexion pour l'utilisateur: {username}")
+        
         user = User.query.filter_by(username=username).first()
         
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for('main.dashboard'))
+        if user:
+            logger.info(f"Utilisateur trouvé: {username}")
+            if user.check_password(password):
+                logger.info(f"Mot de passe correct pour l'utilisateur: {username}")
+                login_user(user)
+                return redirect(url_for('main.dashboard'))
+            else:
+                logger.warning(f"Mot de passe incorrect pour l'utilisateur: {username}")
+        else:
+            logger.warning(f"Utilisateur non trouvé: {username}")
+            
         flash('Nom d\'utilisateur ou mot de passe incorrect', 'error')
     return render_template('login.html')
 
