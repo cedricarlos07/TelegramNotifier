@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import login_required, current_user, logout_user
+from flask_login import login_required, current_user, logout_user, login_user
 from models import Course, Student, RankingHistory, User, ZoomAttendance, TelegramMessage
 from extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,6 +10,25 @@ bp = Blueprint('main', __name__)
 @bp.route('/')
 def index():
     return render_template('index.html')
+
+@bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.courses'))
+        
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('main.courses'))
+        else:
+            flash('Nom d\'utilisateur ou mot de passe incorrect', 'error')
+            
+    return render_template('login.html')
 
 @bp.route('/courses')
 @login_required
