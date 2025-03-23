@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from app import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 class AppSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -112,9 +114,16 @@ class User(UserMixin, db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class Course(db.Model):
     __tablename__ = 'courses'
@@ -124,6 +133,7 @@ class Course(db.Model):
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    students = db.relationship('Student', secondary='student_courses')
 
 class TelegramGroup(db.Model):
     __tablename__ = 'telegram_groups'
@@ -145,10 +155,19 @@ class Student(db.Model):
     __tablename__ = 'students'
     
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
+    telegram_id = db.Column(db.String(100), unique=True, nullable=False)
+    username = db.Column(db.String(100))
+    first_name = db.Column(db.String(100))
+    last_name = db.Column(db.String(100))
     email = db.Column(db.String(120), unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    courses = db.relationship('Course', secondary='student_courses')
+
+# Table d'association pour la relation many-to-many entre Student et Course
+student_courses = db.Table('student_courses',
+    db.Column('student_id', db.Integer, db.ForeignKey('student.id'), primary_key=True),
+    db.Column('course_id', db.Integer, db.ForeignKey('course.id'), primary_key=True)
+)
 
 class Point(db.Model):
     __tablename__ = 'points'
@@ -163,13 +182,14 @@ class RankingHistory(db.Model):
     __tablename__ = 'ranking_history'
     
     id = db.Column(db.Integer, primary_key=True)
-    group_id = db.Column(db.String(255), db.ForeignKey('telegram_groups.group_id'), nullable=False)
-    period_type = db.Column(db.String(50), nullable=False)  # daily, weekly, monthly
-    status = db.Column(db.String(50), nullable=False)  # success, error
-    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    rank = db.Column(db.Integer, nullable=False)
+    score = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relations
-    group = db.relationship('TelegramGroup', backref=db.backref('ranking_history', lazy=True))
+    course = db.relationship('Course', backref=db.backref('rankings', lazy=True))
+    student = db.relationship('Student', backref=db.backref('rankings', lazy=True))
 
 # Ajout des relations après la définition des tables
 Course.telegram_groups = db.relationship('TelegramGroup', secondary=course_telegram_groups, backref=db.backref('courses', lazy=True))

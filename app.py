@@ -5,6 +5,10 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_apscheduler import APScheduler
 from flask_login import LoginManager
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+from models import db, User, TelegramGroup, Course, Student, RankingHistory
+from routes import main
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, 
@@ -27,11 +31,14 @@ login_manager = LoginManager()
 # Create the Flask application
 app = Flask(__name__)
 
+# Load environment variables
+load_dotenv()
+
 # Configure the application
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 # Configure SQLAlchemy
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///courses.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///telegram_notifier.db")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
@@ -42,31 +49,27 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 scheduler.init_app(app)
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'main.login'
 login_manager.login_message = 'Veuillez vous connecter pour accéder à cette page.'
 login_manager.login_message_category = 'warning'
 
 @login_manager.user_loader
 def load_user(user_id):
-    from models import User
     return User.query.get(int(user_id))
 
 # Création des tables dans la base de données
-with app.app_context():
-    # Suppression de toutes les tables existantes
-    db.drop_all()
-    # Création des tables dans le bon ordre
-    db.create_all()
-    # Création d'un utilisateur admin par défaut si aucun n'existe
-    if not User.query.filter_by(username='admin').first():
-        admin = User(username='admin', is_admin=True)
-        admin.set_password('admin')
-        db.session.add(admin)
-        db.session.commit()
+def create_tables():
+    with app.app_context():
+        db.create_all()
+        # Créer l'utilisateur admin s'il n'existe pas
+        if not User.query.filter_by(username='admin').first():
+            admin = User(username='admin', email='admin@example.com')
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
 
-# Register all routes for the application
-from routes import register_routes
-register_routes(app)
+# Register the blueprint
+app.register_blueprint(main)
 
 # Initialize the scheduler with all the tasks
 from scheduler import initialize_scheduler
@@ -74,3 +77,7 @@ initialize_scheduler(app)
 
 # Start the scheduler
 scheduler.start()
+
+if __name__ == '__main__':
+    create_tables()
+    app.run(debug=True)
