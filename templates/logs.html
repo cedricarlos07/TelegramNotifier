@@ -1,153 +1,24 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">System Logs</h1>
-    </div>
-</div>
-
-<!-- Logs filter controls -->
-<div class="card mb-4">
-    <div class="card-header bg-secondary text-white">
-        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Logs</h5>
-    </div>
-    <div class="card-body">
-        <form id="filterForm" class="row g-3">
-            <div class="col-md-4">
-                <label for="level-filter" class="form-label">Log Level</label>
-                <select id="level-filter" class="form-select">
-                    <option value="all">All Levels</option>
-                    <option value="INFO">Info</option>
-                    <option value="WARNING">Warning</option>
-                    <option value="ERROR">Error</option>
-                </select>
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Logs du système</h5>
+                    <button class="btn btn-primary" onclick="refreshLogs()">
+                        <i class="fas fa-sync me-2"></i>Rafraîchir
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Cette fonctionnalité sera bientôt disponible.
+                    </div>
+                </div>
             </div>
-            <div class="col-md-4">
-                <label for="scenario-filter" class="form-label">Scenario</label>
-                <select id="scenario-filter" class="form-select">
-                    <option value="all">All Scenarios</option>
-                    <option value="update_courses">Update Courses</option>
-                    <option value="create_zoom">Create Zoom Links</option>
-                    <option value="generate_messages">Generate Messages</option>
-                    <option value="send_daily_messages">Send Daily Messages</option>
-                    <option value="telegram_message">Telegram Messages</option>
-                    <option value="manual">Manual Actions</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label for="date-filter" class="form-label">Date</label>
-                <input type="date" id="date-filter" class="form-control">
-            </div>
-            <div class="col-12 text-end">
-                <button type="button" id="apply-filter" class="btn btn-primary">Apply Filter</button>
-                <button type="button" id="clear-filter" class="btn btn-secondary">Clear Filter</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Logs table -->
-<div class="card">
-    <div class="card-header bg-info text-white">
-        <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>System Logs</h5>
-    </div>
-    <div class="card-body">
-        {% if logs %}
-        <div class="table-responsive">
-            <table class="table table-striped table-hover" id="logs-table">
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Level</th>
-                        <th>Scenario</th>
-                        <th>Message</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in logs %}
-                    <tr class="log-row" 
-                        data-level="{{ log.level }}" 
-                        data-scenario="{{ log.scenario }}" 
-                        data-date="{{ log.timestamp.strftime('%Y-%m-%d') }}">
-                        <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td>
-                            {% if log.level == 'INFO' %}
-                                <span class="badge bg-info text-dark">INFO</span>
-                            {% elif log.level == 'WARNING' %}
-                                <span class="badge bg-warning text-dark">WARNING</span>
-                            {% elif log.level == 'ERROR' %}
-                                <span class="badge bg-danger">ERROR</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ log.scenario or 'System' }}</td>
-                        <td>{{ log.message }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
         </div>
-        {% else %}
-        <div class="alert alert-info">No logs available.</div>
-        {% endif %}
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Filter functionality
-        const applyFilterBtn = document.getElementById('apply-filter');
-        const clearFilterBtn = document.getElementById('clear-filter');
-        const levelFilter = document.getElementById('level-filter');
-        const scenarioFilter = document.getElementById('scenario-filter');
-        const dateFilter = document.getElementById('date-filter');
-        const logRows = document.querySelectorAll('.log-row');
-        
-        // Apply filter
-        applyFilterBtn.addEventListener('click', function() {
-            const level = levelFilter.value;
-            const scenario = scenarioFilter.value;
-            const date = dateFilter.value;
-            
-            logRows.forEach(function(row) {
-                const rowLevel = row.getAttribute('data-level');
-                const rowScenario = row.getAttribute('data-scenario');
-                const rowDate = row.getAttribute('data-date');
-                
-                let showRow = true;
-                
-                if (level !== 'all' && rowLevel !== level) {
-                    showRow = false;
-                }
-                
-                if (scenario !== 'all') {
-                    if (scenario === 'manual' && !rowScenario.startsWith('manual_')) {
-                        showRow = false;
-                    } else if (scenario !== 'manual' && rowScenario !== scenario) {
-                        showRow = false;
-                    }
-                }
-                
-                if (date && rowDate !== date) {
-                    showRow = false;
-                }
-                
-                row.style.display = showRow ? '' : 'none';
-            });
-        });
-        
-        // Clear filter
-        clearFilterBtn.addEventListener('click', function() {
-            levelFilter.value = 'all';
-            scenarioFilter.value = 'all';
-            dateFilter.value = '';
-            
-            logRows.forEach(function(row) {
-                row.style.display = '';
-            });
-        });
-    });
-</script>
 {% endblock %}
