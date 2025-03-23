@@ -5,11 +5,13 @@ from datetime import datetime, timedelta, time
 from flask import render_template, request, redirect, url_for, jsonify, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app import app, db
-from models import Course, ScheduledMessage, Log, UserRanking, AppSettings, TelegramMessage, ZoomAttendance, User, Scenario
+from models import Course, ScheduledMessage, Log, UserRanking, AppSettings, TelegramMessage, ZoomAttendance, User, Scenario, TelegramGroup, CourseTelegramGroup, Notification
 from forms import LoginForm, ChangePasswordForm, AddAdminForm
 from scheduler import run_job
 from excel_processor import excel_processor
 from telegram_bot import init_telegram_bot
+from werkzeug.utils import secure_filename
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -2156,3 +2158,75 @@ Vous pouvez utiliser ce système pour:
     @app.errorhandler(500)
     def server_error(e):
         return render_template('500.html'), 500
+
+    @app.route('/telegram-groups')
+    @login_required
+    def telegram_groups():
+        """Affiche la page de gestion des groupes Telegram."""
+        groups = TelegramGroup.query.all()
+        courses = Course.query.all()
+        
+        # Statistiques
+        total_groups = len(groups)
+        total_associations = CourseTelegramGroup.query.count()
+        total_notifications = TelegramMessage.query.count()
+        last_update = max((group.updated_at for group in groups), default=datetime.utcnow()).strftime("%Y-%m-%d %H:%M")
+        
+        return render_template('telegram_groups.html',
+                             groups=groups,
+                             courses=courses,
+                             total_groups=total_groups,
+                             total_associations=total_associations,
+                             total_notifications=total_notifications,
+                             last_update=last_update)
+
+    @app.route('/telegram-groups/add', methods=['POST'])
+    @login_required
+    def add_telegram_group():
+        """Ajoute un nouveau groupe Telegram."""
+        try:
+            group_id = request.form.get('group_id')
+            group_name = request.form.get('group_name')
+            description = request.form.get('description')
+            course_ids = request.form.getlist('courses')
+            
+            success, message = add_telegram_group(group_id, group_name, description, course_ids)
+            return jsonify({'success': success, 'message': message})
+        except Exception as e:
+            return jsonify({'success': False, 'message': str(e)})
+
+    @app.route('/telegram-groups/<int:group_id>')
+    @login_required
+    def get_telegram_group(group_id):
+        """Récupère les détails d'un groupe Telegram."""
+        group = TelegramGroup.query.get_or_404(group_id)
+        return jsonify({
+            'group_id': group.group_id,
+            'group_name': group.group_name,
+            'description': group.description,
+            'courses': [course.id for course in group.courses]
+        })
+
+    @app.route('/telegram-groups/<int:group_id>/edit', methods=['POST'])
+    @login_required
+    def edit_telegram_group(group_id):
+        """Modifie un groupe Telegram existant."""
+        try:
+            group_name = request.form.get('group_name')
+            description = request.form.get('description')
+            course_ids = request.form.getlist('courses')
+            
+            success, message = update_telegram_group(group_id, group_name, description, course_ids)
+            return jsonify({'success': success, 'message': message})
+        except Exception as e:
+            return jsonify({'success': False, 'message': str(e)})
+
+    @app.route('/telegram-groups/<int:group_id>/delete', methods=['POST'])
+    @login_required
+    def delete_telegram_group(group_id):
+        """Supprime un groupe Telegram."""
+        try:
+            success, message = delete_telegram_group(group_id)
+            return jsonify({'success': success, 'message': message})
+        except Exception as e:
+            return jsonify({'success': False, 'message': str(e)})

@@ -1,177 +1,319 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-trophy me-2"></i>Classements des participants
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Classements</h1>
+            <p class="text-muted mb-0">Suivez les performances des étudiants</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateRankingModal">
+                <i class="fas fa-chart-line me-2"></i> Générer un classement
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Total Étudiants</h6>
+                            <h3 class="mb-0">{{ total_students }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-success bg-opacity-10 text-success me-3">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Meilleur Score</h6>
+                            <h3 class="mb-0">{{ best_score }}%</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-info bg-opacity-10 text-info me-3">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Score Moyen</h6>
+                            <h3 class="mb-0">{{ average_score }}%</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-warning bg-opacity-10 text-warning me-3">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Dernière Mise à Jour</h6>
+                            <h3 class="mb-0">{{ last_update }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-transparent">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-filter me-2 text-primary"></i>Filtres
                 </h5>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                    <i class="fas fa-chevron-up me-1"></i> <span class="filter-toggle-text">Masquer</span>
+                </button>
             </div>
+        </div>
+        
+        <div class="collapse show" id="filterCollapse">
             <div class="card-body">
-                <div class="alert alert-info">
-                    <h5><i class="fas fa-info-circle me-2"></i>À propos du système de classement</h5>
-                    <p>
-                        Le système de classement attribue des points aux participants de vos groupes Telegram en fonction de leur activité :
-                        <ul>
-                            <li><strong>Messages envoyés :</strong> 1 point par message</li>
-                            <li><strong>Participation aux réunions Zoom :</strong> 10 points par présence</li>
-                        </ul>
-                        Les classements sont calculés quotidiennement, hebdomadairement et mensuellement, et peuvent être partagés directement dans les groupes Telegram.
-                    </p>
-                </div>
-                
-                <!-- Actions globales -->
-                <div class="card mb-4">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Actions globales</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <button type="button" class="btn btn-primary" onclick="sendDailyRankings()">
-                                    <i class="fas fa-paper-plane me-2"></i>Envoyer les classements quotidiens à tous les groupes
-                                </button>
-                                <small class="text-muted ms-2">
-                                    Cela enverra les classements quotidiens à tous les groupes Telegram actifs.
-                                    <br>Cette action ne s'exécute que manuellement, comme demandé.
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Filter controls -->
-                <div class="mb-4">
-                    <form method="GET" class="row g-3">
-                        <div class="col-md-3">
-                            <label for="coach" class="form-label">Coach</label>
-                            <select class="form-select" id="coach" name="coach">
-                                <option value="">Tous les coachs</option>
-                                {% for teacher in teachers %}
-                                    <option value="{{ teacher }}" {% if teacher == selected_coach %}selected{% endif %}>
-                                        {{ teacher }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-3">
-                            <label for="course" class="form-label">Cours</label>
-                            <select class="form-select" id="course" name="course">
+                <form id="filterForm" class="row g-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filter_class" class="form-label">
+                                <i class="fas fa-book text-primary me-1"></i> Cours
+                            </label>
+                            <select class="form-select" id="filter_class" name="class">
                                 <option value="">Tous les cours</option>
-                                {% for course in courses %}
-                                    <option value="{{ course }}" {% if course == selected_course %}selected{% endif %}>
-                                        {{ course }}
-                                    </option>
+                                {% for class_name in class_names %}
+                                    <option value="{{ class_name }}">{{ class_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        
-                        <div class="col-md-3">
-                            <label for="group" class="form-label">Groupe Telegram</label>
-                            <select class="form-select" id="group" name="group" {% if not groups %}disabled{% endif %}>
-                                {% if not groups %}
-                                    <option value="">Aucun groupe disponible</option>
-                                {% else %}
-                                    {% for group_id in groups %}
-                                        <option value="{{ group_id }}" {% if group_id == selected_group %}selected{% endif %}>
-                                            {{ group_id }}
-                                        </option>
-                                    {% endfor %}
-                                {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filter_period" class="form-label">
+                                <i class="fas fa-calendar text-primary me-1"></i> Période
+                            </label>
+                            <select class="form-select" id="filter_period" name="period">
+                                <option value="all">Toutes les périodes</option>
+                                <option value="week">Cette semaine</option>
+                                <option value="month">Ce mois</option>
+                                <option value="quarter">Ce trimestre</option>
+                                <option value="year">Cette année</option>
                             </select>
                         </div>
-                        
-                        <div class="col-md-4">
-                            <label for="period" class="form-label">Période</label>
-                            <select class="form-select" id="period" name="period">
-                                <option value="daily" {% if selected_period == 'daily' %}selected{% endif %}>Quotidienne</option>
-                                <option value="weekly" {% if selected_period == 'weekly' %}selected{% endif %}>Hebdomadaire</option>
-                                <option value="monthly" {% if selected_period == 'monthly' %}selected{% endif %}>Mensuelle</option>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filter_type" class="form-label">
+                                <i class="fas fa-chart-pie text-primary me-1"></i> Type de Score
+                            </label>
+                            <select class="form-select" id="filter_type" name="type">
+                                <option value="all">Tous les scores</option>
+                                <option value="attendance">Assiduité</option>
+                                <option value="participation">Participation</option>
+                                <option value="homework">Devoirs</option>
                             </select>
                         </div>
-                        
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100" {% if not groups %}disabled{% endif %}>
-                                <i class="fas fa-filter me-2"></i>Filtrer
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- Rankings table -->
-                {% if selected_group %}
-                    <div class="card mb-4">
-                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">
-                                <i class="fas fa-list me-2"></i>
-                                Top participants - 
-                                {% if selected_period == 'daily' %}
-                                    Classement quotidien
-                                {% elif selected_period == 'weekly' %}
-                                    Classement hebdomadaire
-                                {% else %}
-                                    Classement mensuel
-                                {% endif %}
-                            </h6>
-                            <button type="button" class="btn btn-sm btn-light" 
-                                    onclick="sendRankings('{{ selected_group }}', '{{ selected_period }}')">
-                                <i class="fas fa-paper-plane me-1"></i>Envoyer au groupe
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            {% if rankings %}
-                                <div class="table-responsive">
-                                    <table class="table table-striped table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">#</th>
-                                                <th scope="col">Nom d'utilisateur</th>
-                                                <th scope="col">Points messages</th>
-                                                <th scope="col">Points présence</th>
-                                                <th scope="col">Points totaux</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for rank in rankings %}
-                                                <tr>
-                                                    <th scope="row">
-                                                        {% if rank.rank == 1 %}
-                                                            <i class="fas fa-crown text-warning me-1"></i>{{ rank.rank }}
-                                                        {% elif rank.rank == 2 %}
-                                                            <i class="fas fa-medal text-secondary me-1"></i>{{ rank.rank }}
-                                                        {% elif rank.rank == 3 %}
-                                                            <i class="fas fa-award text-danger me-1"></i>{{ rank.rank }}
-                                                        {% else %}
-                                                            {{ rank.rank }}
-                                                        {% endif %}
-                                                    </th>
-                                                    <td>{{ rank.user_name or rank.user_id }}</td>
-                                                    <td>{{ rank.message_points }}</td>
-                                                    <td>{{ rank.attendance_points }}</td>
-                                                    <td><strong>{{ rank.total_points }}</strong></td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <div class="alert alert-warning text-center">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    Aucune activité pour ce groupe dans cette période.
-                                </div>
-                            {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filter_sort" class="form-label">
+                                <i class="fas fa-sort text-primary me-1"></i> Trier par
+                            </label>
+                            <select class="form-select" id="filter_sort" name="sort">
+                                <option value="score">Score</option>
+                                <option value="name">Nom</option>
+                                <option value="class">Cours</option>
+                            </select>
                         </div>
                     </div>
-                {% else %}
-                    <div class="alert alert-warning text-center">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        Sélectionnez un groupe pour voir les classements.
+                    <div class="col-12 mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-search me-2"></i>Rechercher
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo me-2"></i>Réinitialiser
+                        </button>
                     </div>
-                {% endif %}
+                </form>
             </div>
+        </div>
+    </div>
+
+    <!-- Rankings Table -->
+    <div class="card">
+        <div class="card-header bg-transparent">
+            <div class="d-flex align-items-center">
+                <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
+                    <i class="fas fa-list-ol"></i>
+                </div>
+                <div>
+                    <h5 class="card-title mb-0">Classement des Étudiants</h5>
+                    <p class="text-muted mb-0">Liste des étudiants classés par performance</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px">#</th>
+                            <th>Étudiant</th>
+                            <th>Cours</th>
+                            <th>Score</th>
+                            <th>Progression</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">{{ loop.index }}</span>
+                                    {% if loop.index <= 3 %}
+                                        <i class="fas fa-trophy text-warning"></i>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle me-2">
+                                        {{ student.name[0]|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ student.name }}</div>
+                                        <small class="text-muted">{{ student.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ student.class_name }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress me-2" style="width: 100px; height: 6px;">
+                                        <div class="progress-bar {% if student.score >= 80 %}bg-success{% elif student.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ student.score }}%"
+                                             aria-valuenow="{{ student.score }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <span class="fw-medium">{{ student.score }}%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if student.progression > 0 %}
+                                        <i class="fas fa-arrow-up text-success me-1"></i>
+                                        <span class="text-success">+{{ student.progression }}%</span>
+                                    {% elif student.progression < 0 %}
+                                        <i class="fas fa-arrow-down text-danger me-1"></i>
+                                        <span class="text-danger">{{ student.progression }}%</span>
+                                    {% else %}
+                                        <i class="fas fa-minus text-muted me-1"></i>
+                                        <span class="text-muted">0%</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails({{ student.id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="exportStudent({{ student.id }})">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Ranking Modal -->
+<div class="modal fade" id="generateRankingModal" tabindex="-1" aria-labelledby="generateRankingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateRankingModalLabel">Générer un Classement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="generateRankingForm" method="POST" action="{{ url_for('generate_ranking') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="ranking_type" class="form-label">Type de Classement</label>
+                        <select class="form-select" id="ranking_type" name="type" required>
+                            <option value="">Sélectionnez un type</option>
+                            <option value="weekly">Hebdomadaire</option>
+                            <option value="monthly">Mensuel</option>
+                            <option value="quarterly">Trimestriel</option>
+                            <option value="yearly">Annuel</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ranking_class" class="form-label">Cours</label>
+                        <select class="form-select" id="ranking_class" name="class">
+                            <option value="">Tous les cours</option>
+                            {% for class_name in class_names %}
+                                <option value="{{ class_name }}">{{ class_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ranking_criteria" class="form-label">Critères</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="criteria" value="attendance" id="criteria_attendance" checked>
+                            <label class="form-check-label" for="criteria_attendance">
+                                Assiduité
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="criteria" value="participation" id="criteria_participation" checked>
+                            <label class="form-check-label" for="criteria_participation">
+                                Participation
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="criteria" value="homework" id="criteria_homework" checked>
+                            <label class="form-check-label" for="criteria_homework">
+                                Devoirs
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-chart-line me-2"></i>Générer
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -179,205 +321,68 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const coachSelect = document.getElementById('coach');
-        const courseSelect = document.getElementById('course');
-        const groupSelect = document.getElementById('group');
-        const periodSelect = document.getElementById('period');
-        
-        if (!coachSelect || !courseSelect || !groupSelect || !periodSelect) return;
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion du toggle des filtres
+    const filterToggle = document.querySelector('[data-bs-target="#filterCollapse"]');
+    const filterToggleText = filterToggle.querySelector('.filter-toggle-text');
+    const filterCollapse = document.getElementById('filterCollapse');
 
-        function updateFilters() {
-            const selectedCoach = coachSelect.value;
-            const selectedCourse = courseSelect.value;
+    filterCollapse.addEventListener('show.bs.collapse', function () {
+        filterToggleText.textContent = 'Masquer';
+    });
 
-            // Make API call to get filtered data
-            fetch(`/api/filter-rankings?coach=${encodeURIComponent(selectedCoach)}&course=${encodeURIComponent(selectedCourse)}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Update courses dropdown
-                    updateDropdown(courseSelect, data.courses, selectedCourse);
-                    // Update groups dropdown
-                    updateDropdown(groupSelect, data.groups, groupSelect.value);
-                })
-                .catch(error => console.error('Error fetching filter data:', error));
+    filterCollapse.addEventListener('hide.bs.collapse', function () {
+        filterToggleText.textContent = 'Afficher';
+    });
+
+    // Fonction pour mettre à jour le tableau
+    function updateTable() {
+        const form = document.getElementById('filterForm');
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+
+        for (const [key, value] of formData.entries()) {
+            if (value) {
+                params.append(key, value);
+            }
         }
 
-        function updateDropdown(select, values, currentValue) {
-            const defaultOption = select.querySelector('option[value=""]');
-            select.innerHTML = '';
-            if (defaultOption) {
-                select.appendChild(defaultOption);
-            }
-
-            values.forEach(value => {
-                const option = document.createElement('option');
-                option.value = value;
-                option.textContent = value;
-                if (value === currentValue) {
-                    option.selected = true;
-                }
-                select.appendChild(option);
+        fetch(`/api/filter-rankings?${params.toString()}`)
+            .then(response => response.text())
+            .then(html => {
+                document.querySelector('.table-responsive').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue lors du filtrage des classements.');
             });
+    }
 
-            select.disabled = values.length === 0;
-        }
-
-        // Event listeners
-        coachSelect.addEventListener('change', updateFilters);
-        courseSelect.addEventListener('change', updateFilters);
-
-        // Submit form when group or period changes
-        [groupSelect, periodSelect].forEach(select => {
-            select.addEventListener('change', () => select.form.submit());
-        });
-
-        // Initial filter update
-        updateFilters();
+    // Écouter les changements dans les filtres
+    document.getElementById('filterForm').addEventListener('change', function() {
+        updateTable();
     });
 
-    function sendRankings(groupId, periodType) {
-        if (!groupId) {
-            alert('Aucun groupe Telegram sélectionné.');
-            return;
-        }
-        
-        const button = event.target.closest('button');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Envoi en cours...';
-        
-        const formData = new FormData();
-        formData.append('group_id', groupId);
-        formData.append('period_type', periodType);
-        
-        fetch('/api/send-rankings', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Classement envoyé avec succès !');
-            } else {
-                alert('Erreur lors de l\'envoi du classement : ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de l\'envoi du classement : ' + error);
-        })
-        .finally(() => {
-            button.disabled = false;
-            button.innerHTML = originalText;
-        });
-    }
-    
-    function sendDailyRankings() {
-        const button = event.target.closest('button');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Envoi en cours...';
-        
-        fetch('/api/send-daily-rankings', {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Classements quotidiens envoyés avec succès : ' + data.message);
-            } else {
-                alert('Erreur lors de l\'envoi des classements : ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de l\'envoi des classements : ' + error);
-        })
-        .finally(() => {
-            button.disabled = false;
-            button.innerHTML = originalText;
-        });
-    }
-</script>
+    // Écouter la soumission du formulaire
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        updateTable();
+    });
 
-    function sendRankings(groupId, periodType) {
-        if (!groupId) {
-            alert('Aucun groupe Telegram sélectionné.');
-            return;
-        }
-        
-        // Disable UI elements and show loading state
-        const button = event.target.closest('button');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Envoi en cours...';
-        
-        // Send the rankings to the group
-        const formData = new FormData();
-        formData.append('group_id', groupId);
-        formData.append('period_type', periodType);
-        
-        fetch('{{ url_for("send_rankings") }}', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Success notification
-                alert('Classement envoyé avec succès !');
-            } else {
-                // Error notification
-                alert('Erreur lors de l\'envoi du classement : ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de l\'envoi du classement : ' + error);
-        })
-        .finally(() => {
-            // Restore UI elements
-            button.disabled = false;
-            button.innerHTML = originalText;
-        });
-    }
-    
-    function sendDailyRankings() {
-        // Disable UI elements and show loading state
-        const button = event.target.closest('button');
-        const originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Envoi en cours...';
-        
-        // Send daily rankings to all groups
-        fetch('{{ url_for("send_daily_rankings") }}', {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Success notification
-                alert('Classements quotidiens envoyés avec succès : ' + data.message);
-            } else {
-                // Error notification
-                alert('Erreur lors de l\'envoi des classements : ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de l\'envoi des classements : ' + error);
-        })
-        .finally(() => {
-            // Restore UI elements
-            button.disabled = false;
-            button.innerHTML = originalText;
-        });
-    }
-    
-    // Auto-submit form when changing select values
-    document.getElementById('group').addEventListener('change', function() {
-        this.form.submit();
+    // Écouter le reset du formulaire
+    document.getElementById('filterForm').addEventListener('reset', function() {
+        setTimeout(updateTable, 0);
     });
-    
-    document.getElementById('period').addEventListener('change', function() {
-        this.form.submit();
-    });
+});
+
+// Fonction pour voir les détails d'un étudiant
+function viewDetails(studentId) {
+    window.location.href = `/student/${studentId}/details`;
+}
+
+// Fonction pour exporter les données d'un étudiant
+function exportStudent(studentId) {
+    window.location.href = `/student/${studentId}/export`;
+}
 </script>
 {% endblock %}

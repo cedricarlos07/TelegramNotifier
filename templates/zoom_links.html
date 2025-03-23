@@ -1,112 +1,109 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">Gestion des Liens Zoom</h1>
-    </div>
-</div>
-
-<!-- Filtres -->
-<div class="card mb-4 border-0 shadow-sm">
-    <div class="card-header bg-transparent">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-filter me-2 text-primary"></i>Filtres rapides
-            </h5>
-            <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
-                <i class="fas fa-chevron-up me-1"></i> <span class="filter-toggle-text">Masquer</span>
-            </button>
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Gestion des Liens Zoom</h1>
+            <p class="text-muted mb-0">Gérez les liens Zoom pour tous vos cours</p>
         </div>
-    </div>
-    
-    <div class="collapse show" id="filterCollapse">
-        <div class="card-body">
-            <form id="filterForm" class="row g-3">
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="filter_teacher" class="form-label text-dark">
-                            <i class="fas fa-user-tie text-primary me-1"></i> Coach
-                        </label>
-                        <select class="form-select" id="filter_teacher" name="teacher">
-                            <option value="">Tous les coachs</option>
-                            {% for teacher in teachers %}
-                                <option value="{{ teacher }}">{{ teacher }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="filter_class" class="form-label text-dark">
-                            <i class="fas fa-book text-primary me-1"></i> Cours
-                        </label>
-                        <select class="form-select" id="filter_class" name="class">
-                            <option value="">Tous les cours</option>
-                            {% for class_name in class_names %}
-                                <option value="{{ class_name }}">{{ class_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="filter_day" class="form-label text-dark">
-                            <i class="fas fa-calendar-day text-primary me-1"></i> Jour
-                        </label>
-                        <select class="form-select" id="filter_day" name="day">
-                            <option value="">Tous les jours</option>
-                            <option value="0">Lundi</option>
-                            <option value="1">Mardi</option>
-                            <option value="2">Mercredi</option>
-                            <option value="3">Jeudi</option>
-                            <option value="4">Vendredi</option>
-                            <option value="5">Samedi</option>
-                            <option value="6">Dimanche</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="filter_status" class="form-label text-dark">
-                            <i class="fas fa-check-circle text-primary me-1"></i> Statut Zoom
-                        </label>
-                        <select class="form-select" id="filter_status" name="status">
-                            <option value="">Tous les statuts</option>
-                            <option value="with_zoom">Avec lien Zoom</option>
-                            <option value="without_zoom">Sans lien Zoom</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-12 mt-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary px-4">
-                        <i class="fas fa-search me-2"></i>Rechercher
-                    </button>
-                    <button type="reset" class="btn btn-outline-secondary">
-                        <i class="fas fa-undo me-2"></i>Réinitialiser
-                    </button>
-                </div>
+        <div>
+            <form method="POST" action="{{ url_for('run_scenario', scenario_name='create_zoom_links') }}" class="d-inline">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sync me-2"></i> Générer les liens manquants
+                </button>
             </form>
         </div>
     </div>
-</div>
 
-<!-- Conteneur pour les tableaux de liens Zoom -->
-<div id="zoomLinksTables">
-    {% include 'partials/zoom_links_tables.html' %}
-</div>
-
-<!-- Quick Actions -->
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+    <!-- Filters Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-transparent">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-filter me-2 text-primary"></i>Filtres rapides
+                </h5>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                    <i class="fas fa-chevron-up me-1"></i> <span class="filter-toggle-text">Masquer</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="collapse show" id="filterCollapse">
+            <div class="card-body">
+                <form id="filterForm" class="row g-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filter_teacher" class="form-label">
+                                <i class="fas fa-user-tie text-primary me-1"></i> Coach
+                            </label>
+                            <select class="form-select" id="filter_teacher" name="teacher">
+                                <option value="">Tous les coachs</option>
+                                {% for teacher in teachers %}
+                                    <option value="{{ teacher }}">{{ teacher }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filter_class" class="form-label">
+                                <i class="fas fa-book text-primary me-1"></i> Cours
+                            </label>
+                            <select class="form-select" id="filter_class" name="class">
+                                <option value="">Tous les cours</option>
+                                {% for class_name in class_names %}
+                                    <option value="{{ class_name }}">{{ class_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filter_day" class="form-label">
+                                <i class="fas fa-calendar-day text-primary me-1"></i> Jour
+                            </label>
+                            <select class="form-select" id="filter_day" name="day">
+                                <option value="">Tous les jours</option>
+                                <option value="0">Lundi</option>
+                                <option value="1">Mardi</option>
+                                <option value="2">Mercredi</option>
+                                <option value="3">Jeudi</option>
+                                <option value="4">Vendredi</option>
+                                <option value="5">Samedi</option>
+                                <option value="6">Dimanche</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="filter_status" class="form-label">
+                                <i class="fas fa-check-circle text-primary me-1"></i> Statut Zoom
+                            </label>
+                            <select class="form-select" id="filter_status" name="status">
+                                <option value="">Tous les statuts</option>
+                                <option value="with_zoom">Avec lien Zoom</option>
+                                <option value="without_zoom">Sans lien Zoom</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-search me-2"></i>Rechercher
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo me-2"></i>Réinitialiser
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('run_scenario', scenario_name='create_zoom_links') }}" class="d-inline">
-            <button type="submit" class="btn btn-primary me-2">
-                <i class="fas fa-sync me-1"></i> Generate Missing Zoom Links
-            </button>
-        </form>
+
+    <!-- Zoom Links Tables -->
+    <div id="zoomLinksTables">
+        {% include 'partials/zoom_links_tables.html' %}
     </div>
 </div>
 
@@ -115,27 +112,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title text-dark" id="editZoomModalLabel">Edit Zoom Link</h5>
+                <h5 class="modal-title" id="editZoomModalLabel">Modifier le lien Zoom</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editZoomForm" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label text-dark">Course Name</label>
+                        <label class="form-label">Nom du cours</label>
                         <input type="text" class="form-control" id="zoom_course_name" disabled>
                     </div>
                     <div class="mb-3">
-                        <label for="zoom_meeting_id" class="form-label text-dark">Zoom Meeting ID</label>
+                        <label for="zoom_meeting_id" class="form-label">ID de la réunion Zoom</label>
                         <input type="text" class="form-control" id="zoom_meeting_id" name="zoom_meeting_id">
                     </div>
                     <div class="mb-3">
-                        <label for="zoom_link" class="form-label text-dark">Zoom Link</label>
+                        <label for="zoom_link" class="form-label">Lien Zoom</label>
                         <input type="text" class="form-control" id="zoom_link" name="zoom_link" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -147,33 +144,32 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title text-dark" id="addZoomModalLabel">Add Zoom Link</h5>
+                <h5 class="modal-title" id="addZoomModalLabel">Ajouter un lien Zoom</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="addZoomForm" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label text-dark">Course Name</label>
+                        <label class="form-label">Nom du cours</label>
                         <input type="text" class="form-control" id="add_zoom_course_name" disabled>
                     </div>
                     <div class="mb-3">
-                        <label for="add_zoom_meeting_id" class="form-label text-dark">Zoom Meeting ID</label>
+                        <label for="add_zoom_meeting_id" class="form-label">ID de la réunion Zoom</label>
                         <input type="text" class="form-control" id="add_zoom_meeting_id" name="zoom_meeting_id">
                     </div>
                     <div class="mb-3">
-                        <label for="add_zoom_link" class="form-label text-dark">Zoom Link</label>
+                        <label for="add_zoom_link" class="form-label">Lien Zoom</label>
                         <input type="text" class="form-control" id="add_zoom_link" name="zoom_link" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Link</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}

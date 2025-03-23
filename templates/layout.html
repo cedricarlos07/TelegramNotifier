@@ -6,7 +6,7 @@
     <title>KODJO ENGLISH BOT - Plateforme de Gestion de Cours</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,11 +14,23 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- BREVO-inspired theme -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/brevo-theme.css') }}">
-    
-    <!-- Contrast fixes -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/contrast-fixes.css') }}">
+    <!-- Modern Theme -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+    {% if request.endpoint == 'rankings' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/rankings.css') }}">
+    {% endif %}
+    {% if request.endpoint == 'scenarios' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/scenarios.css') }}">
+    {% endif %}
+    {% if request.endpoint == 'courses' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/courses.css') }}">
+    {% endif %}
+    {% if request.endpoint == 'students' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/students.css') }}">
+    {% endif %}
+    {% if request.endpoint == 'telegram-groups' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/telegram_groups.css') }}">
+    {% endif %}
 </head>
 <body>
     <div class="d-flex flex-column min-vh-100">
@@ -40,11 +52,6 @@
                     
                     <div class="collapse navbar-collapse" id="navbarNav">
                         {% if current_user.is_authenticated %}
-                        <!-- Show this side navigation on larger screens -->
-                        <div class="d-none d-lg-flex me-auto">
-                            <!-- Empty space for sidebar on large screens -->
-                        </div>
-                        
                         <!-- User menu -->
                         <ul class="navbar-nav ms-auto d-flex align-items-center">
                             <!-- Theme switcher -->
@@ -56,12 +63,12 @@
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <div class="avatar-circle me-2 d-flex align-items-center justify-content-center">
+                                    <div class="avatar-circle me-2">
                                         <span>{{ current_user.username[0]|upper }}</span>
                                     </div>
                                     <span class="d-none d-md-inline">{{ current_user.username }}</span>
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     {% if current_user.is_admin %}
                                     <li>
                                         <a class="dropdown-item {% if request.path == '/admin-users' %}active{% endif %}" href="{{ url_for('admin_users') }}">
@@ -160,6 +167,11 @@
                                 </a>
                             </li>
                             <li class="nav-item mb-2">
+                                <a class="nav-link {% if request.path == '/telegram-groups' %}active{% endif %}" href="{{ url_for('telegram_groups') }}">
+                                    <i class="fas fa-telegram"></i> <span>Groupes Telegram</span>
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
                                 <a class="nav-link {% if request.path == '/rankings' %}active{% endif %}" href="{{ url_for('rankings') }}">
                                     <i class="fas fa-trophy"></i> <span>Classements</span>
                                 </a>
@@ -213,6 +225,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-center py-1 px-2 {% if request.path == '/telegram-groups' %}active{% endif %}" href="{{ url_for('telegram_groups') }}">
+                                <i class="fas fa-telegram d-block mb-1"></i>
+                                <small>Groupes Telegram</small>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-center py-1 px-2 {% if request.path == '/rankings' %}active{% endif %}" href="{{ url_for('rankings') }}">
                                 <i class="fas fa-trophy d-block mb-1"></i>
                                 <small>Classements</small>
@@ -254,78 +272,63 @@
                         <a href="{{ url_for('logs') }}" class="list-group-item list-group-item-action">
                             <i class="fas fa-list-alt me-2"></i> Logs
                         </a>
-                        
-                        <h6 class="text-uppercase fw-bold mt-4 mb-3 px-2">Compte</h6>
-                        {% if current_user.is_admin %}
-                        <a href="{{ url_for('admin_users') }}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-users-cog me-2"></i> Gérer les utilisateurs
-                        </a>
-                        {% endif %}
-                        <a href="{{ url_for('change_password') }}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-key me-2"></i> Changer le mot de passe
-                        </a>
-                        <button class="list-group-item list-group-item-action d-flex align-items-center" id="theme-switcher-mobile">
-                            <i class="fas fa-moon me-2 theme-icon-dark"></i>
-                            <i class="fas fa-sun me-2 theme-icon-light d-none"></i>
-                            <span class="theme-text-dark">Mode clair</span>
-                            <span class="theme-text-light d-none">Mode sombre</span>
-                        </button>
-                        <div class="divider my-2"></div>
-                        <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action text-danger">
-                            <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
-                        </a>
                     </div>
                 </div>
             </div>
             {% endif %}
 
             <!-- Main content -->
-            <main class="flex-grow-1 pt-4 pb-5 {% if current_user.is_authenticated %}content-with-sidebar{% endif %}">
-                <div class="container-fluid px-4 pb-5">
-                    <!-- Page heading and breadcrumb -->
-                    {% if current_user.is_authenticated %}
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <div>
-                            {% block page_header %}{% endblock %}
-                        </div>
-                    </div>
+            <main class="flex-grow-1 p-4">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
                     {% endif %}
-                    
-                    <!-- Flash messages -->
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
+                {% endwith %}
 
-                    <!-- Page content -->
-                    {% block content %}{% endblock %}
-                </div>
+                {% block content %}{% endblock %}
             </main>
         </div>
-
-        <!-- Footer -->
-        <footer class="footer py-3 mt-auto border-top">
-            <div class="container-fluid px-4 text-center">
-                <span class="text-muted">© 2025 KODJO ENGLISH BOT - Plateforme de Gestion de Cours</span>
-            </div>
-        </footer>
     </div>
 
-    <!-- Bootstrap and custom JS -->
+    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/scenarios.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/theme-switcher.js') }}"></script>
 
-    <!-- Chart.js for data visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Theme switcher script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeSwitchers = document.querySelectorAll('#theme-switcher, #theme-switcher-menu');
+            const html = document.documentElement;
+            
+            function updateTheme(isDark) {
+                html.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+                document.querySelectorAll('.theme-icon-dark').forEach(el => {
+                    el.classList.toggle('d-none', !isDark);
+                });
+                document.querySelectorAll('.theme-icon-light').forEach(el => {
+                    el.classList.toggle('d-none', isDark);
+                });
+                document.querySelectorAll('.theme-text-dark').forEach(el => {
+                    el.classList.toggle('d-none', !isDark);
+                });
+                document.querySelectorAll('.theme-text-light').forEach(el => {
+                    el.classList.toggle('d-none', isDark);
+                });
+            }
 
-    <!-- Page-specific JavaScript -->
+            themeSwitchers.forEach(switcher => {
+                switcher.addEventListener('click', function() {
+                    const isDark = html.getAttribute('data-bs-theme') === 'dark';
+                    updateTheme(!isDark);
+                });
+            });
+        });
+    </script>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

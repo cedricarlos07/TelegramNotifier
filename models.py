@@ -245,3 +245,24 @@ class Scenario(db.Model):
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             'updated_at': self.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         }
+
+class TelegramGroup(db.Model):
+    __tablename__ = 'telegram_groups'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.String(50), unique=True, nullable=False)
+    group_name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relation avec les cours
+    courses = db.relationship('Course', secondary='course_telegram_groups', backref=db.backref('telegram_groups', lazy='dynamic'))
+
+class CourseTelegramGroup(db.Model):
+    __tablename__ = 'course_telegram_groups'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('telegram_groups.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

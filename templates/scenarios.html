@@ -6,350 +6,356 @@
 {% endblock %}
 
 {% block content %}
-<!-- Header Actions -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center">
-        <div class="dashboard-stats me-4">
-            <span class="badge bg-primary rounded-pill">{{ scenarios|length }} scénarios</span>
-            {% set custom_count = scenarios|selectattr('is_custom_code', 'eq', True)|list|length %}
-            {% if custom_count > 0 %}
-            <span class="badge bg-info rounded-pill ms-2">{{ custom_count }} personnalisés</span>
-            {% endif %}
-        </div>
-    </div>
-    <div>
-        <button type="button" class="btn btn-outline-warning me-2" data-bs-toggle="modal" data-bs-target="#cacheClearModal">
-            <i class="fas fa-broom me-2"></i>Vider le cache
-        </button>
-        <a href="{{ url_for('add_scenario') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Ajouter un scénario
-        </a>
-    </div>
-</div>
-
-<!-- Info Panel -->
-<div class="alert alert-primary mb-4">
-    <div class="d-flex">
-        <div class="me-3">
-            <i class="fas fa-info-circle fa-2x"></i>
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Gestion des Scénarios</h1>
+            <p class="text-muted mb-0">Configurez et gérez vos scénarios d'automatisation</p>
         </div>
         <div>
-            <h5 class="alert-heading">Qu'est-ce qu'un scénario?</h5>
-            <p class="mb-0">Les scénarios sont des tâches automatisées qui s'exécutent selon un calendrier défini. Vous pouvez les déclencher manuellement ici si nécessaire.</p>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addScenarioModal">
+                <i class="fas fa-plus-circle me-2"></i> Nouveau Scénario
+            </button>
         </div>
     </div>
-</div>
 
-<!-- Scenarios Grid -->
-<div class="row">
-    {% for scenario in scenarios %}
-    <div class="col-lg-6 mb-4 zoom-in" style="animation-delay: {{ loop.index0 * 0.05 }}s">
-        <div class="card h-100 border-{{ scenario.color }}">
-            <div class="card-header d-flex justify-content-between align-items-center py-3">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon bg-{{ scenario.color }} me-3">
-                        <i class="fas {{ scenario.icon }}"></i>
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Total Scénarios</h6>
+                            <h3 class="mb-0">{{ scenarios|length }}</h3>
+                        </div>
                     </div>
-                    <h5 class="mb-0 fw-bold">{{ scenario.display_name }}</h5>
-                </div>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <li>
-                            <a class="dropdown-item" href="{{ url_for('edit_scenario', scenario_id=scenario.id) }}">
-                                <i class="fas fa-edit me-2"></i>Modifier
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteScenarioModal{{ scenario.id }}">
-                                <i class="fas fa-trash-alt me-2"></i>Supprimer
-                            </a>
-                        </li>
-                    </ul>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <p class="card-text">{{ scenario.description }}</p>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-success bg-opacity-10 text-success me-3">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Scénarios Actifs</h6>
+                            <h3 class="mb-0">{{ scenarios|selectattr('enabled')|list|length }}</h3>
+                        </div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="badge bg-light text-dark me-2">
-                            <i class="fas fa-calendar-alt me-1"></i> Planning
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-info bg-opacity-10 text-info me-3">
+                            <i class="fas fa-clock"></i>
                         </div>
-                        <div class="text-muted small">{{ scenario.schedule }}</div>
-                    </div>
-                    
-                    {% if scenario.is_custom_code %}
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="badge bg-info text-white me-2">
-                            <i class="fas fa-code me-1"></i> Code personnalisé
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Prochain Exécution</h6>
+                            <h3 class="mb-0">{{ next_execution|default('Aucune', true) }}</h3>
                         </div>
                     </div>
-                    {% endif %}
-                    
-                    <div class="mt-3">
-                        <p class="fw-medium mb-2">Actions:</p>
-                        <ul class="list-group list-group-flush">
-                            {% for action in scenario.actions.split('\n') %}
-                                <li class="list-group-item border-0 ps-0 py-1">
-                                    <i class="fas fa-check-circle text-{{ scenario.color }} me-2"></i>{{ action }}
-                                </li>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-warning bg-opacity-10 text-warning me-3">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Dernière Exécution</h6>
+                            <h3 class="mb-0">{{ last_execution|default('Jamais', true) }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenarios Grid -->
+    <div class="row g-4">
+        {% for scenario in scenarios %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card scenario-card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">{{ scenario.name }}</h5>
+                            <p class="text-muted mb-0">{{ scenario.description }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-uppercase text-muted mb-2">Configuration</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for key, value in scenario.config.items() %}
+                            <span class="badge bg-light">
+                                {{ key }}: {{ value }}
+                            </span>
                             {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
-                <div class="small text-muted">
-                    Dernière mise à jour: {{ scenario.updated_at.strftime('%d/%m/%Y') }}
-                </div>
-                <form method="POST" action="{{ url_for('run_scenario', scenario_name=scenario.name) }}">
-                    <button type="submit" class="btn btn-{{ scenario.color }}">
-                        <i class="fas fa-play me-2"></i>Exécuter
-                    </button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Delete Modal -->
-        <div class="modal fade" id="deleteScenarioModal{{ scenario.id }}" tabindex="-1" aria-labelledby="deleteScenarioModalLabel{{ scenario.id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteScenarioModalLabel{{ scenario.id }}">Supprimer un scénario</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="text-center mb-4">
-                            <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
-                            <h5>Êtes-vous sûr de vouloir supprimer ce scénario?</h5>
-                            <p class="text-muted">{{ scenario.display_name }}</p>
                         </div>
-                        <p>Cette action est irréversible et supprimera définitivement ce scénario.</p>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <form method="POST" action="{{ url_for('delete_scenario', scenario_id=scenario.id) }}">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-trash-alt me-2"></i>Supprimer
+                    <div class="mb-3">
+                        <h6 class="text-uppercase text-muted mb-2">Statut</h6>
+                        <div class="d-flex align-items-center">
+                            <div class="form-check form-switch me-3">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="scenarioToggle{{ scenario.id }}"
+                                       {% if scenario.enabled %}checked{% endif %}
+                                       onchange="toggleScenario({{ scenario.id }}, this.checked)">
+                            </div>
+                            <span class="badge {% if scenario.enabled %}bg-success{% else %}bg-secondary{% endif %} status-change">
+                                {% if scenario.enabled %}Actif{% else %}Inactif{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-uppercase text-muted mb-2">Dernière exécution</h6>
+                        <p class="mb-0">
+                            {% if scenario.last_run %}
+                                {{ scenario.last_run.strftime('%d-%m-%Y %H:%M') }}
+                            {% else %}
+                                <span class="text-muted">Jamais exécuté</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-sm btn-outline-primary" 
+                                onclick="runScenario({{ scenario.id }})"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Exécuter le scénario">
+                            <i class="fas fa-play me-1"></i> Exécuter
+                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    onclick="editScenario({{ scenario.id }})"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Modifier le scénario">
+                                <i class="fas fa-edit"></i>
                             </button>
-                        </form>
+                            <button class="btn btn-sm btn-outline-danger" 
+                                    onclick="deleteScenario({{ scenario.id }})"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Supprimer le scénario">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 
-<!-- Cache Clear Modal -->
-<div class="modal fade" id="cacheClearModal" tabindex="-1" aria-labelledby="cacheClearModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<!-- Add Scenario Modal -->
+<div class="modal fade" id="addScenarioModal" tabindex="-1" aria-labelledby="addScenarioModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="cacheClearModalLabel">Vider le cache de l'application</h5>
+                <h5 class="modal-title" id="addScenarioModalLabel">Nouveau Scénario</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <i class="fas fa-sync-alt text-primary fa-3x mb-3"></i>
+            <form id="addScenarioForm" method="POST" action="{{ url_for('add_scenario') }}" data-ajax="true">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="scenario_name" class="form-label">Nom du scénario</label>
+                        <input type="text" class="form-control" id="scenario_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="scenario_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="scenario_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="scenario_type" class="form-label">Type de scénario</label>
+                        <select class="form-select" id="scenario_type" name="type" required>
+                            <option value="">Sélectionnez un type</option>
+                            <option value="notification">Notification</option>
+                            <option value="automation">Automatisation</option>
+                            <option value="report">Rapport</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="scenario_schedule" class="form-label">Planification</label>
+                        <input type="text" class="form-control" id="scenario_schedule" name="schedule" 
+                               placeholder="Ex: 0 9 * * * (tous les jours à 9h)">
+                        <small class="text-muted">Format CRON</small>
+                    </div>
                 </div>
-                <p>Vider le cache rechargera toutes les données depuis la base de données. Ceci est utile si vous rencontrez:</p>
-                <ul class="list-group list-group-flush mb-3">
-                    <li class="list-group-item border-0"><i class="fas fa-check-circle text-success me-2"></i>Des changements qui ne sont pas reflétés dans l'interface</li>
-                    <li class="list-group-item border-0"><i class="fas fa-check-circle text-success me-2"></i>Des informations obsolètes affichées</li>
-                    <li class="list-group-item border-0"><i class="fas fa-check-circle text-success me-2"></i>Un comportement inattendu après des mises à jour</li>
-                </ul>
-                <div class="form-check form-switch my-3">
-                    <input class="form-check-input" type="checkbox" id="restartScenario">
-                    <label class="form-check-label" for="restartScenario">
-                        Redémarrer également le workflow des scénarios
-                    </label>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Créer
+                    </button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" id="confirmCacheClear">
-                    <i class="fas fa-broom me-2"></i>Vider le cache
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Telegram Test Message Section -->
-<div class="card mb-4 mt-5">
-    <div class="card-header d-flex justify-content-between align-items-center py-3">
-        <div class="d-flex align-items-center">
-            <div class="stat-icon bg-primary me-3">
-                <i class="fas fa-paper-plane"></i>
+<!-- Edit Scenario Modal -->
+<div class="modal fade" id="editScenarioModal" tabindex="-1" aria-labelledby="editScenarioModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editScenarioModalLabel">Modifier le Scénario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <h5 class="mb-0 fw-bold">Envoyer un message test</h5>
-        </div>
-    </div>
-    <div class="card-body">
-        <form id="testMessageForm">
-            <div class="row mb-4">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <label for="group_id" class="form-label">ID du groupe Telegram</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-users"></i></span>
-                        <input type="text" class="form-control" id="group_id" name="group_id" required>
+            <form id="editScenarioForm" method="POST" data-ajax="true">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_scenario_name" class="form-label">Nom du scénario</label>
+                        <input type="text" class="form-control" id="edit_scenario_name" name="name" required>
                     </div>
-                    <div class="form-text">Entrez l'ID du groupe Telegram où vous souhaitez envoyer le message test.</div>
+                    <div class="mb-3">
+                        <label for="edit_scenario_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_scenario_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_scenario_type" class="form-label">Type de scénario</label>
+                        <select class="form-select" id="edit_scenario_type" name="type" required>
+                            <option value="">Sélectionnez un type</option>
+                            <option value="notification">Notification</option>
+                            <option value="automation">Automatisation</option>
+                            <option value="report">Rapport</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_scenario_schedule" class="form-label">Planification</label>
+                        <input type="text" class="form-control" id="edit_scenario_schedule" name="schedule" 
+                               placeholder="Ex: 0 9 * * * (tous les jours à 9h)">
+                        <small class="text-muted">Format CRON</small>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label for="message" class="form-label">Message</label>
-                    <textarea class="form-control" id="message" name="message" rows="3" required>Message test de KODJO ENGLISH BOT</textarea>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
                 </div>
-            </div>
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-paper-plane me-2"></i>Envoyer le message
-                </button>
-            </div>
-        </form>
-        <div id="testMessageResult" class="mt-3" style="display: none;"></div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Test Message Form
-        document.getElementById('testMessageForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const groupId = document.getElementById('group_id').value;
-            const message = document.getElementById('message').value;
-            const resultDiv = document.getElementById('testMessageResult');
-            
-            // Clear previous results
-            resultDiv.innerHTML = '';
-            resultDiv.style.display = 'none';
-            resultDiv.className = 'mt-3 alert';
-            
-            // Show loading
-            resultDiv.innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Envoi du message en cours...</div>';
-            resultDiv.className = 'mt-3 alert alert-info';
-            resultDiv.style.display = 'block';
-            
-            // Send request
-            fetch('/api/send-test-message', {
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des modales
+    const addModal = new bootstrap.Modal(document.getElementById('addScenarioModal'));
+    const editModal = new bootstrap.Modal(document.getElementById('editScenarioModal'));
+
+    // Fonction pour exécuter un scénario
+    window.runScenario = function(scenarioId) {
+        if (confirm('Voulez-vous exécuter ce scénario maintenant ?')) {
+            fetch(`/scenarios/${scenarioId}/run`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    'group_id': groupId,
-                    'message': message
-                })
+                    'Content-Type': 'application/json'
+                }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    resultDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + data.message;
-                    resultDiv.className = 'mt-3 alert alert-success';
+                    showNotification('Scénario exécuté avec succès !');
                 } else {
-                    resultDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + data.message;
-                    resultDiv.className = 'mt-3 alert alert-danger';
+                    showNotification('Erreur lors de l\'exécution du scénario : ' + data.message, 'danger');
                 }
-                resultDiv.style.display = 'block';
             })
             .catch(error => {
-                resultDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Une erreur est survenue: ' + error;
-                resultDiv.className = 'mt-3 alert alert-danger';
-                resultDiv.style.display = 'block';
+                console.error('Error:', error);
+                showNotification('Une erreur est survenue lors de l\'exécution du scénario.', 'danger');
             });
+        }
+    };
+
+    // Fonction pour activer/désactiver un scénario
+    window.toggleScenario = function(scenarioId, enabled) {
+        fetch(`/scenarios/${scenarioId}/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ enabled: enabled })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Scénario ${enabled ? 'activé' : 'désactivé'} avec succès !`);
+            } else {
+                showNotification('Erreur lors de la modification du statut du scénario : ' + data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Une erreur est survenue lors de la modification du statut du scénario.', 'danger');
         });
-        
-        // Cache Clear Functionality
-        const confirmCacheClearBtn = document.getElementById('confirmCacheClear');
-        const restartScenarioCheckbox = document.getElementById('restartScenario');
-        const cacheClearModal = new bootstrap.Modal(document.getElementById('cacheClearModal'));
-        
-        confirmCacheClearBtn.addEventListener('click', function() {
-            // Show loading state
-            confirmCacheClearBtn.disabled = true;
-            confirmCacheClearBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Vidage du cache en cours...';
-            
-            // Send request to clear cache
-            fetch('/api/clear-cache', {
+    };
+
+    // Fonction pour éditer un scénario
+    window.editScenario = function(scenarioId) {
+        fetch(`/scenarios/${scenarioId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('edit_scenario_name').value = data.name;
+                document.getElementById('edit_scenario_description').value = data.description;
+                document.getElementById('edit_scenario_type').value = data.type;
+                document.getElementById('edit_scenario_schedule').value = data.schedule;
+                document.getElementById('editScenarioForm').action = `/scenarios/${scenarioId}/edit`;
+                editModal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Une erreur est survenue lors du chargement des données du scénario.', 'danger');
+            });
+    };
+
+    // Fonction pour supprimer un scénario
+    window.deleteScenario = function(scenarioId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce scénario ?')) {
+            fetch(`/scenarios/${scenarioId}/delete`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    'restart_workflow': restartScenarioCheckbox.checked ? 'true' : 'false'
-                })
+                    'Content-Type': 'application/json'
+                }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Hide modal
-                    cacheClearModal.hide();
-                    
-                    // Show success message
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
-                    alertDiv.innerHTML = `
-                        <i class="fas fa-check-circle me-2"></i>${data.message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    `;
-                    
-                    // Insert alert at the top of the page
-                    const firstChild = document.querySelector('.container').firstChild;
-                    document.querySelector('.container').insertBefore(alertDiv, firstChild);
-                    
-                    // Reload page after a short delay
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
+                    showNotification('Scénario supprimé avec succès !');
+                    location.reload();
                 } else {
-                    // Show error message in modal
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'alert alert-danger mt-3';
-                    errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${data.message}`;
-                    
-                    // Insert error message in modal body
-                    const modalBody = document.querySelector('#cacheClearModal .modal-body');
-                    modalBody.appendChild(errorDiv);
-                    
-                    // Reset button
-                    confirmCacheClearBtn.disabled = false;
-                    confirmCacheClearBtn.innerHTML = '<i class="fas fa-broom me-2"></i>Vider le cache';
+                    showNotification('Erreur lors de la suppression du scénario : ' + data.message, 'danger');
                 }
             })
             .catch(error => {
-                // Show error message in modal
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'alert alert-danger mt-3';
-                errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>Une erreur est survenue: ${error}`;
-                
-                // Insert error message in modal body
-                const modalBody = document.querySelector('#cacheClearModal .modal-body');
-                modalBody.appendChild(errorDiv);
-                
-                // Reset button
-                confirmCacheClearBtn.disabled = false;
-                confirmCacheClearBtn.innerHTML = '<i class="fas fa-broom me-2"></i>Vider le cache';
+                console.error('Error:', error);
+                showNotification('Une erreur est survenue lors de la suppression du scénario.', 'danger');
             });
-        });
-        
-        // Reset modal state when hidden
-        document.getElementById('cacheClearModal').addEventListener('hidden.bs.modal', function () {
-            confirmCacheClearBtn.disabled = false;
-            confirmCacheClearBtn.innerHTML = '<i class="fas fa-broom me-2"></i>Vider le cache';
-            restartScenarioCheckbox.checked = false;
-            
-            // Remove any error messages
-            const errorDivs = document.querySelectorAll('#cacheClearModal .alert-danger');
-            errorDivs.forEach(div => div.remove());
-        });
-    });
+        }
+    };
+});
 </script>
 {% endblock %}

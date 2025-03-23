@@ -14,405 +14,296 @@
 {% endblock %}
 
 {% block content %}
-<!-- Action buttons & Stats Overview -->
-<div class="row mb-4">
-    <div class="col-md-9">
-        <div class="row">
-            <!-- Total Cours -->
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 stat-card">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted mb-2">Total Cours</h5>
-                        <p class="stat-value">{{ total_courses }}</p>
-                        <p class="text-muted mb-0">Cours dans le système</p>
-                        <i class="fas fa-graduation-cap stat-icon"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Cours avec Zoom -->
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 stat-card">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted mb-2">Avec Zoom</h5>
-                        <p class="stat-value">{{ courses_with_zoom }}</p>
-                        <p class="text-muted mb-0">Cours avec liens vidéo</p>
-                        <i class="fas fa-video stat-icon"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Taux de planification -->
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 stat-card">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted mb-2">Planifiés</h5>
-                        <p class="stat-value">{{ planning_progress }}%</p>
-                        <p class="text-muted mb-0">Progression de la planification</p>
-                        <i class="fas fa-calendar-check stat-icon"></i>
-                    </div>
-                </div>
-            </div>
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Gestion des Cours</h1>
+            <p class="text-muted mb-0">Organisez et gérez vos cours et emplois du temps</p>
         </div>
-    </div>
-    
-    <div class="col-md-3 mb-4">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body d-flex flex-column justify-content-center">
-                <h6 class="mb-3 fw-bold">Ajouter un nouveau cours</h6>
-                <p class="text-muted mb-3 small">Créer une nouvelle planification de cours et envoyer des notifications automatisées</p>
-                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#addCourseModal">
-                    <i class="fas fa-plus-circle me-2"></i>Nouveau Cours
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Progress bar -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-tasks text-primary me-2"></i>Progression de la planification
-                    </h5>
-                    {% if planning_progress < 30 %}
-                        {% set badge_color = "bg-danger" %}
-                    {% elif planning_progress < 70 %}
-                        {% set badge_color = "bg-warning" %}
-                    {% else %}
-                        {% set badge_color = "bg-success" %}
-                    {% endif %}
-                    <span class="badge {{ badge_color }} rounded-pill px-3 py-2">{{ planning_progress }}%</span>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="progress mb-4" style="height: 10px; border-radius: 0.5rem;">
-                    {% if planning_progress < 30 %}
-                        {% set progress_color = "bg-danger" %}
-                    {% elif planning_progress < 70 %}
-                        {% set progress_color = "bg-warning" %}
-                    {% else %}
-                        {% set progress_color = "bg-success" %}
-                    {% endif %}
-                    
-                    <div class="progress-bar {{ progress_color }}" role="progressbar" style="width: {{ planning_progress }}%;" 
-                         aria-valuenow="{{ planning_progress }}" aria-valuemin="0" aria-valuemax="100">
-                    </div>
-                </div>
-                
-                <div class="row mt-3">
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center">
-                            <div class="progress-stat-icon bg-success rounded-circle p-2 me-3">
-                                <i class="fas fa-video text-white"></i>
-                            </div>
-                            <div>
-                                <div class="progress-stat-value">{{ courses_with_zoom }}</div>
-                                <div class="text-muted">Cours avec liens Zoom</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center">
-                            <div class="progress-stat-icon bg-warning rounded-circle p-2 me-3">
-                                <i class="fas fa-hourglass-half text-white"></i>
-                            </div>
-                            <div>
-                                <div class="progress-stat-value">{{ total_courses - courses_with_zoom }}</div>
-                                <div class="text-muted">Cours en attente</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center">
-                            <div class="progress-stat-icon bg-info rounded-circle p-2 me-3">
-                                <i class="fas fa-graduation-cap text-white"></i>
-                            </div>
-                            <div>
-                                <div class="progress-stat-value">{{ total_courses }}</div>
-                                <div class="text-muted">Cours au total</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Filter section -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-transparent">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-filter me-2 text-primary"></i>Filtres de recherche
-            </h5>
-            <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
-                <i class="fas fa-chevron-up me-1"></i> <span class="filter-toggle-text">Masquer</span>
+        <div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+                <i class="fas fa-plus-circle me-2"></i> Nouveau Cours
             </button>
         </div>
     </div>
-    
-    <div class="collapse show" id="filterCollapse">
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Total Cours</h6>
+                            <h3 class="mb-0">{{ courses|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-success bg-opacity-10 text-success me-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Total Étudiants</h6>
+                            <h3 class="mb-0">{{ total_students }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-info bg-opacity-10 text-info me-3">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Total Professeurs</h6>
+                            <h3 class="mb-0">{{ total_teachers }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-warning bg-opacity-10 text-warning me-3">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-uppercase text-muted mb-1">Cours Aujourd'hui</h6>
+                            <h3 class="mb-0">{{ courses_today }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card filter-card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filtres</h5>
+        </div>
         <div class="card-body">
             <form id="filterForm" class="row g-3">
                 <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="filter_teacher" class="form-label">
-                            <i class="fas fa-user-tie text-primary me-1"></i> Coach
-                        </label>
-                        <select class="form-select" id="filter_teacher" name="teacher">
-                            <option value="">Tous les coachs</option>
-                            {% for teacher in teachers %}
-                                <option value="{{ teacher }}">{{ teacher }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                    <label for="filter_teacher" class="form-label">Professeur</label>
+                    <select class="form-select" id="filter_teacher" name="teacher">
+                        <option value="">Tous les professeurs</option>
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="filter_class" class="form-label">
-                            <i class="fas fa-book text-primary me-1"></i> Cours
-                        </label>
-                        <select class="form-select" id="filter_class" name="class">
-                            <option value="">Tous les cours</option>
-                            {% for class_name in class_names %}
-                                <option value="{{ class_name }}">{{ class_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                    <label for="filter_level" class="form-label">Niveau</label>
+                    <select class="form-select" id="filter_level" name="level">
+                        <option value="">Tous les niveaux</option>
+                        {% for level in levels %}
+                        <option value="{{ level }}">{{ level }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="filter_group" class="form-label">
-                            <i class="fas fa-users text-primary me-1"></i> Groupe Telegram
-                        </label>
-                        <select class="form-select" id="filter_group" name="group">
-                            <option value="">Tous les groupes</option>
-                            {% for group in telegram_groups %}
-                                <option value="{{ group }}">{{ group }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                    <label for="filter_day" class="form-label">Jour</label>
+                    <select class="form-select" id="filter_day" name="day">
+                        <option value="">Tous les jours</option>
+                        {% for day in days %}
+                        <option value="{{ day }}">{{ day }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="filter_period" class="form-label">
-                            <i class="fas fa-calendar-alt text-primary me-1"></i> Période
-                        </label>
-                        <select class="form-select" id="filter_period" name="period">
-                            <option value="">Toutes les périodes</option>
-                            <option value="this_week">Cette semaine</option>
-                            <option value="next_week">Semaine prochaine</option>
-                            <option value="this_month">Ce mois</option>
-                        </select>
-                    </div>
+                    <label for="filter_status" class="form-label">Statut</label>
+                    <select class="form-select" id="filter_status" name="status">
+                        <option value="">Tous les statuts</option>
+                        <option value="active">Actif</option>
+                        <option value="inactive">Inactif</option>
+                    </select>
                 </div>
-                <div class="col-12 mt-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary px-4">
-                        <i class="fas fa-search me-2"></i>Rechercher
-                    </button>
-                    <button type="reset" class="btn btn-outline-secondary">
-                        <i class="fas fa-undo me-2"></i>Réinitialiser
-                    </button>
+                <div class="col-12">
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="reset" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo me-2"></i>Réinitialiser
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-2"></i>Filtrer
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
-</div>
 
-<!-- Course Tabs -->
-<div class="card border-0 shadow-sm">
-    <div class="card-header border-bottom-0 bg-transparent">
-        <ul class="nav nav-tabs" id="courseTabs" role="tablist">
-            {% for day in days %}
-            <li class="nav-item" role="presentation">
-                <button class="nav-link {% if loop.first %}active{% endif %}" 
-                        id="{{ day.lower() }}-tab" 
-                        data-bs-toggle="tab" 
-                        data-bs-target="#{{ day.lower() }}" 
-                        type="button" 
-                        role="tab" 
-                        aria-controls="{{ day.lower() }}" 
-                        aria-selected="{% if loop.first %}true{% else %}false{% endif %}">
-                    {{ day }}
-                </button>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="card-body p-0">
-        <div class="tab-content" id="courseTabsContent">
-            {% for day in days %}
-            <div class="tab-pane fade {% if loop.first %}show active{% endif %}" 
-                 id="{{ day.lower() }}" 
-                 role="tabpanel" 
-                 aria-labelledby="{{ day.lower() }}-tab">
-                
-                {% if courses_by_day[day] %}
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th class="ps-4">Horaire</th>
-                                <th>Cours</th>
-                                <th>Coach</th>
-                                <th>Groupe Telegram</th>
-                                <th>Prochaine Date</th>
-                                <th class="text-end pe-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for course in courses_by_day[day] %}
-                            <tr>
-                                <td class="ps-4">
-                                    <span class="badge bg-dark px-2 py-1">{{ course.start_time.strftime('%H:%M') }}</span>
-                                    <span class="text-muted">-</span>
-                                    <span class="badge bg-dark px-2 py-1">{{ course.end_time.strftime('%H:%M') }}</span>
-                                </td>
-                                <td class="fw-medium">{{ course.course_name }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-circle me-2 bg-secondary" style="width: 28px; height: 28px; font-size: 0.8rem;">
-                                            <span>{{ course.teacher_name[0]|upper }}</span>
-                                        </div>
-                                        <span>{{ course.teacher_name }}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-primary px-2 py-1">{{ course.telegram_group_id }}</span>
-                                </td>
-                                <td>
-                                    {% if course.schedule_date %}
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary bg-opacity-25 rounded-circle p-1 d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px;">
-                                                <span class="text-primary fw-bold">{{ course.schedule_date.strftime('%d') }}</span>
-                                            </div>
-                                            <span>{{ course.schedule_date.strftime('%b %Y') }}</span>
-                                        </div>
-                                    {% else %}
-                                        <span class="badge bg-warning">Non planifié</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-end pe-4">
-                                    <div class="btn-group">
-                                        <button class="btn btn-sm btn-primary edit-course-btn" 
-                                                data-course-id="{{ course.id }}"
-                                                data-course-name="{{ course.course_name }}"
-                                                data-teacher-name="{{ course.teacher_name }}"
-                                                data-day-of-week="{{ course.day_of_week }}"
-                                                data-start-time="{{ course.start_time.strftime('%H:%M') }}"
-                                                data-end-time="{{ course.end_time.strftime('%H:%M') }}"
-                                                data-telegram-group-id="{{ course.telegram_group_id }}">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-danger delete-course-btn" data-course-id="{{ course.id }}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center p-5">
-                    <div class="mb-3">
-                        <i class="fas fa-calendar-times fa-3x text-muted opacity-25"></i>
+    <!-- Courses Grid -->
+    <div class="row g-4">
+        {% for course in courses %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card course-card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">{{ course.name }}</h5>
+                            <p class="text-muted mb-0">{{ course.level }}</p>
+                        </div>
                     </div>
-                    <h6 class="fw-bold">Aucun cours planifié</h6>
-                    <p class="text-muted">Aucun cours n'est planifié pour {{ day }}</p>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
-                        <i class="fas fa-plus-circle me-2"></i>Ajouter un cours
-                    </button>
                 </div>
-                {% endif %}
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-uppercase text-muted mb-2">Professeur</h6>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
+                                <span>{{ course.teacher.name[0]|upper }}</span>
+                            </div>
+                            <span>{{ course.teacher.name }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-uppercase text-muted mb-2">Emploi du temps</h6>
+                        {% for schedule in course.schedules %}
+                        <div class="schedule-item">
+                            <i class="fas fa-calendar-day"></i>
+                            <div>
+                                <div class="fw-medium">{{ schedule.day }}</div>
+                                <div class="text-muted">{{ schedule.start_time }} - {{ schedule.end_time }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-uppercase text-muted mb-2">Statistiques</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light">
+                                <i class="fas fa-users me-1"></i>{{ course.students|length }} étudiants
+                            </span>
+                            <span class="badge bg-light">
+                                <i class="fas fa-clock me-1"></i>{{ course.duration }} minutes
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-sm btn-outline-primary" 
+                                onclick="viewCourse({{ course.id }})"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Voir les détails">
+                            <i class="fas fa-eye me-1"></i> Détails
+                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    onclick="editCourse({{ course.id }})"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Modifier le cours">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" 
+                                    onclick="deleteCourse({{ course.id }})"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Supprimer le cours">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            {% endfor %}
         </div>
+        {% else %}
+        <div class="col-12">
+            <div class="empty-state">
+                <div class="icon-circle bg-primary bg-opacity-10 text-primary">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3>Aucun cours trouvé</h3>
+                <p class="text-muted">Commencez par créer votre premier cours</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+                    <i class="fas fa-plus-circle me-2"></i> Créer un cours
+                </button>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </div>
 
 <!-- Add Course Modal -->
 <div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
+    <div class="modal-dialog">
+        <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addCourseModalLabel">
-                    <i class="fas fa-plus-circle text-primary me-2"></i>Nouveau cours
-                </h5>
+                <h5 class="modal-title" id="addCourseModalLabel">Nouveau Cours</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ url_for('add_course') }}">
+            <form id="addCourseForm" method="POST" action="{{ url_for('add_course') }}" data-ajax="true">
                 <div class="modal-body">
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-center mb-4">
-                            <div class="bg-primary bg-opacity-10 rounded-circle p-4">
-                                <i class="fas fa-graduation-cap fa-3x text-primary"></i>
-                            </div>
+                    <div class="mb-3">
+                        <label for="course_name" class="form-label">Nom du cours</label>
+                        <input type="text" class="form-control" id="course_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="course_level" class="form-label">Niveau</label>
+                        <select class="form-select" id="course_level" name="level" required>
+                            <option value="">Sélectionnez un niveau</option>
+                            {% for level in levels %}
+                            <option value="{{ level }}">{{ level }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="course_teacher" class="form-label">Professeur</label>
+                        <select class="form-select" id="course_teacher" name="teacher_id" required>
+                            <option value="">Sélectionnez un professeur</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="course_duration" class="form-label">Durée (minutes)</label>
+                        <input type="number" class="form-control" id="course_duration" name="duration" required>
+                    </div>
+                    <div class="schedule-form">
+                        <h6 class="mb-3">Emploi du temps</h6>
+                        <div class="form-group">
+                            <label for="schedule_day" class="form-label">Jour</label>
+                            <select class="form-select" id="schedule_day" name="schedule_day" required>
+                                {% for day in days %}
+                                <option value="{{ day }}">{{ day }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="course_name" class="form-label">Nom du cours</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-dark"><i class="fas fa-book"></i></span>
-                                    <input type="text" class="form-control" id="course_name" name="course_name" placeholder="Ex: Anglais Intermédiaire" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="teacher_name" class="form-label">Nom du coach</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-dark"><i class="fas fa-user-tie"></i></span>
-                                    <input type="text" class="form-control" id="teacher_name" name="teacher_name" placeholder="Ex: John Smith" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <label for="day_of_week" class="form-label">Jour de la semaine</label>
-                                <select class="form-select" id="day_of_week" name="day_of_week" required>
-                                    <option value="" selected disabled>Sélectionner un jour</option>
-                                    <option value="0">Lundi</option>
-                                    <option value="1">Mardi</option>
-                                    <option value="2">Mercredi</option>
-                                    <option value="3">Jeudi</option>
-                                    <option value="4">Vendredi</option>
-                                    <option value="5">Samedi</option>
-                                    <option value="6">Dimanche</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="start_time" class="form-label">Heure de début</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-dark"><i class="fas fa-clock"></i></span>
-                                    <input type="time" class="form-control" id="start_time" name="start_time" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="end_time" class="form-label">Heure de fin</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-dark"><i class="fas fa-clock"></i></span>
-                                    <input type="time" class="form-control" id="end_time" name="end_time" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <label for="telegram_group_id" class="form-label">ID du groupe Telegram</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-dark"><i class="fab fa-telegram"></i></span>
-                                    <input type="text" class="form-control" id="telegram_group_id" name="telegram_group_id" placeholder="Ex: -1001234567890" required>
-                                </div>
-                                <div class="form-text">L'ID du groupe où les notifications seront envoyées</div>
-                            </div>
+                        <div class="form-group">
+                            <label for="schedule_start_time" class="form-label">Heure de début</label>
+                            <input type="time" class="form-control" id="schedule_start_time" name="schedule_start_time" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="schedule_end_time" class="form-label">Heure de fin</label>
+                            <input type="time" class="form-control" id="schedule_end_time" name="schedule_end_time" required>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Ajouter
+                        <i class="fas fa-plus-circle me-2"></i>Créer
                     </button>
                 </div>
             </form>
@@ -422,68 +313,62 @@
 
 <!-- Edit Course Modal -->
 <div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
+    <div class="modal-dialog">
+        <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editCourseModalLabel">
-                    <i class="fas fa-edit text-primary me-2"></i>Modifier un cours
-                </h5>
+                <h5 class="modal-title" id="editCourseModalLabel">Modifier le Cours</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="editCourseForm" method="POST">
+            <form id="editCourseForm" method="POST" data-ajax="true">
                 <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="edit_course_name" class="form-label">Nom du cours</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark"><i class="fas fa-book"></i></span>
-                                <input type="text" class="form-control" id="edit_course_name" name="course_name" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="edit_teacher_name" class="form-label">Nom du coach</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark"><i class="fas fa-user-tie"></i></span>
-                                <input type="text" class="form-control" id="edit_teacher_name" name="teacher_name" required>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <label for="edit_day_of_week" class="form-label">Jour de la semaine</label>
-                            <select class="form-select" id="edit_day_of_week" name="day_of_week" required>
-                                <option value="0">Lundi</option>
-                                <option value="1">Mardi</option>
-                                <option value="2">Mercredi</option>
-                                <option value="3">Jeudi</option>
-                                <option value="4">Vendredi</option>
-                                <option value="5">Samedi</option>
-                                <option value="6">Dimanche</option>
+                    <div class="mb-3">
+                        <label for="edit_course_name" class="form-label">Nom du cours</label>
+                        <input type="text" class="form-control" id="edit_course_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_course_level" class="form-label">Niveau</label>
+                        <select class="form-select" id="edit_course_level" name="level" required>
+                            <option value="">Sélectionnez un niveau</option>
+                            {% for level in levels %}
+                            <option value="{{ level }}">{{ level }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_course_teacher" class="form-label">Professeur</label>
+                        <select class="form-select" id="edit_course_teacher" name="teacher_id" required>
+                            <option value="">Sélectionnez un professeur</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_course_duration" class="form-label">Durée (minutes)</label>
+                        <input type="number" class="form-control" id="edit_course_duration" name="duration" required>
+                    </div>
+                    <div class="schedule-form">
+                        <h6 class="mb-3">Emploi du temps</h6>
+                        <div class="form-group">
+                            <label for="edit_schedule_day" class="form-label">Jour</label>
+                            <select class="form-select" id="edit_schedule_day" name="schedule_day" required>
+                                {% for day in days %}
+                                <option value="{{ day }}">{{ day }}</option>
+                                {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-6">
-                            <label for="edit_start_time" class="form-label">Heure de début</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark"><i class="fas fa-clock"></i></span>
-                                <input type="time" class="form-control" id="edit_start_time" name="start_time" required>
-                            </div>
+                        <div class="form-group">
+                            <label for="edit_schedule_start_time" class="form-label">Heure de début</label>
+                            <input type="time" class="form-control" id="edit_schedule_start_time" name="schedule_start_time" required>
                         </div>
-                        <div class="col-md-6">
-                            <label for="edit_end_time" class="form-label">Heure de fin</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark"><i class="fas fa-clock"></i></span>
-                                <input type="time" class="form-control" id="edit_end_time" name="end_time" required>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <label for="edit_telegram_group_id" class="form-label">ID du groupe Telegram</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark"><i class="fab fa-telegram"></i></span>
-                                <input type="text" class="form-control" id="edit_telegram_group_id" name="telegram_group_id" required>
-                            </div>
+                        <div class="form-group">
+                            <label for="edit_schedule_end_time" class="form-label">Heure de fin</label>
+                            <input type="time" class="form-control" id="edit_schedule_end_time" name="schedule_end_time" required>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save me-2"></i>Enregistrer
                     </button>
@@ -492,227 +377,83 @@
         </div>
     </div>
 </div>
-
-<!-- Delete Course Modal -->
-<div class="modal fade" id="deleteCourseModal" tabindex="-1" aria-labelledby="deleteCourseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteCourseModalLabel">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmation de suppression
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <div class="bg-danger bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
-                        <i class="fas fa-trash fa-3x text-danger"></i>
-                    </div>
-                    <h5>Êtes-vous sûr de vouloir supprimer ce cours ?</h5>
-                    <p class="text-muted">Cette action ne peut pas être annulée. Toutes les données associées à ce cours seront définitivement supprimées.</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-                <form id="deleteCourseForm" method="POST">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-2"></i>Supprimer définitivement
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/courses.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle filter toggle button text
-        const filterToggleBtn = document.querySelector('[data-bs-toggle="collapse"][data-bs-target="#filterCollapse"]');
-        const filterToggleText = document.querySelector('.filter-toggle-text');
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des modales
+    const addModal = new bootstrap.Modal(document.getElementById('addCourseModal'));
+    const editModal = new bootstrap.Modal(document.getElementById('editCourseModal'));
+
+    // Gestion des filtres
+    const filterForm = document.getElementById('filterForm');
+    filterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(filterForm);
+        const params = new URLSearchParams(formData);
         
-        if (filterToggleBtn && filterToggleText) {
-            filterToggleBtn.addEventListener('click', function() {
-                const isCollapsed = this.getAttribute('aria-expanded') === 'true';
-                filterToggleText.textContent = isCollapsed ? 'Afficher' : 'Masquer';
-                
-                // Change icon as well
-                const icon = this.querySelector('i');
-                if (icon) {
-                    icon.className = isCollapsed ? 'fas fa-chevron-down me-1' : 'fas fa-chevron-up me-1';
-                }
+        fetch(`/courses/filter?${params.toString()}`)
+            .then(response => response.text())
+            .then(html => {
+                document.querySelector('.row.g-4').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Une erreur est survenue lors du filtrage des cours.', 'danger');
             });
-        }
-        
-        // Handle Edit Course buttons
-        document.querySelectorAll('.edit-course-btn').forEach(function(button) {
-            button.addEventListener('click', function() {
-                const courseId = this.getAttribute('data-course-id');
-                const courseName = this.getAttribute('data-course-name');
-                const teacherName = this.getAttribute('data-teacher-name');
-                const dayOfWeek = this.getAttribute('data-day-of-week');
-                const startTime = this.getAttribute('data-start-time');
-                const endTime = this.getAttribute('data-end-time');
-                const telegramGroupId = this.getAttribute('data-telegram-group-id');
-                
-                // Populate form
-                document.getElementById('edit_course_name').value = courseName;
-                document.getElementById('edit_teacher_name').value = teacherName;
-                document.getElementById('edit_day_of_week').value = dayOfWeek;
-                document.getElementById('edit_start_time').value = startTime;
-                document.getElementById('edit_end_time').value = endTime;
-                document.getElementById('edit_telegram_group_id').value = telegramGroupId;
-                
-                // Set form action
-                document.getElementById('editCourseForm').action = `/courses/edit/${courseId}`;
-                
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('editCourseModal'));
-                modal.show();
-            });
-        });
-        
-        // Handle Delete Course buttons
-        document.querySelectorAll('.delete-course-btn').forEach(function(button) {
-            button.addEventListener('click', function() {
-                const courseId = this.getAttribute('data-course-id');
-                
-                // Set form action
-                document.getElementById('deleteCourseForm').action = `/courses/delete/${courseId}`;
-                
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('deleteCourseModal'));
-                modal.show();
-            });
-        });
-        
-        // Handle Filter Form
-        const filterForm = document.getElementById('filterForm');
-        if (filterForm) {
-            filterForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Get filter values
-                const teacher = document.getElementById('filter_teacher').value;
-                const className = document.getElementById('filter_class').value;
-                const group = document.getElementById('filter_group').value;
-                const period = document.getElementById('filter_period').value;
-                
-                // Build URL with query parameters
-                let url = window.location.pathname;
-                const params = new URLSearchParams();
-                
-                if (teacher) params.append('teacher', teacher);
-                if (className) params.append('class', className);
-                if (group) params.append('group', group);
-                if (period) params.append('period', period);
-                
-                // Redirect to filtered URL
-                if (params.toString()) {
-                    url += '?' + params.toString();
-                }
-                
-                window.location.href = url;
-            });
-            
-            // Handle reset button
-            filterForm.querySelector('button[type="reset"]').addEventListener('click', function() {
-                // Reset all selects
-                filterForm.querySelectorAll('select').forEach(select => {
-                    select.value = '';
-                });
-                
-                // Go to base URL
-                window.location.href = window.location.pathname;
-            });
-            
-            // Pre-populate filter values from URL
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('teacher')) {
-                document.getElementById('filter_teacher').value = urlParams.get('teacher');
-            }
-            if (urlParams.has('class')) {
-                document.getElementById('filter_class').value = urlParams.get('class');
-            }
-            if (urlParams.has('group')) {
-                document.getElementById('filter_group').value = urlParams.get('group');
-            }
-            if (urlParams.has('period')) {
-                document.getElementById('filter_period').value = urlParams.get('period');
-            }
-        }
     });
-    
-    // Function to validate course form to prevent duplicates
-    function validateCourseForm(formId) {
-        const form = document.getElementById(formId);
-        const dayOfWeek = form.querySelector('[name="day_of_week"]').value;
-        const startTime = form.querySelector('[name="start_time"]').value;
-        const endTime = form.querySelector('[name="end_time"]').value;
-        const teacherName = form.querySelector('[name="teacher_name"]').value;
-        
-        // Check server-side if this is a duplicate
-        return new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('day_of_week', dayOfWeek);
-            formData.append('start_time', startTime);
-            formData.append('end_time', endTime);
-            formData.append('teacher_name', teacherName);
-            
-            fetch('/api/check-course-conflict', {
+
+    // Fonction pour voir les détails d'un cours
+    window.viewCourse = function(courseId) {
+        window.location.href = `/courses/${courseId}`;
+    };
+
+    // Fonction pour éditer un cours
+    window.editCourse = function(courseId) {
+        fetch(`/courses/${courseId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('edit_course_name').value = data.name;
+                document.getElementById('edit_course_level').value = data.level;
+                document.getElementById('edit_course_teacher').value = data.teacher_id;
+                document.getElementById('edit_course_duration').value = data.duration;
+                document.getElementById('edit_schedule_day').value = data.schedule.day;
+                document.getElementById('edit_schedule_start_time').value = data.schedule.start_time;
+                document.getElementById('edit_schedule_end_time').value = data.schedule.end_time;
+                document.getElementById('editCourseForm').action = `/courses/${courseId}/edit`;
+                editModal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Une erreur est survenue lors du chargement des données du cours.', 'danger');
+            });
+    };
+
+    // Fonction pour supprimer un cours
+    window.deleteCourse = function(courseId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
+            fetch(`/courses/${courseId}/delete`, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             })
             .then(response => response.json())
             .then(data => {
-                if (data.conflict) {
-                    if (confirm(`ATTENTION: Un cours similaire existe déjà:\n\n${data.details}\n\nVoulez-vous vraiment créer un cours en doublon?`)) {
-                        resolve(true); // User confirmed to proceed despite conflict
-                    } else {
-                        resolve(false); // User cancelled
-                    }
+                if (data.success) {
+                    showNotification('Cours supprimé avec succès !');
+                    location.reload();
                 } else {
-                    resolve(true); // No conflict
+                    showNotification('Erreur lors de la suppression du cours : ' + data.message, 'danger');
                 }
             })
             .catch(error => {
-                console.error('Error checking course conflict:', error);
-                // In case of error, allow form submission but warn user
-                if (confirm('Impossible de vérifier les doublons. Voulez-vous continuer?')) {
-                    resolve(true);
-                } else {
-                    resolve(false);
-                }
+                console.error('Error:', error);
+                showNotification('Une erreur est survenue lors de la suppression du cours.', 'danger');
             });
-        });
-    }
-    
-    // Add validation to add course form
-    const addCourseForm = document.querySelector('#addCourseModal form');
-    if (addCourseForm) {
-        addCourseForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            validateCourseForm('addCourseModal').then(isValid => {
-                if (isValid) {
-                    this.submit();
-                }
-            });
-        });
-    }
-    
-    // Add validation to edit course form
-    const editCourseForm = document.getElementById('editCourseForm');
-    if (editCourseForm) {
-        editCourseForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            validateCourseForm('editCourseForm').then(isValid => {
-                if (isValid) {
-                    this.submit();
-                }
-            });
-        });
-    }
+        }
+    };
+});
 </script>
 {% endblock %}
