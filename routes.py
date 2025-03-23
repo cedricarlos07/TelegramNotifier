@@ -78,7 +78,41 @@ def change_password():
 @main.route('/admin')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    # Récupération des données
+    courses = Course.query.all()
+    students = Student.query.all()
+    telegram_groups = TelegramGroup.query.all()
+    zoom_links = ZoomLink.query.all()
+    
+    # Données pour les graphiques
+    course_days_labels = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
+    course_days_values = [0] * 7
+    
+    for course in courses:
+        if course.day_of_week:
+            day_index = course.day_of_week - 1
+            if 0 <= day_index < 7:
+                course_days_values[day_index] += 1
+    
+    # Données pour les tendances d'activité
+    now = datetime.now()
+    last_week = now - timedelta(days=7)
+    
+    # Récupération des messages et présences des 7 derniers jours
+    activity_dates = [(now - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(7)]
+    message_trend = [0] * 7
+    attendance_trend = [0] * 7
+    
+    return render_template('dashboard.html',
+                         courses=courses,
+                         students=students,
+                         telegram_groups=telegram_groups,
+                         zoom_links=zoom_links,
+                         course_days_labels=course_days_labels,
+                         course_days_values=course_days_values,
+                         activity_dates=activity_dates,
+                         message_trend=message_trend,
+                         attendance_trend=attendance_trend)
 
 @main.route('/analytics')
 @login_required

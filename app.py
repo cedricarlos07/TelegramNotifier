@@ -29,7 +29,7 @@ load_dotenv()
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 # Configure SQLAlchemy
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///telegram_notifier.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///telegram_notifier.db"
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,

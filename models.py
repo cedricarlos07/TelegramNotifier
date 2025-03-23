@@ -134,10 +134,32 @@ class Course(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    professor = db.Column(db.String(255), nullable=False)
+    day_of_week = db.Column(db.Integer, nullable=False)  # 1 = Lundi, 7 = Dimanche
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     students = db.relationship('Student', secondary='student_courses', back_populates='courses', overlaps="courses")
+
+    def __repr__(self):
+        return f"<Course {self.code}: {self.name}>"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'code': self.code,
+            'professor': self.professor,
+            'day_of_week': self.day_of_week,
+            'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
+            'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
+            'description': self.description,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+        }
 
 class TelegramGroup(db.Model):
     __tablename__ = 'telegram_groups'

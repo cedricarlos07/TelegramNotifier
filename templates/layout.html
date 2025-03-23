@@ -1,162 +1,207 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TelegramNotifier - {% block title %}{% endblock %}</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>{% block title %}TelegramNotifier{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    {% block styles %}{% endblock %}
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/brevo-theme.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.dashboard') }}">
-                <i class="fab fa-telegram me-2"></i>
-                TelegramNotifier
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-robot me-2"></i>TelegramNotifier
             </a>
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-2"></i>{{ current_user.username }}
+                            <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('main.change_password') }}">
-                                <i class="fas fa-key me-2"></i>Changer le mot de passe
-                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-user me-2"></i>Profil</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('change_password') }}"><i class="fas fa-key me-2"></i>Changer mot de passe</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.logout') }}">
-                                <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
-                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
                         </ul>
                     </li>
-                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
-
-    <!-- Main Container -->
-    <div class="container-fluid">
-        <div class="row">
-            {% if current_user.is_authenticated %}
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 px-0 sidebar">
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-content">
+            <!-- Main menu -->
+            <div class="sidebar-section">
+                <h6 class="sidebar-heading">Menu principal</h6>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" 
-                           href="{{ url_for('main.dashboard') }}">
-                            <i class="fas fa-home"></i>Tableau de bord
+                        <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-home me-2"></i>Tableau de bord
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.courses' %}active{% endif %}" 
-                           href="{{ url_for('main.courses') }}">
-                            <i class="fas fa-graduation-cap"></i>Cours
+                        <a class="nav-link {% if request.endpoint == 'courses' %}active{% endif %}" href="{{ url_for('courses') }}">
+                            <i class="fas fa-graduation-cap me-2"></i>Cours
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.students' %}active{% endif %}" 
-                           href="{{ url_for('main.students') }}">
-                            <i class="fas fa-users"></i>Étudiants
+                        <a class="nav-link {% if request.endpoint == 'zoom_links' %}active{% endif %}" href="{{ url_for('zoom_links') }}">
+                            <i class="fas fa-video me-2"></i>Liens Zoom
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.telegram_groups' %}active{% endif %}" 
-                           href="{{ url_for('main.telegram_groups') }}">
-                            <i class="fab fa-telegram"></i>Groupes Telegram
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.zoom_links' %}active{% endif %}" 
-                           href="{{ url_for('main.zoom_links') }}">
-                            <i class="fas fa-video"></i>Liens Zoom
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.rankings' %}active{% endif %}" 
-                           href="{{ url_for('main.rankings') }}">
-                            <i class="fas fa-trophy"></i>Classements
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.analytics' %}active{% endif %}" 
-                           href="{{ url_for('main.analytics') }}">
-                            <i class="fas fa-chart-line"></i>Analyses
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.scenarios' %}active{% endif %}" 
-                           href="{{ url_for('main.scenarios') }}">
-                            <i class="fas fa-tasks"></i>Scénarios
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.simulation' %}active{% endif %}" 
-                           href="{{ url_for('main.simulation') }}">
-                            <i class="fas fa-vial"></i>Simulation
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.bot_status' %}active{% endif %}" 
-                           href="{{ url_for('main.bot_status') }}">
-                            <i class="fas fa-robot"></i>Statut du Bot
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.logs' %}active{% endif %}" 
-                           href="{{ url_for('main.logs') }}">
-                            <i class="fas fa-list"></i>Logs
+                        <a class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
+                            <i class="fas fa-chart-bar me-2"></i>Analytiques
                         </a>
                     </li>
                 </ul>
             </div>
-            {% endif %}
-
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4 content-wrapper">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                {% block page_header %}{% endblock %}
-                {% block content %}{% endblock %}
+            
+            <!-- Automation -->
+            <div class="sidebar-section">
+                <h6 class="sidebar-heading">Automatisation</h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'scenarios' %}active{% endif %}" href="{{ url_for('scenarios') }}">
+                            <i class="fas fa-robot me-2"></i>Scénarios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'rankings' %}active{% endif %}" href="{{ url_for('rankings') }}">
+                            <i class="fas fa-trophy me-2"></i>Classements
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- System -->
+            <div class="sidebar-section">
+                <h6 class="sidebar-heading">Système</h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'bot_status' %}active{% endif %}" href="{{ url_for('bot_status') }}">
+                            <i class="fas fa-server me-2"></i>État du bot
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}" href="{{ url_for('logs') }}">
+                            <i class="fas fa-clipboard-list me-2"></i>Logs
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
-
+    
+    <!-- Main content -->
+    <div class="main-content">
+        <div class="container-fluid py-4">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <!-- Mobile navigation -->
+    <div class="mobile-nav">
+        <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </a>
+        <a href="{{ url_for('courses') }}" class="nav-item {% if request.endpoint == 'courses' %}active{% endif %}">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Cours</span>
+        </a>
+        <a href="{{ url_for('scenarios') }}" class="nav-item {% if request.endpoint == 'scenarios' %}active{% endif %}">
+            <i class="fas fa-robot"></i>
+            <span>Scénarios</span>
+        </a>
+        <a href="#" class="nav-item" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+            <i class="fas fa-bars"></i>
+            <span>Menu</span>
+        </a>
+    </div>
+    
+    <!-- Mobile menu -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="mobileMenu">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('zoom_links') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-video me-2"></i>Liens Zoom
+                </a>
+                <a href="{{ url_for('analytics') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-chart-bar me-2"></i>Analytiques
+                </a>
+                <a href="{{ url_for('rankings') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-trophy me-2"></i>Classements
+                </a>
+                <a href="{{ url_for('bot_status') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-server me-2"></i>État du bot
+                </a>
+                <a href="{{ url_for('logs') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-clipboard-list me-2"></i>Logs
+                </a>
+            </div>
+        </div>
+    </div>
+    
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <!-- Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    
+    <!-- Theme switcher -->
+    <script>
+        // Theme switcher
+        const themeSwitcher = document.createElement('button');
+        themeSwitcher.className = 'btn btn-link position-fixed bottom-0 end-0 m-3';
+        themeSwitcher.innerHTML = '<i class="fas fa-moon"></i>';
+        themeSwitcher.onclick = function() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Dispatch theme change event
+            document.dispatchEvent(new Event('themeChanged'));
+        };
+        document.body.appendChild(themeSwitcher);
+        
+        // Set initial theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    </script>
     
     {% block scripts %}{% endblock %}
 </body>

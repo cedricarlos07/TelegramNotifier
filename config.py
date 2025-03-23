@@ -6,7 +6,28 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Telegram bot configuration
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Remplacez par votre token de bot Telegram
+
+# Configuration de la base de données
+DATABASE_PATH = "instance/telegram_notifier.db"
+
+# Configuration des niveaux
+LEVELS = ['ABG', 'BBG', 'ZBG', 'IG', 'IAG']
+
+# Configuration des jours
+DAYS = {
+    'MW': 'Monday-Wednesday',
+    'TT': 'Tuesday-Thursday',
+    'FS': 'Friday-Saturday',
+    'SS': 'Sunday'
+}
+
+# Configuration des points
+POINTS_CONFIG = {
+    'message': 1,  # Points par message
+    'attendance': 5,  # Points par présence
+    'bonus': 10  # Points bonus
+}
 
 # Zoom API configuration (OAuth)
 ZOOM_ACCOUNT_ID = os.getenv("ZOOM_ACCOUNT_ID")

@@ -5,111 +5,392 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Tableau de bord</h5>
+<!-- Simulation mode alert -->
+{% if simulation_mode %}
+<div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4" role="alert">
+    <div class="d-flex align-items-center">
+        <div class="rounded-circle bg-warning bg-opacity-25 p-3 me-3">
+            <i class="fas fa-flask fs-4 text-warning"></i>
+        </div>
+        <div>
+            <h5 class="alert-heading mb-1">Mode Simulation actif</h5>
+            <p class="mb-0">
+                Les notifications seront envoyées au groupe de test: 
+                <span class="badge bg-dark">{{ test_group_id }}</span>
+                <a href="{{ url_for('simulation') }}" class="alert-link ms-2"><i class="fas fa-cog"></i> Paramètres</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Stats overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">TOTAL COURS</h6>
+                <div class="stat-value">{{ course_count }}</div>
+                <div class="d-flex align-items-center text-muted">
+                    <span>{{ today_courses }} aujourd'hui</span>
+                    {% if today_courses > 0 %}
+                    <span class="ms-2 badge bg-success">Actif</span>
+                    {% endif %}
                 </div>
-                <div class="card-body">
-                    <div class="row g-4">
-                        <!-- Statistiques des cours -->
-                        <div class="col-md-3">
-                            <div class="card bg-primary text-white">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="text-uppercase mb-1">Cours</h6>
-                                            <h3 class="mb-0">{{ courses|length if courses else 0 }}</h3>
-                                        </div>
-                                        <div class="icon-circle bg-white text-primary">
-                                            <i class="fas fa-graduation-cap"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <i class="fas fa-graduation-cap stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">INTERACTIONS</h6>
+                <div class="stat-value">{{ message_count }}</div>
+                <div class="d-flex align-items-center text-muted">
+                    <span>Messages envoyés</span>
+                </div>
+                <i class="fas fa-comment-dots stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">PRÉSENCES</h6>
+                <div class="stat-value">{{ attendance_count }}</div>
+                <div class="d-flex align-items-center text-muted">
+                    <span>Participations enregistrées</span>
+                </div>
+                <i class="fas fa-users stat-icon"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">PLANIFICATION</h6>
+                <div class="stat-value">
+                    {% set percent = (course_count > 0) and ((upcoming_courses|length / course_count) * 100)|round or 0 %}
+                    {{ percent }}%
+                </div>
+                <div class="d-flex align-items-center text-muted">
+                    <span>Cours planifiés</span>
+                </div>
+                <i class="fas fa-calendar-check stat-icon"></i>
+            </div>
+        </div>
+    </div>
+</div>
 
-                        <!-- Statistiques des étudiants -->
-                        <div class="col-md-3">
-                            <div class="card bg-success text-white">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="text-uppercase mb-1">Étudiants</h6>
-                                            <h3 class="mb-0">{{ students|length if students else 0 }}</h3>
-                                        </div>
-                                        <div class="icon-circle bg-white text-success">
-                                            <i class="fas fa-users"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Statistiques des groupes -->
-                        <div class="col-md-3">
-                            <div class="card bg-info text-white">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="text-uppercase mb-1">Groupes</h6>
-                                            <h3 class="mb-0">{{ telegram_groups|length if telegram_groups else 0 }}</h3>
-                                        </div>
-                                        <div class="icon-circle bg-white text-info">
-                                            <i class="fas fa-telegram"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Statistiques des liens Zoom -->
-                        <div class="col-md-3">
-                            <div class="card bg-warning text-white">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="text-uppercase mb-1">Liens Zoom</h6>
-                                            <h3 class="mb-0">{{ zoom_links|length if zoom_links else 0 }}</h3>
-                                        </div>
-                                        <div class="icon-circle bg-white text-warning">
-                                            <i class="fas fa-video"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Graphiques et autres widgets peuvent être ajoutés ici -->
+<!-- Action buttons row -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body d-flex flex-wrap gap-2">
+                <a href="{{ url_for('courses') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>Nouveau cours
+                </a>
+                <a href="{{ url_for('scenarios') }}" class="btn btn-success">
+                    <i class="fas fa-play me-2"></i>Exécuter scénarios
+                </a>
+                <a href="{{ url_for('simulation') }}" class="btn btn-warning">
+                    <i class="fas fa-flask me-2"></i>
+                    {% if simulation_mode %}Désactiver simulation{% else %}Activer simulation{% endif %}
+                </a>
+                <a href="{{ url_for('rankings') }}" class="btn btn-info">
+                    <i class="fas fa-trophy me-2"></i>Classements
+                </a>
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-file-export me-2"></i>Exporter
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="handleExport('excel')"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="handleExport('pdf')"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Data visualization row -->
+<div class="row mb-4">
+    <!-- Course distribution chart -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4 h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-primary"></i>Distribution des cours</h5>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <div class="text-center text-muted mb-2 small">Répartition des cours par jour de la semaine</div>
+                <div class="chart-container flex-grow-1" style="position: relative; height: 220px;">
+                    <canvas id="courseDistributionChart"></canvas>
+                </div>
+                {% if not course_days_labels %}
+                <div class="text-center text-muted mt-3">
+                    <i class="fas fa-info-circle me-1"></i>Aucune donnée disponible
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity trend chart -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm mb-4 h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2 text-success"></i>Tendance d'activité</h5>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary active">7 jours</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">30 jours</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="text-center text-muted mb-2 small">Messages et présences enregistrés</div>
+                <div class="chart-container" style="position: relative; height: 220px;">
+                    <canvas id="activityTrendChart"></canvas>
+                </div>
+                {% if not activity_dates %}
+                <div class="text-center text-muted mt-3">
+                    <i class="fas fa-info-circle me-1"></i>Aucune donnée disponible
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Upcoming courses -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar me-2 text-primary"></i>Cours à venir</h5>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary me-3">7 prochains jours</span>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary courses-nav-button" data-slide="prev">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary courses-nav-button" data-slide="next">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if upcoming_courses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Date</th>
+                                    <th>Heure</th>
+                                    <th>Cours</th>
+                                    <th>Enseignant</th>
+                                    <th class="text-end pe-4">Zoom</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in upcoming_courses %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% set day_class = {
+                                                0: 'text-indigo', 
+                                                1: 'text-blue', 
+                                                2: 'text-cyan', 
+                                                3: 'text-teal', 
+                                                4: 'text-green', 
+                                                5: 'text-yellow', 
+                                                6: 'text-orange'
+                                            } %}
+                                            <div class="bg-dark rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                <span class="{{ day_class.get(course.day_of_week, 'text-primary') }} fw-bold">
+                                                    {{ course.schedule_date.strftime('%d') }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">{{ course.schedule_date.strftime('%B') }}</span>
+                                                <span class="fw-semibold">{{ course.schedule_date.strftime('%A') }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-dark">{{ course.start_time.strftime('%H:%M') }}</span>
+                                        <span class="text-muted">-</span>
+                                        <span class="badge bg-dark">{{ course.end_time.strftime('%H:%M') }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{{ course.course_name }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2 bg-secondary" style="width: 28px; height: 28px; font-size: 0.8rem;">
+                                                <span>{{ course.teacher_name[0]|upper }}</span>
+                                            </div>
+                                            <span>{{ course.teacher_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        {% if course.zoom_link %}
+                                            <a href="{{ course.zoom_link }}" target="_blank" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-video me-1"></i> Rejoindre
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('zoom_links') }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-plus me-1"></i> Ajouter
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-calendar-times fa-2x mb-3"></i>
+                        <p class="mb-0">Aucun cours prévu pour les 7 prochains jours</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent activity -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history me-2 text-info"></i>Activité récente</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_activity %}
+                    <div class="list-group list-group-flush">
+                        {% for activity in recent_activity %}
+                        <div class="list-group-item border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="activity-icon me-3">
+                                    {% if activity.type == 'message' %}
+                                        <i class="fas fa-comment text-primary"></i>
+                                    {% elif activity.type == 'attendance' %}
+                                        <i class="fas fa-user-check text-success"></i>
+                                    {% elif activity.type == 'course' %}
+                                        <i class="fas fa-graduation-cap text-warning"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle text-info"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-1">{{ activity.description }}</p>
+                                    <small class="text-muted">{{ activity.timestamp.strftime('%d/%m/%Y %H:%M') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-history fa-2x mb-3"></i>
+                        <p class="mb-0">Aucune activité récente</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-
-<!-- Initialize chart data -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Chart data passed from Flask
-    window.courseDistributionData = {
-        labels: {{ course_days_labels|safe if course_days_labels else '[]'|safe }},
-        values: {{ course_days_values|safe if course_days_values else '[]'|safe }}
-    };
-    
-    window.activityTrendData = {
-        labels: {{ activity_dates|safe if activity_dates else '[]'|safe }},
-        messages: {{ message_trend|safe if message_trend else '[]'|safe }},
-        attendances: {{ attendance_trend|safe if attendance_trend else '[]'|safe }}
-    };
-</script>
+    // Course distribution chart
+    const courseDistributionCtx = document.getElementById('courseDistributionChart').getContext('2d');
+    new Chart(courseDistributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ course_days_labels|tojson }},
+            datasets: [{
+                data: {{ course_days_data|tojson }},
+                backgroundColor: [
+                    '#4F46E5', // Indigo
+                    '#3B82F6', // Blue
+                    '#06B6D4', // Cyan
+                    '#14B8A6', // Teal
+                    '#22C55E', // Green
+                    '#EAB308', // Yellow
+                    '#F97316'  // Orange
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
 
-<!-- Dashboard.js with charts and UI enhancements -->
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    // Activity trend chart
+    const activityTrendCtx = document.getElementById('activityTrendChart').getContext('2d');
+    new Chart(activityTrendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ activity_dates|tojson }},
+            datasets: [
+                {
+                    label: 'Messages',
+                    data: {{ message_counts|tojson }},
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true
+                },
+                {
+                    label: 'Présences',
+                    data: {{ attendance_counts|tojson }},
+                    borderColor: '#22C55E',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Export functionality
+    function handleExport(type) {
+        // Implement export logic here
+        console.log('Exporting as:', type);
+    }
+
+    // Course navigation
+    document.querySelectorAll('.courses-nav-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const slide = this.dataset.slide;
+            // Implement course navigation logic here
+            console.log('Sliding courses:', slide);
+        });
+    });
+</script>
 {% endblock %}

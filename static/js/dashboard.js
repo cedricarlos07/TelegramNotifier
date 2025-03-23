@@ -207,6 +207,40 @@ function handleExport(format) {
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+
+    // Course navigation
+    const courseNavButtons = document.querySelectorAll('.courses-nav-button');
+    let currentPage = 1;
+    const itemsPerPage = 5;
+
+    courseNavButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const slide = this.dataset.slide;
+            const table = document.querySelector('.table tbody');
+            const rows = table.querySelectorAll('tr');
+            const totalPages = Math.ceil(rows.length / itemsPerPage);
+
+            if (slide === 'prev' && currentPage > 1) {
+                currentPage--;
+            } else if (slide === 'next' && currentPage < totalPages) {
+                currentPage++;
+            }
+
+            // Show/hide rows based on current page
+            rows.forEach((row, index) => {
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                row.style.display = (index >= start && index < end) ? '' : 'none';
+            });
+
+            // Update button states
+            courseNavButtons[0].disabled = currentPage === 1;
+            courseNavButtons[1].disabled = currentPage === totalPages;
+        });
+    });
+
+    // Initialize first page
+    courseNavButtons[0].click();
 });
 
 // Helper function to show toast notifications
@@ -236,3 +270,87 @@ function showToast(message, type = 'success') {
         document.body.removeChild(toast);
     });
 }
+
+// Export functionality
+function handleExport(type) {
+    const exportUrl = type === 'excel' ? '/export/excel' : '/export/pdf';
+    
+    // Show loading state
+    const button = document.querySelector(`[onclick="handleExport('${type}')"]`);
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exportation...';
+    button.disabled = true;
+
+    // Make the export request
+    fetch(exportUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            start_date: document.getElementById('startDate').value,
+            end_date: document.getElementById('endDate').value
+        })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `export_${type}_${new Date().toISOString().split('T')[0]}.${type}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    })
+    .catch(error => {
+        console.error('Export error:', error);
+        alert('Une erreur est survenue lors de l\'exportation.');
+    })
+    .finally(() => {
+        // Restore button state
+        button.innerHTML = originalContent;
+        button.disabled = false;
+    });
+}
+
+// Chart theme configuration
+Chart.defaults.color = '#6B7280';
+Chart.defaults.borderColor = 'rgba(75, 85, 99, 0.1)';
+
+// Update charts on theme change
+document.addEventListener('themeChanged', function() {
+    const charts = Chart.instances;
+    charts.forEach(chart => {
+        chart.options.plugins.legend.labels.color = Chart.defaults.color;
+        chart.update();
+    });
+});
+
+// Activity trend period toggle
+document.querySelectorAll('.btn-group .btn-outline-secondary').forEach(button => {
+    button.addEventListener('click', function() {
+        const period = this.textContent.trim();
+        const chart = Chart.getChart('activityTrendChart');
+        
+        if (chart) {
+            // Update data based on period
+            fetch(`/api/activity-trend?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    chart.data.labels = data.labels;
+                    chart.data.datasets[0].data = data.messages;
+                    chart.data.datasets[1].data = data.attendances;
+                    chart.update();
+                })
+                .catch(error => console.error('Error fetching activity trend:', error));
+        }
+
+        // Update button states
+        this.parentElement.querySelectorAll('.btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        this.classList.add('active');
+    });
+});
