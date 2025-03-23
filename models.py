@@ -280,8 +280,28 @@ class Scenario(db.Model):
         }
 
 class ZoomLink(db.Model):
+    __tablename__ = 'zoom_links'
+    
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     url = db.Column(db.String(500), nullable=False)
+    meeting_id = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    course = db.relationship('Course', backref=db.backref('zoom_links', lazy=True))
+    
+    def __repr__(self):
+        return f"<ZoomLink for course_id {self.course_id}>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'course_id': self.course_id,
+            'url': self.url,
+            'meeting_id': self.meeting_id,
+            'password': self.password,
+            'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'updated_at': self.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        }
